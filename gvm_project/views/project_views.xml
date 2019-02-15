@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="project_form_sign_inherited" model="ir.ui.view">
+            <field name="name">project inherited sign</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.edit_project"/>
+            <field name="arch" type="xml">
+                 <xpath expr="//page[@name='settings']" position="before">
+		    <page string="manage">
+		      <group string='sign' name='sign'>
+                      <field name="sign" domain="[('sign_ids','=',3)]">
+		        <tree>
+			  <field name="user_id"/>
+			  <field name="date_from"/>
+			  <field name="date_to"/>
+			  <field name="had_cost"/>
+			  <field name="finally_cost"/>
+			</tree>
+		      </field>
+		      </group>
+		    </page>
+                </xpath>
+            </field>
+        </record>
+</odoo>

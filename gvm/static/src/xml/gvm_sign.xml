@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="gvm.Dashboard">
+      <div>
+        <div class="sign_box">
+	  <table style="border:1px solid;width:300px;height:150px">
+	    <tr>
+	      <td style="width:3px;background-color:blue"></td>
+	      <td style="text-align:left">내 문서</td>
+	      <td style="text-align:center"><field name="my_doc_count"/> 건</td>
+	    </tr>
+	    <tr>
+	      <td style="width:3px;background-color:blue"></td>
+	      <td style="text-align:left">결재</td>
+	      <td style="text-align:center"><field name="my_check_count"/> 건</td>
+	    </tr>
+	    <tr>
+	      <td style="width:3px;background-color:blue"></td>
+	      <td style="text-align:left">참조</td>
+	      <td style="text-align:center"><field name="my_ref_count"/> 건</td>
+	    </tr>
+	  </table>
+	</div>
+      </div>
+      <div style="border-top:1px solid;width:100%"></div>
+    </t>
+</templates>

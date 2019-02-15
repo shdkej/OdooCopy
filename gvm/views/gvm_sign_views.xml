@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <menuitem name="전자결재"
+                  id="menu_sign_root"
+                  web_icon="gvm,static/description/icon.png"
+                  sequence="25"/>
+        <menuitem id="menu_sign" name="전자결재"
+            parent="menu_sign_root" sequence="5"/>
+
+        <record id="sign_form" model="ir.ui.view">
+            <field name="name">sign.form</field>
+            <field name="model">gvm.sign</field>
+            <field name="arch" type="xml">
+                <form string="Timesheet by Accounts">
+                        <field name="num"/>
+                        <field name="name"/>
+                </form>
+            </field>
+        </record>
+        <record id="sign_form_test" model="ir.ui.view">
+            <field name="name">sign.form.test</field>
+            <field name="model">gvm.signcontent</field>
+            <field name="arch" type="xml">
+                <form string="Timesheet by Accounts">
+                  <sheet>
+                       <button name="cancel_apply" string="Create" type="object" class="btn-primary"/>
+                      <field name="reason"/>
+                    <footer>
+                       <button string="Discard" class="btn-default" special="cancel"/>
+                    </footer>
+                  </sheet>
+                </form>
+            </field>
+        </record>
+       <record id="view_sign_content_filter" model="ir.ui.view">
+            <field name="name">sign.content.select</field>
+            <field name="model">gvm.signcontent</field>
+            <field name="arch" type="xml">
+                <search string="Search Sign Content">
+                    <field name="name" string="Reference"/>
+                    <field name="create_uid"/>
+                    <filter string="상신 상태" name="write" domain="[('state','=','write')]"/>
+                    <filter string="부서결재 필요" name="check3" domain="[('state','in',('check1','check2'))]"/>
+                    <filter string="합의 필요" name="check4" domain="[('state','in',('check3','check4','check5'))]"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="작성자" domain="[]" context="{'group_by':'user_id'}"/>
+                        <filter string="문서종류" domain="[]" context="{'group_by':'sign'}"/>
+                        <filter string="월별" domain="[]" context="{'group_by':'create_date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="act_sign_content_test" model="ir.actions.act_window">
+            <field name="name">Sign Content test</field>
+            <field name="res_model">gvm.signcontent</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="context">{}</field>
+            <field name="domain"></field>
+            <field name="view_id" ref="sign_form_test"/>
+            <field name="target">new</field>
+        </record>
+
+        <record id="sign_content_form" model="ir.ui.view">
+            <field name="name">sign.content.form</field>
+            <field name="model">gvm.signcontent</field>
+            <field name="arch" type="xml">
+                <form string="Sign">
+                  <header>
+                     <input type="button" class="print" name="print" id="print" value="프린트"/>
+                     <input type="button" class="toexcel" name="toexcel" id="toexcel" value="엑셀"/>
+		     <span attrs="{'invisible':[('check','=',False)]}"><input type="button" class="sign_button" id="sign_button" value="결재"/></span>
+		     <span attrs="{'invisible':[('check','=',False)]}"><input type="button" class="sign_button" id="deny_button" value="반려"/></span>
+		     <button name="button_confirm" string="상신" type="object" states="temp" confirm="상신하시겠습니까?"/>
+		     <button name="button_check_all" string="전결" type="object" groups="hr.group_hr_manager" attrs="{'invisible':['|','|',('state','=','done'),('check_all','=',False),('check','=',False)]}" confirm="전결하시겠습니까?"/>
+		     <button name="button_reorder" string="재상신" type="object" states="cancel"/>
+                     <field name="state" widget="statusbar" statusbar_visible="write,check1,check2,done" readonly="1"/>
+                  </header>
+          <sheet>
+             <field name="sign_ids" invisible="1"/>
+             <field name="check" invisible="1"/>
+             <field name="user_department" invisible="1"/>
+             <field name="next_check" invisible="1"/>
+         <div class="gvm_sign" id="gvm_sign">
+         <span><input type="button" id="add_check" name="0" class="check_button" value="추가" attrs="{'invisible':[('state','!=','write')]}"/></span>
+	 <table width="100%">
+		<tbody>
+			<tr height="30" class="tr_head">
+				<td rowspan="5" width="550" align="center"><h1><field name="sign" options="{'no_create_edit':True}"/>
+                                <span style="font-weight:bold" attrs="{'invisible':[('state','!=','cancel')]}"> (반려) </span>
+				</h1>
+                                전결 : <field name="check_all"/><br/>
+</td>
+				<td class="tdcolor">기안</td>
+				<td class="tdcolor check_hidden" attrs="{'invisible':[('request_check1','=',False),('check1','=',False)]}">결재</td>
+				<td class="tdcolor check_hidden" attrs="{'invisible':[('request_check2','=',False),('check2','=',False)]}">결재</td>
+				<td class="tdcolor">결재</td>
+			</tr>
+			<tr height="80" class="tr_body">
+				<td class="td_check"><field name="writer" readonly="1"/></td>
+				<td class="td_check check_hidden" attrs="{'invisible':[('request_check1','=',False),('check1','=',False)]}">
+                                      <field name="check1" readonly="1"/>
+                                      <span style="font-size:5px"><field name="check1_date" readonly="1"/></span>
+                                      <span attrs="{'invisible':[('request_check1','=',False)]}"> 결재예정 : </span>
+                                      <field name="request_check1" domain="[('job_id.no_of_hired_employee','>',3)]" attrs="{'invisible':[('check1','!=',False)]}" options="{'no_create_edit':True}"/></td>
+				<td class="td_check check_hidden" attrs="{'invisible':[('request_check2','=',False),('check2','=',False)]}">
+                                      <field name="check2" readonly="1"/>
+                                      <span style="font-size:5px"><field name="check2_date" readonly="1"/></span>
+                                      <span attrs="{'invisible':[('request_check2','=',False)]}"> 결재예정 : </span>
+                                      <field name="request_check2" domain="['|',('job_id.no_of_hired_employee','>',3),('department_id','=',10)]" attrs="{'invisible':[('check2','!=',False)]}" options="{'no_create_edit':True}"/></td>
+				<td class="td_check">
+				      <field name="check3" readonly="1"/>
+                                      <span style="font-size:5px"><field name="check3_date" readonly="1"/></span>
+                                      <span style="font-weight:bold" attrs="{'invisible':['|',('state','!=','done'),('check_all','=',False)]}"> 전결 </span>
+                                      <span attrs="{'invisible':[('request_check3','=',False)]}"> 결재예정 : </span>
+                                      <field name="request_check3" domain="[('job_id.no_of_hired_employee','>',3)]" attrs="{'invisible':[('check3','!=',False)]}" options="{'no_create_edit':True}"/></td>
+			</tr>
+			<tr height="30" attrs="{'invisible':[('sign_ids','not in',[2,3,5,6])]}">
+				<td class="tdcolor" attrs="{'invisible':[('sign_ids','not in',[2,3,5,6])]}">합의</td>
+				<td class="tdcolor" attrs="{'invisible':[('sign_ids','not in',[2,3,5,6])]}">합의</td>
+				<td class="tdcolor check_hidden" attrs="{'invisible':[('request_check6','=',False),('check6','=',False)]}">합의</td>
+			</tr>
+			<tr height="80" attrs="{'invisible':[('sign_ids','not in',[2,3,4,5,6])]}">
+				<td attrs="{'invisible':[('sign_ids','=',1)]}">
+                                      <field name="check4" readonly="1"/>
+				      <field name="check4_date" readonly="1"/>
+                                      <span attrs="{'invisible':[('request_check4','=',False)]}"> 결재예정 : </span>
+                                      <field name="request_check4" domain="[('job_id.no_of_hired_employee','>',3)]" attrs="{'invisible':[('check4','!=',False)]}" options="{'no_create_edit':True}"/></td>
+				<td attrs="{'invisible':[('sign_ids','=',1)]}">
+                                      <field name="check5" readonly="1"/>
+                                      <field name="check5_date" readonly="1"/>
+                                      <span attrs="{'invisible':[('request_check5','=',False)]}"> 결재예정 : </span>
+                                      <field name="request_check5" domain="['|',('job_id.no_of_hired_employee','>',3),('department_id','=',10)]" attrs="{'invisible':[('check5','!=',False)]}" options="{'no_create_edit':True}"/></td>
+				<td class="td_check check_hidden" attrs="{'invisible':[('request_check6','=',False),('check6','=',False)]}">
+				<field name="check6" readonly="1"/>
+				<field name="check6_date" readonly="1"/>
+                                      <span attrs="{'invisible':[('request_check6','=',False)]}"> 결재예정 : </span>
+                                      <field name="request_check6" domain="[('job_id.no_of_hired_employee','>',3)]" attrs="{'invisible':[('check6','!=',False)]}" options="{'no_create_edit':True}"/></td>
+			</tr>
+			<tr height="30" class="no_excel">
+				<td colspan='4'>참조 : <field name="reference" widget="many2many_tags" option="{'no_create_edit':True}"/></td>
+			</tr>
+		</tbody>
+	</table>
+	<table width="100%">
+		<tr>
+			<td class="tdcolor">부서</td>
+			<td width="40%"><field name="dep_ids"/></td>
+			<td class="tdcolor">이름</td>
+			<td width="40%"><field name="user_id" readonly="1"/></td>
+		</tr>
+		<tr>
+			<td class="tdcolor">직급</td>
+			<td width="40%"><field name="job_ids"/></td>
+			<td class="tdcolor">기간</td>
+			<td width="40%"><field name="date_from"/> 부터 <field name="date_to"/></td>
+		</tr>
+		<tr attrs="{'invisible':[('sign_ids','!=',3)]}">
+			<td class="tdcolor">지급 된 비용</td>
+			<td width="40%"><field name="had_cost"/></td>
+			<td class="tdcolor">문서첨부</td>
+			<td width="40%"><field name="relate_sign" options="{'no_create_edit':True}" domain="[('user_id','=',user_id)]"/></td>
+		</tr>
+		<tr attrs="{'invisible':[('sign_ids','in',[1,2,5])]}">
+			<td class="tdcolor">프로젝트</td>
+			<td width="90%" colspan="3"><field name="project"/></td>
+		</tr>
+		<tr attrs="{'invisible':[('sign_ids','!=',1)]}">
+			<td class="tdcolor">분류</td>
+			<td width="90%" colspan="3"><field name="rest1"/></td>
+		</tr>
+		<tr attrs="{'invisible':[('sign_ids','!=',6)]}">
+			<td class="tdcolor">기본 가지급액</td>
+			<td width="90%" colspan="3"><field name="basic_cost"/></td>
+		</tr>
+		<tr attrs="{'invisible':[('sign_ids','not in',[3,4])]}">
+			<td class="tdcolor">파일첨부</td>
+                        <td width="90%" colspan="3"><field name="attachment" widget="many2many_binary"/></td>
+		</tr>
+		<tr>
+			<td class="tdcolor">내용</td>
+			<td width="90%" height="500" colspan="6" attrs="{'invisible':[('sign_ids','in',[2,3,5,6])]}" class="tdleft">
+                        <field name="content"/></td>
+                        <td width="90%" height="500" colspan="6" attrs="{'invisible':[('sign_ids','!=',6)]}">
+                        출장 목적 : <field name="content2"/>
+                        가지급신청 :
+                        <field name="cost2">
+                          <tree editable="1">
+                            <field name="name" string="항목명"/>
+                            <field name="cost" string="금액" widget="monet"/>
+                            <field name="currency"/>
+                            <field name="description" string="세부사항"/>
+                          </tree>
+                        </field>
+                        </td>
+                        <td width="90%" height="500" colspan="6" attrs="{'invisible':[('sign_ids','not in',[3,5])]}">
+			<div id="exceltable">
+                        <group>
+                        <group>
+                        <field name="currency_dollar" string="달러"/>
+                        <field name="currency_yuan" string="위안"/>
+                        <field name="currency_dong" string="동"/>
+                        </group>
+                        </group>
+                        <field name="cost">
+                          <tree editable="1">
+                            <field name="card" string="개인/법인"/>
+                            <field name="name" string="항목명"/>
+                            <field name="date" string="일자"/>
+                            <field name="cost" string="금액" widget="monet"/>
+                            <field name="currency"/>
+                            <field name="description" string="세부사항"/>
+                          </tree>
+                        </field>
+			</div>
+                        <span attrs="{'invisible':[('sign_ids','!=',3)]}">
+                        <h3>최종 결산 금액 : <field name="finally_cost" widget="monet"/>원</h3>
+                        </span>
+                        </td>
+                        <td width="90%" height="500" colspan="6" attrs="{'invisible':[('sign_ids','!=',2)]}">
+			<div id="exceltable2">
+                        <field name="timesheet">
+                          <tree editable="1" decoration-info='weekend==True' decoration-bf='weekend==True'>
+                            <field name="project_id" string="프로젝트" readonly="1"/>
+                            <field name="date" string="일자" readonly="1"/>
+                            <field name="unit_amount" string="잔업시간" widget="float_time" readonly="1"/>
+                            <field name="weekend" string="일자" invisible="1"/>
+                          </tree>
+                        </field>
+			</div>
+                        </td>
+		</tr>
+	</table>
+	<table height="250" width="100%">
+                <tr>
+		  <td><field name="reason" readonly="1"/></td>
+		</tr>
+		<tr>
+			<td align="center" valign="bottom"><h2>
+					위와 같이 제출 하오니 재가 바랍니다.<br /><br />GVM.ltd
+					</h2></td>
+		</tr>
+	</table>
+        </div>
+<script>
+$("#print").click(function(){
+window.print();
+});
+$("#toexcel").click(function(){
+console.log('excel');
+});
+</script>
+        </sheet>
+                </form>
+            </field>
+        </record>
+        <record id="sign_tree" model="ir.ui.view">
+            <field name="name">sign.tree</field>
+            <field name="model">gvm.sign</field>
+            <field name="arch" type="xml">
+                <tree string="Timesheet by Accounts">
+                    <field name="num"/>
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+        <record id="sign_content_tree" model="ir.ui.view">
+            <field name="name">sign.content.tree</field>
+            <field name="model">gvm.signcontent</field>
+            <field name="arch" type="xml">
+                <tree string="Timesheet by Accounts">
+                    <field name="name" string="번호"/>
+                    <field name="user_id" string="작성자"/>
+                    <field name="sign" string="결재문서"/>
+                    <field name="create_date" string="상신일"/>
+                    <field name="state" string="상태"/>
+                    <field name="check1" invisible="1"/>
+                    <field name="check2" invisible="1"/>
+                    <field name="next_check" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="sign_content_repair" model="ir.ui.view">
+            <field name="name">sign.content.test</field>
+            <field name="model">gvm.signcontent</field>
+            <field name="arch" type="xml">
+                <form string="Timesheet by Accounts">
+                    <field name="name" string="작성자"/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="sign_kanban">
+            <field name="name">sign.content.kanban</field>
+            <field name="model">gvm.signcontent</field>
+            <field name="arch" type="xml">
+                <kanban class="oe_background_grey o_kanban_dashboard o_stock_kanban" create="1">
+                    <field name="color"/>
+                    <field name="state"/>
+                    <field name="name"/>
+                    <field name="check1"/>
+                    <field name="check2"/>
+                    <field name="check3"/>
+                    <field name="check4"/>
+                    <field name="check5"/>
+                    <field name="check6"/>
+                    <field name="request_check1"/>
+                    <field name="request_check2"/>
+                    <field name="request_check3"/>
+                    <field name="create_date"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div t-if="['write', 'check1', 'check2','done','cancel'].indexOf(record.state.raw_value) > -1" name="stock_picking">
+                                <div t-attf-class="#{kanban_color(record.color.raw_value)}">
+                                    <div class="o_kanban_card_header">
+                                        <div class="o_kanban_card_header_title">
+                                            <div class="o_primary">
+                                                    <field name="name"/> /
+                                                    <field name="sign"/><br/>
+						    <field name="create_date"/>
+                                            </div>
+                                        </div>
+                                        <div class="o_kanban_manage_button_section">
+                                            <a class="o_kanban_manage_toggle_button" href="#">More <i class="fa fa-caret-down"/></a>
+                                        </div>
+                                    </div>
+                                    <div class="container o_kanban_card_content o_visible">
+                                        <div class="row">
+                                            <div class="col-xs-6 o_kanban_primary_left">
+                                                    <span>기안</span>
+                                                    <span>검토</span>
+                                                    <span t-if="record.sign.value != '근태신청서'">합의</span>
+                                                    <span>결재</span>
+                                            </div>
+                                           <div class="col-xs-6 o_kanban_primary_right">
+                                                    <span><field name="writer"/></span>
+						    <span t-esc="record.check1.value"/>
+						    <span t-esc="record.check2.value"/>
+						    <span t-esc="record.check3.value"/>
+                                                    <span t-if="record.state.raw_value == 'write'">진행중</span>
+						    <span t-esc="record.check4.value"/>
+						    <span t-esc="record.check5.value"/>
+						    <span t-esc="record.check6.value"/>
+                                                    <span t-if="record.state.raw_value == 'check1'">진행중</span>
+                                                    <span t-if="record.state.raw_value == 'cancel'">반려</span>
+                                                    <span t-if="record.state.raw_value == 'done'">결재완료</span>
+                                           </div>
+                                        </div>
+                                    </div><div class="container o_kanban_card_manage_pane o_invisible">
+                                        <div class="row">
+                                            <div class="col-xs-6 o_kanban_card_manage_section o_kanban_manage_view">
+                                                <div class="o_kanban_card_manage_title">
+                                                    <span>View</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-xs-6 o_kanban_card_manage_section o_kanban_manage_new">
+                                                <div class="o_kanban_card_manage_title">
+                                                    <span>New</span>
+                                                </div>
+                                                <div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div t-if="widget.editable" class="o_kanban_card_manage_settings row">
+                                            <div class="col-xs-8">
+                                                <ul class="oe_kanban_colorpicker" data-field="color"/>
+                                            </div>
+                                            <div class="col-xs-4 text-right">
+                                                <a type="edit">Settings</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="act_sign" model="ir.actions.act_window">
+            <field name="name">Sign</field>
+            <field name="res_model">gvm.sign</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="search_view_id"/>
+        </record>
+        <record id="act_sign_content_all" model="ir.actions.act_window">
+            <field name="name">Sign Content All</field>
+            <field name="res_model">gvm.signcontent</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{}</field>
+            <field name="domain">[]</field>
+            <field name="search_view_id" ref="view_sign_content_filter"/>
+            <field name="search_view_id"/>
+        </record>
+        <record id="act_sign_content_check" model="ir.actions.act_window">
+            <field name="name">Sign Content Check</field>
+            <field name="res_model">gvm.signcontent</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{}</field>
+            <field name="domain">['|','|','|','|','|',('check1','=',uid),('check2','=',uid),('check3','=',uid),('check4','=',uid),('check5','=',uid),('check6','=',uid)]</field>
+            <field name="search_view_id"/>
+        </record>
+        <record id="act_sign_content_my" model="ir.actions.act_window">
+            <field name="name">Sign Content</field>
+            <field name="res_model">gvm.signcontent</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="context">{}</field>
+            <field name="domain">[('user_id','=',uid)]</field>
+            <field name="search_view_id"/>
+        </record>
+        <record id="act_sign_content_finish" model="ir.actions.act_window">
+            <field name="name">Sign Content Finish</field>
+            <field name="res_model">gvm.signcontent</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{}</field>
+            <field name="domain">[('state','=','done')]</field>
+            <field name="search_view_id"/>
+        </record>
+        <record id="ir_actions_server_gvm" model="ir.actions.server">
+            <field name="sequence" eval="5"/>
+            <field name="state">code</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_gvm_signcontent"/>
+            <field name="code">action = env["gvm.signcontent"].sign_view()</field>
+            <field name="condition">True</field>
+            <field name="name">결재 할 문서</field>
+        </record>
+        <record id="act_sign_reference_content" model="ir.actions.server">
+            <field name="sequence" eval="5"/>
+            <field name="state">code</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_gvm_signcontent"/>
+            <field name="code">action = env["gvm.signcontent"].sign_reference_view()</field>
+            <field name="condition">True</field>
+            <field name="name">참조 문서</field>
+        </record>
+
+        <menuitem name="문서 목록" id="menu_sign_herit" parent="menu_sign" action="act_sign" sequence="2"/>
+        <menuitem name="내 문서" id="menu_sign_content_my" parent="menu_sign_root" action="act_sign_content_my" sequence="3"/>
+        <menuitem name="참조문서" id="menu_sign_content_ref" parent="menu_sign_root" action="act_sign_reference_content" sequence="3"/>
+        <menuitem name="결재 할 문서" id="menu_sign_content" parent="menu_sign_root" action="ir_actions_server_gvm" sequence="0" groups="hr.group_hr_manager"/>
+        <menuitem name="결재 한 문서" id="menu_sign_content_check" parent="menu_sign_root" action="act_sign_content_check" sequence="2" groups="hr.group_hr_manager"/>
+        <menuitem name="결재 된 문서" id="menu_sign_content_finish" parent="menu_sign" action="act_sign_content_finish" sequence="1" groups="hr.group_hr_manager"/>
+        <menuitem name="전체문서" id="menu_sign_content_all" parent="menu_sign" action="act_sign_content_all" sequence="2" groups="hr.group_hr_manager"/>
+
+</odoo>

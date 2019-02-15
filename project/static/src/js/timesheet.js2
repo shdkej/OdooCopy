@@ -1,0 +1,72 @@
+odoo.define('project.project_chart', function (require) {
+"use strict";
+
+var core = require('web.core');
+var data = require('web.data');
+var form_common = require('web.form_common');
+var formats = require('web.formats');
+var Model = require('web.DataModel');
+var time = require('web.time');
+var utils = require('web.utils');
+var session = require('web.session');
+
+var QWeb = core.qweb;
+var _t = core._t;
+
+//document.write('<script src="https://www.gstatic.com/charts/loader.js"></script>')
+var ProjectChart = form_common.FormWidget.extend(form_common.ReinitializeWidgetMixin, {
+    template: 'project.ProjectChart',
+    init: function() {
+        this._super.apply(this, arguments);
+	var self = this;
+	this.drawChart();
+
+    },
+    drawChart: function(){
+        session.rpc('/web/dataset/search_read',{
+	   model : 'project.timeline',
+	}).then(function(id){
+	  var demoSource = [{
+	    name: "Sprint 0",
+	    desc: "Analysis",
+	    values: [{
+	      from: 1320192000000,
+	      to: 1322401600000,
+	      label: "test",
+	      customClass: 'ganttRed'
+	    }]
+	  }]
+          var container = document.getElementById('chart_div');
+	  $('#chart_div').gantt({
+	    source: demoSource,
+	    navigate: "scroll",
+	    scale: "weeks",
+	    maxScale: 'months',
+	    minScale: 'hours',
+	    itemPerPage: 10,
+	    scrollToToday: false,
+	    useCookie: true,
+	    onItemClick: function(data){
+	      alert('test');
+	    }
+	  });
+	  $('#chart_div').popover({
+	    selector: ".bar",
+	    content: "Here's some useful information.",
+	    trigger: 'hover',
+	    placement: 'auto right'
+	  });
+	  prettyPrint();
+
+          $.each(id.records, function(index, item){
+	     data.addRow(
+	       [item.project[1], item.name, new Date(item.date_from), new Date(item.date_to)]
+	     );
+          });
+        });
+    }
+});
+
+core.form_custom_registry.add('project_chart', ProjectChart);
+
+});

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--Email template -->
+        <record id="email_template_edi_purchase" model="mail.template">
+            <field name="name">RFQ - Send by Email</field>
+            <field name="email_from">${(object.create_uid.email and '%s &lt;%s&gt;' % (object.create_uid.name, object.create_uid.email) or '')|safe}</field>
+            <field name="subject">${object.company_id.name} Order (Ref ${object.name or 'n/a' })</field>
+            <field name="partner_to">${object.partner_id.id}</field>
+            <field name="model_id" ref="purchase.model_purchase_order"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="report_template" ref="report_purchase_quotation"/>
+            <field name="report_name">RFQ_${(object.name or '').replace('/','_')}</field>
+            <field name="lang">${object.partner_id.lang}</field>
+            <field name="body_html"><![CDATA[
+<p>안녕하십니까 지브이엠 입니다.</p>
+<p>
+${object.state in ('draft', 'sent') and '견적요청서' or '구매요청서'} <strong>${object.name}</strong>
+% if object.partner_ref:
+    with reference: ${object.partner_ref}
+% endif
+% if object.origin:
+    (RFQ origin: ${object.origin})
+% endif
+를 송부해 드립니다.
+</p>
+
+<p>도면문의 : ${user.email}</p>
+<p>구매문의 : ${object.create_uid.name}</p>
+<p>문의사항이 있으시면 답장 부탁드리겠습니다.</p>
+<p>감사합니다.</p>
+]]></field>
+        </record>
+
+
+        <!--Email template -->
+        <record id="email_template_edi_purchase_done" model="mail.template">
+            <field name="name">Purchase Order - Send by Email</field>
+            <field name="email_from">${(object.create_uid.email and '%s &lt;%s&gt;' % (object.create_uid.name, object.create_uid.email) or '')|safe}</field>
+            <field name="subject">${object.company_id.name} Order (Ref ${object.name or 'n/a' })</field>
+            <field name="partner_to">${object.partner_id.id}</field>
+            <field name="model_id" ref="purchase.model_purchase_order"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="report_template" ref="action_report_purchase_order"/>
+            <field name="report_name">PO_${(object.name or '').replace('/','_')}</field>
+            <field name="lang">${object.partner_id.lang}</field>
+            <field name="body_html"><![CDATA[
+<p>안녕하십니까. 지브이엠 입니다.</p>
+<p>
+<strong>${object.state in ('draft', 'sent') and '견적요청서' or '구매요청서'} ${object.name}</strong>
+% if object.partner_ref:
+    with reference: ${object.partner_ref}
+% endif
+% if object.origin:
+    (RFQ origin: ${object.origin})
+% endif
+를 송부해 드립니다. 첨부파일 확인 바랍니다.
+</p>
+
+<p>도면문의 : ${user.email}</p>
+<p>구매문의 : ${object.create_uid.name}</p>
+<p>문의사항이 있으시면 답장 부탁드리겠습니다.</p>
+<p>감사합니다.</p>
+]]></field>
+        </record>
+
+    </data>
+</odoo>

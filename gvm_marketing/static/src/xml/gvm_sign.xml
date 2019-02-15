@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="GvmTemplate2">
+         <div class="gvm_sign">
+	<table width="100%">
+		<tbody>
+			<tr height="30">
+				<td rowspan="2" width="550" align="center"><h1></h1></td>
+				<td class="tdcolor">기안</td>
+				<td class="tdcolor">결재</td>
+				<td class="tdcolor">결재</td>
+				<td class="tdcolor">결재</td>
+			</tr>
+			<tr height="80">
+				<td><input type="text" name="name" id="name"/></td>
+				<td><input type="text" name="name2" id="name2"/></td>
+				<td>
+						</td>
+				<td>
+						</td>
+			</tr>
+		</tbody>
+	</table>
+	<table width="100%">
+		<tr>
+			<td class="tdcolor">부서</td>
+			<td width="40%">
+				</td>
+			<td class="tdcolor">이름</td>
+			<td width="40%">
+			</td>
+		</tr>
+		<tr>
+			<td class="tdcolor">직급</td>
+			<td width="40%">
+			</td>		
+			<td class="tdcolor">기간</td>
+			<td width="40%">
+			</td>
+		</tr>
+		<tr>
+			<td class="tdcolor">프로젝트</td>
+			
+			<td width="90%" colspan="3">
+				</td>
+		</tr>
+		<tr>
+			<td class="tdcolor">내용</td>
+			<td width="90%" height="500" colspan="3">
+				<textarea type="text" rows="20" name="signcontent"></textarea>
+			</td>
+		</tr>
+	</table>
+
+	<table height="250" width="100%">
+		<tr>
+			<td align="center" valign="bottom"><h2>
+					상기 사항은 틀림없음을 확인합니다.<br /><br />GVM.ltd
+					</h2></td>
+		</tr>
+	</table>
+        </div>
+    </t>
+</templates>
