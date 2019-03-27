@@ -60,5 +60,15 @@ Leave Management (keep track of employee leaves), Expense Management (manage emp
             <field name="function">parse_holiday</field>
             <field name="args">()</field>
         </record>
+        <record model="ir.cron" id="check_holiday_count">
+            <field name='name'>Check Holiday Count</field>
+            <field name='interval_number'>1</field>
+            <field name='interval_type'>days</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="model">hr.employee</field>
+            <field name="function">_check_holiday_count</field>
+            <field name="args">()</field>
+        </record>
     </data>
 </odoo>

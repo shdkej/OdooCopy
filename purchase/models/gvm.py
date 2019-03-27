@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from datetime import datetime
+from datetime import datetime,timedelta
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models, SUPERUSER_ID, _
@@ -97,12 +97,14 @@ class GvmProduct(models.Model):
         ('C', '설계불량'),
 	('D', '작업자 파손'),
 	('E', '구매불량'),
+	('F', '분실'),
 	], string='불량유형', default='A')
     release_place = fields.Many2one('gvm.product.release',string='출고지')
 
     def _generate_order_by(self, order_spec, query):
 	my_order = "case when substring(sequence_num from '^P') IS NULL then substring(sequence_num from '^\d+$')::int end, sequence_num"
 	if order_spec:
+	   _logger.warning(order_spec)
 	   return super(GvmProduct,self)._generate_order_by(order_spec,query) + "," + my_order
 	return " order by " + my_order
 
@@ -237,7 +239,7 @@ class GvmProduct(models.Model):
          record.etc = self.product_ids.etc
          record.price = self.product_ids.price
          record.material = self.product_ids.material
-         record.request_date = datetime.today()
+         record.request_date = datetime.today() + timedelta(days=7)
 	 
     @api.onchange('destination_date')
     def _onchange_destination_date(self):
@@ -252,6 +254,7 @@ class GvmProduct(models.Model):
         if record.receiving_date:
           record.state = 'done'
   	  record.receiving_man = self.env.user.name
+	  
 
     @api.multi
     def purchase_view(self):
@@ -276,10 +279,13 @@ class GvmProduct(models.Model):
 	  project_id = Project.search([('name','=',vals[0][9].encode('utf-8'))]).id
 	  part_id = Part.search([('name','=',vals[0][10].encode('utf-8')),('project_id','=',project_id)]).id
         for val in vals:
+	  if (val[7] == False or val[7].upper().encode('utf-8') == 'FALSE'):
+	    val[7] = 'A'
 	  if str(val[0]) != 'None':
   	    Update = Product.search([('id','=',val[0])])
 	    Update.write({
 	    	'state' : 'bad',
+		'bad_state':val[7].upper().encode('utf-8'), 
 	    })
 
 	    reorder_text = Update.reorder_text or ''
@@ -294,8 +300,6 @@ class GvmProduct(models.Model):
 	      newPd.write({
 		column[i] : val[i],
 	      })
-	    if (val[7] == False or val[7].upper().encode('utf-8') == 'FALSE'):
-	      val[7] = 'A'
 	    Update.write({'reorder_text':reorder_text})
 	    #같은이름의 같은프로젝트에 있는 자재에 모두 이력을 쓰도록 해야겠다
 	    newPd.write({'reorder_text':reorder_text, 
@@ -310,11 +314,12 @@ class GvmProduct(models.Model):
 	    		'sequence_num':val[1],
 	    		'name':val[2].encode('utf-8'),
 	    		'product_name':val[3].encode('utf-8'),
+			'bad_state':val[7].upper().encode('utf-8'), 
 			'material':val[4].encode('utf-8'),
 			'original_count':val[5].encode('utf-8'),
 			'project_id':val[9].encode('utf-8'),
 			'issue':part_id,
-			'request_date':datetime.today(),
+			'request_date':datetime.today() + timedelta(days=7),
 			'order_man':request.env.user.name,
 	    })
 	    PONum.write({

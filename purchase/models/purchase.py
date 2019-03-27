@@ -258,14 +258,21 @@ class PurchaseOrder(models.Model):
         product = last_id.purchase_product
 	for pd in product:
 	  if pd:
-            pd.write({'state':'purchasing',
-	    	      'purchase':res.id
+            pd.write({'state' : 'purchasing',
+	              'partner_ids' : last_id.partner_id.id,
+	    	      'purchase' : res.id
 	    })
         return res
 
     @api.multi
     def write(self, vals):
         res = super(PurchaseOrder, self).write(vals)
+	for record in self:
+	  if record.purchase_product:
+	    for product in record.purchase_product:
+	      product.write({'partner_ids': record.partner_id.id,
+	        'purchase': record.id
+	      })
 	return res
 
     @api.multi

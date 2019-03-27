@@ -247,6 +247,7 @@
 		      <field name="known_price" attrs="{'invisible':[('known_price','==',0)]}" groups="purchase.group_purchase_manager"/>
 		      <field name="price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
 		      <field name="total_price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
+		      <field name="bad_state"/>
 		      <field name="etc"/>
 		      <field name="emergency"/>
 		      <field name="stock_item"/>
@@ -381,7 +382,7 @@
 		      <field name="expected_date"/>
 		      <field name="destination_date"/>
 		      <field name="receiving_date"/>
-		      <field name="reorder_num"/>
+		      <field name="bad_state"/>
 		      <field name="original_count"/>
 		      <field name="total_count"/>
 		      <field name="known_price" attrs="{'invisible':[('known_price','==',0)]}" groups="purchase.group_purchase_manager"/>

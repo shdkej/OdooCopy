@@ -132,18 +132,19 @@ class AccountAnalyticLine(models.Model):
            td = timedelta(hours=9)
            d1 = datetime.strptime(record.date_to,fmt) + td
            d2 = datetime.strptime(record.date_from,fmt) + td
-           day_end_standard = d2.replace(hour=18, minute=00)
+           day_end_standard = d2.replace(hour=19, minute=00)
            dayDiff = d1-day_end_standard
 	   weekendDiff = d1-d2
            count = (dayDiff.total_seconds()+60) / 3600
 	   if d2.weekday() > 4 or record.holiday:
 	     record.weekend = True
-	     count = (weekendDiff.total_seconds()+60) / 3600
+	     count = (weekendDiff.total_seconds()+60) / 3600 - 1
 	   if d2.hour >= 18:
 	     count = (weekendDiff.total_seconds()+60) / 3600
 
-	   if record.lunch != '0':
-	     count = count - int(record.lunch) + 1
+	   if d2.weekday() > 4 or record.holiday:
+	     if record.lunch != '0':
+	       count = count - int(record.lunch) + 1
            if count <= 0:
              count = 0
 	   if count:
