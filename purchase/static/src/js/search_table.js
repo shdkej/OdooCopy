@@ -84,7 +84,7 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
 	var project_selected = $('#gvm_search_product option:selected').text();
 	Product.query(
 	  ['id','sequence_num','name','product_name','material','original_count','bad_state','purchase_by_maker','etc']
-	).filter(self.search_filter).limit(100).all().then(function(id){
+	).filter(self.search_filter).limit(500).all().then(function(id){
 	  $.each(id, function(index, item){
 	    self.data.push([0, item.sequence_num, item.name, item.product_name, item.material, item.original_count, item.etc, item.bad_state, item.purchase_by_maker[1]]);
 	    self.data_id.push(item.id);

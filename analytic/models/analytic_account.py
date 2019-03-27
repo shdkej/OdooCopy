@@ -155,7 +155,7 @@ class AccountAnalyticLine(models.Model):
 	     if d2.weekday() > 4 or record.holiday:
 	       count = count * 1.2
              record.unit_amount = count
-           record.sudo(1).write({'date':d2.date()})
+           #record.sudo(1).write({'date':d2.date()})
 
     @api.onchange('date_from','date_to')
     def _onchage_lunch(self):
@@ -247,5 +247,8 @@ class AccountAnalyticLine(models.Model):
       if self.date_from:
         fmt = '%Y-%m-%d %H:%M:%S'
         td = timedelta(hours=9)
-        same_day = (datetime.strptime(self.date_from,fmt)+td).replace(hour=10, minute=00)
-        self.date_to = same_day
+        d1 = datetime.strptime(self.date_from,fmt) + td
+        d2 = datetime.strptime(self.date_to,fmt) + td
+	if d1.day != d2.day:
+          same_day = (datetime.strptime(self.date_from,fmt)+td).replace(hour=10, minute=00)
+          self.date_to = same_day

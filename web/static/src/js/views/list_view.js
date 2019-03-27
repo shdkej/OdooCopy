@@ -348,15 +348,52 @@ var ListView = View.extend({
 	});
       },100);
     },
-    gvm_button_receiving: function(){
+    gvm_button_destination: function(){
       var self = this;
       var ids = [];
+      var confirm_people = prompt("이름을 입력해주세요(미입력 시 접속자 이름)");
+      if (confirm_people === null){
+	 return;
+      }
       $('#radiogroup:checked').each(function(){
         ids.push($(this).closest('tr').attr('data-id'));
       });
       self.rpc("/web/dataset/state",{
         ids: ids,
-	state: 'done'
+	state: 'destination',
+	name: confirm_people
+      });
+    },
+    gvm_button_receiving: function(){
+      var self = this;
+      var ids = [];
+      var confirm_people = prompt("이름을 입력해주세요(미입력 시 접속자 이름)");
+      if (confirm_people === null){
+	 return;
+      }
+      $('#radiogroup:checked').each(function(){
+        ids.push($(this).closest('tr').attr('data-id'));
+      });
+      self.rpc("/web/dataset/state",{
+        ids: ids,
+	state: 'done',
+	name: confirm_people
+      });
+    },
+    gvm_change_state: function(states){
+      var self = this;
+      var ids = [];
+      var confirm_people = prompt("이름을 입력해주세요(미입력 시 접속자 이름)");
+      if (confirm_people === null){
+	 return;
+      }
+      $('#radiogroup:checked').each(function(){
+        ids.push($(this).closest('tr').attr('data-id'));
+      });
+      self.rpc("/web/dataset/state",{
+        ids: ids,
+	state: states,
+	name: confirm_people
       });
     },
     /**
@@ -377,7 +414,8 @@ var ListView = View.extend({
                 this.fields_view.fields.active && {label: _t("Archive"), callback: this.do_archive_selected},
                 this.fields_view.fields.active && {label: _t("Unarchive"), callback: this.do_unarchive_selected},
                 this.is_action_enabled('delete') && { label: _t('Delete'), callback: this.do_delete_selected },
-                { label: _t('선택항목출고'), callback: this.gvm_button_receiving }
+                { label: _t('선택항목입고'), callback: this.gvm_button_destination },
+                { label: _t('선택항목출고'), callback: this.gvm_button_receiving },
             ]));
 
             $node = $node || this.options.$sidebar;
