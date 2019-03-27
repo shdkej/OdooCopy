@@ -247,6 +247,7 @@
 		      <field name="known_price" attrs="{'invisible':[('known_price','==',0)]}" groups="purchase.group_purchase_manager"/>
 		      <field name="price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
 		      <field name="total_price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
+		      <field name="bad_state"/>
 		      <field name="etc"/>
 		      <field name="emergency"/>
 		      <field name="stock_item"/>
@@ -302,7 +303,7 @@
                 <header>
                     <button name="print_quotation" string="Print RFQ" type="object" states="draft" class="oe_highlight" groups="purchase.group_purchase_manager"/>
                     <button name="print_quotation" string="Print RFQ" type="object" states="sent" groups="purchase.group_purchase_manager"/>
-                    <button name="button_send_quotation" type="object" states="write" string="검토완료" class="oe_highlight"/>
+                    <button name="button_send_quotation" type="object" states="write" string="검토완료" class="oe_highlight" groups="purchase.group_analytic_accounting"/>
                     <button name="action_rfq_send" states="purchase" string="Send PO by Email" type="object" context="{'send_rfq':False}" groups="purchase.group_purchase_manager"/>
                     <button name="action_view_picking" string="Receive Products" class="oe_highlight" type="object" attrs="{'invisible': ['|', '|' , ('is_shipped', '=', True), ('state','not in', ('purchase','done')), ('picking_count', '=', 0)]}"/>
                     <button name="button_cancel" states="draft,to approve,sent,purchase" string="Cancel" type="object"  groups="purchase.group_purchase_manager"/>
@@ -381,7 +382,7 @@
 		      <field name="expected_date"/>
 		      <field name="destination_date"/>
 		      <field name="receiving_date"/>
-		      <field name="reorder_num"/>
+		      <field name="bad_state"/>
 		      <field name="original_count"/>
 		      <field name="total_count"/>
 		      <field name="known_price" attrs="{'invisible':[('known_price','==',0)]}" groups="purchase.group_purchase_manager"/>

@@ -149,7 +149,9 @@ class Employee(models.Model):
     city = fields.Char(related='address_id.city')
     login = fields.Char(related='user_id.login', readonly=True)
     last_login = fields.Datetime(related='user_id.login_date', string='Latest Connection', readonly=True)
-    holiday_count = fields.Integer('연차', default=0)
+    holiday_count = fields.Char('연차', default=0)
+    join_date = fields.Date('join_date')
+    holiday_max_count = fields.Integer('연차총개수')
 
     # image: all image fields are base64 encoded and PIL-supported
     image = fields.Binary("Photo", default=_default_image, attachment=True,
@@ -168,6 +170,36 @@ class Employee(models.Model):
         for employee in self:
             if not employee._check_recursion():
                 raise ValidationError(_('Error! You cannot create recursive hierarchy of Employee(s).'))
+
+    def _check_holiday_count(self):
+	employees = self.env['hr.employee'].search([])
+        for record in employees:
+          fmt = '%Y-%m-%d'
+          d1 = datetime.datetime.now().date() - datetime.timedelta(days=1)
+	  if record.join_date:
+            d1 = datetime.datetime.strptime(record.join_date,fmt).date()
+	  guideline = datetime.datetime.strptime('2017-05-30',fmt).date()
+          today = datetime.datetime.now().date()
+          one_of_months = today.replace(day=1)
+	  #재직년수 구한다
+	  year_entering = today.year - d1.year
+	  if year_entering < 1:
+	    record.holiday_max_count = 0
+	  else:
+	    record.holiday_max_count = 15
+
+	  if d1 > guideline and today == one_of_months:# and 매달1일:
+	    record.holiday_max_count += 1
+	  if d1 == today:
+	    prev_count = record.holiday_count
+	    #전년도 연차 개수가 - 상태면 올해 연차에서 차감
+	    if prev_count < 1:
+	      record.holiday_max_count -= prev_count
+	    #3년이상 재직 시 2년마다 연차 총 개수 1개씩 증가
+	    if year_entering < 2 and not ((year_entering-1)%2):
+	      record.holiday_max_count += 1
+	    record.holiday_count = record.holiday_max_count
+	_logger.warning("Check Holiday Complete")
 
     @api.onchange('address_id')
     def _onchange_address(self):
@@ -240,7 +272,6 @@ class Employee(models.Model):
     def _message_auto_subscribe_notify(self, partner_ids):
         # Do not notify user it has been marked as follower of its employee.
         return
-
 
 class Department(models.Model):
 
