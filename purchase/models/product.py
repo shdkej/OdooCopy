@@ -18,7 +18,6 @@ class GvmProductInherit(models.Model):
     _inherit = 'product.product'
     _description = "gvm_product_inherit"
     
-    name = fields.Char('name',index=True, copy=False)
     product_ids = fields.Many2one('gvm.product','product')
     project_ids = fields.Many2one('project.project','프로젝트_id', store=True, compute='_compute_project_name')
     project_set = fields.Many2many('project.project',string='project_set', compute='_compute_project_name',store=True)
@@ -29,14 +28,11 @@ class GvmProductInherit(models.Model):
     project_id = fields.Char('프로젝트',copy=False,store=True, compute='_compute_project_name')
     part_name = fields.Char('파트', store=True, compute='_compute_part_name')
     product_name = fields.Char('품명')
-    original_count = fields.Integer('원수',default=1)
-    total_count = fields.Integer('총 발주 수',compute='_compute_total_count')
     drawing = fields.Char('도면번호')
     specification = fields.Char('규격')
     material = fields.Char('재질')
     order_man = fields.Char('발주요청자',translate=True,compute='_compute_order_man')
     destination_man = fields.Char('입고자')
-    request_date = fields.Date('요청일자',required=True)
     expected_date = fields.Date('예정일자')
     destination_date = fields.Date('입고일자')
     receiving_date = fields.Date('출고일자')
@@ -44,12 +40,8 @@ class GvmProductInherit(models.Model):
     receiving_man = fields.Char('출고자')
     reorder_num = fields.Char('A')
     reorder_text = fields.Char('사유')
-    price = fields.Integer('단가')
-    total_price = fields.Integer('총액', store=True, copy=True, compute='_compute_total_price')
-    tax_price = fields.Integer('합계',store=True, copy=True, compute='_compute_tax')
     department = fields.Char('부서',store=True, compute='_compute_department')
     exid = fields.Char('이름',compute='_compute_xml_id')
-    known_price = fields.Integer('이전 가격',store=True,copy=True,compute='_compute_set_price')
     etc = fields.Char('비고')
     state = fields.Selection([
         ('all', 'All'),
@@ -91,25 +83,6 @@ class GvmProductInherit(models.Model):
         for att in attachment_list:
          if att.name.find(record.name) != -1:
            record.attachment = att
-
-    @api.depends('specification','price','name')
-    def _compute_set_price(self):
-     for record in self:
-       if record.specification:
-         record.known_price = self.search([('specification','=',record.specification),('price','!=','0')],limit=1).price
-	 break
-       if record.product_name:
-         record.known_price = self.search([('name','=',record.name),('price','!=','0')],limit=1).price
-
-    @api.depends('price','total_count')
-    def _compute_total_price(self):
-     for record in self:
-      record.total_price = record.total_count * record.price
-
-    @api.depends('total_price')
-    def _compute_tax(self):
-     for record in self:
-      record.tax_price = record.total_price + record.total_price * 0.1
 
     @api.depends('purchase.project_id.name')
     def _compute_project_name(self):
@@ -156,11 +129,6 @@ class GvmProductInherit(models.Model):
      for record in self:
       record.category = record.purchase.category
 
-    @api.depends('purchase.line_count','original_count')
-    def _compute_total_count(self):
-     for record in self:
-      record.total_count = record.purchase.line_count * record.original_count
-
     @api.depends('part_name','purchase.project_id.tasks')
     def _compute_part(self):
      for record in self:
@@ -205,7 +173,6 @@ class GvmProductInherit(models.Model):
          record.specification = self.product_ids.specification
          record.order_man = self.env.uid
          record.etc = self.product_ids.etc
-         record.price = self.product_ids.price
          record.material = self.product_ids.material
          record.request_date = datetime.today()
 	 

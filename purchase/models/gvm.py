@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from datetime import datetime
+from datetime import datetime,timedelta
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models, SUPERUSER_ID, _
@@ -54,11 +54,11 @@ class GvmProduct(models.Model):
     reorder_num = fields.Char('A')
     reorder_text = fields.Html('사유')
     price = fields.Integer('단가')
-    total_price = fields.Integer('총액', store=True, copy=True, compute='_compute_total_price')
-    tax_price = fields.Integer('합계',store=True, copy=True, compute='_compute_tax')
+    total_price = fields.Integer('총액', compute='_compute_total_price')
+    tax_price = fields.Integer('합계', compute='_compute_tax')
     department = fields.Char('부서',store=True, compute='_compute_department')
     exid = fields.Char('이름',compute='_compute_xml_id')
-    known_price = fields.Integer('이전 가격',store=True,copy=True,compute='_compute_set_price')
+    known_price = fields.Integer('이전 가격',compute='_compute_set_price')
     etc = fields.Char('비고')
     state = fields.Selection([
         ('all', 'All'),
@@ -97,12 +97,14 @@ class GvmProduct(models.Model):
         ('C', '설계불량'),
 	('D', '작업자 파손'),
 	('E', '구매불량'),
+	('F', '분실'),
 	], string='불량유형', default='A')
     release_place = fields.Many2one('gvm.product.release',string='출고지')
 
     def _generate_order_by(self, order_spec, query):
-	my_order = "issue asc, case when substring(sequence_num from '^P') IS NULL then substring(sequence_num from '^\d+$')::int end, sequence_num"
+	my_order = "case when substring(sequence_num from '^P') IS NULL then substring(sequence_num from '^\d+$')::int end, sequence_num"
 	if order_spec:
+	   _logger.warning(order_spec)
 	   return super(GvmProduct,self)._generate_order_by(order_spec,query) + "," + my_order
 	return " order by " + my_order
 
@@ -121,16 +123,15 @@ class GvmProduct(models.Model):
            if att.name.find(record.name) != -1:
              record.attachment = att
 
-    @api.depends('specification','price','name')
+    @api.depends('specification','name')
     def _compute_set_price(self):
      for record in self:
        if record.specification:
          record.known_price = self.search([('specification','=',record.specification),('price','!=','0')],limit=1).price
-	 break
-       if record.product_name:
+       elif record.product_name:
          record.known_price = self.search([('name','=',record.name),('price','!=','0')],limit=1).price
 
-    @api.depends('price','total_count')
+    @api.depends('total_count','price')
     def _compute_total_price(self):
      for record in self:
       record.total_price = record.total_count * record.price
@@ -140,22 +141,22 @@ class GvmProduct(models.Model):
      for record in self:
       record.tax_price = record.total_price + record.total_price * 0.1
 
-    @api.depends('purchase.project_id.name')
+    @api.depends('purchase_by_maker.project_id')
     def _compute_project_name(self):
       for record in self:
-        record.project_id = record.purchase.project_id.name
-        record.project_ids = record.purchase.project_id.id
-	if record.purchase.project_ids:
-	  record.project_set = record.purchase.project_ids
+        record.project_id = record.purchase_by_maker.project_id.name
+        record.project_ids = record.purchase_by_maker.project_id.id
+	if record.purchase_by_maker.project_ids:
+	  record.project_set = record.purchase_by_maker.project_ids
 	else:
-	  record.project_set = record.purchase.project_id
+	  record.project_set = record.purchase_by_maker.project_id
         if record.reorder_num != 'A':
 	  same_product = self.env['gvm.product'].search([('project_id','=',record.project_id),('name','=',record.name)])
 	  if same_product:
 	    for sp in same_product:
 	      sp.state = 'bad'
 
-    @api.depends('purchase.part')
+    @api.depends('purchase_by_maker.part')
     def _compute_part_name(self):
      for record in self:
       record.part_name = record.purchase.part['name']
@@ -172,7 +173,7 @@ class GvmProduct(models.Model):
       if record.partner_ids:
         record.partner_id = record.partner_ids.name
 
-    @api.depends('purchase.create_uid','purchase_by_maker.order_man','purchase_by_maker.drawing_man')
+    @api.depends('purchase_by_maker.create_uid','purchase_by_maker.order_man','purchase_by_maker.drawing_man')
     def _compute_order_man(self):
      for record in self:
       if record.purchase.order_man:
@@ -187,13 +188,10 @@ class GvmProduct(models.Model):
      for record in self:
       record.category = record.purchase_by_maker.category
 
-    @api.depends('purchase_by_maker.line_count','purchase.line_count','original_count')
+    @api.depends('purchase_by_maker.line_count','original_count')
     def _compute_total_count(self):
      for record in self:
       record.total_count = record.purchase_by_maker.line_count * record.original_count
-      if record.purchase:
-        record.total_count = record.purchase.line_count * record.original_count
-        
 
     @api.depends('part_name','purchase.project_id.tasks')
     def _compute_part(self):
@@ -203,11 +201,11 @@ class GvmProduct(models.Model):
        if part_name == part['name']:
 	record.part = part
 
-    @api.depends('purchase','purchase.project_id.issue_ids')
+    @api.depends('purchase_by_maker','purchase_by_maker.project_id.issue_ids')
     def _compute_issue(self):
      for record in self:
-      part_name = record.purchase.issue.name
-      for part in record.purchase.project_id.issue_ids:
+      part_name = record.purchase_by_maker.issue.name
+      for part in record.purchase_by_maker.project_id.issue_ids:
        if part_name == part['name']:
         record.issue = part
 
@@ -241,7 +239,7 @@ class GvmProduct(models.Model):
          record.etc = self.product_ids.etc
          record.price = self.product_ids.price
          record.material = self.product_ids.material
-         record.request_date = datetime.today()
+         record.request_date = datetime.today() + timedelta(days=7)
 	 
     @api.onchange('destination_date')
     def _onchange_destination_date(self):
@@ -256,6 +254,7 @@ class GvmProduct(models.Model):
         if record.receiving_date:
           record.state = 'done'
   	  record.receiving_man = self.env.user.name
+	  
 
     @api.multi
     def purchase_view(self):
@@ -280,10 +279,13 @@ class GvmProduct(models.Model):
 	  project_id = Project.search([('name','=',vals[0][9].encode('utf-8'))]).id
 	  part_id = Part.search([('name','=',vals[0][10].encode('utf-8')),('project_id','=',project_id)]).id
         for val in vals:
+	  if (val[7] == False or val[7].upper().encode('utf-8') == 'FALSE'):
+	    val[7] = 'A'
 	  if str(val[0]) != 'None':
   	    Update = Product.search([('id','=',val[0])])
 	    Update.write({
 	    	'state' : 'bad',
+		'bad_state':val[7].upper().encode('utf-8'), 
 	    })
 
 	    reorder_text = Update.reorder_text or ''
@@ -298,8 +300,6 @@ class GvmProduct(models.Model):
 	      newPd.write({
 		column[i] : val[i],
 	      })
-	    if (val[7] == False or val[7].upper().encode('utf-8') == 'FALSE'):
-	      val[7] = 'A'
 	    Update.write({'reorder_text':reorder_text})
 	    #같은이름의 같은프로젝트에 있는 자재에 모두 이력을 쓰도록 해야겠다
 	    newPd.write({'reorder_text':reorder_text, 
@@ -314,11 +314,12 @@ class GvmProduct(models.Model):
 	    		'sequence_num':val[1],
 	    		'name':val[2].encode('utf-8'),
 	    		'product_name':val[3].encode('utf-8'),
+			'bad_state':val[7].upper().encode('utf-8'), 
 			'material':val[4].encode('utf-8'),
 			'original_count':val[5].encode('utf-8'),
 			'project_id':val[9].encode('utf-8'),
 			'issue':part_id,
-			'request_date':datetime.today(),
+			'request_date':datetime.today() + timedelta(days=7),
 			'order_man':request.env.user.name,
 	    })
 	    PONum.write({
