@@ -174,7 +174,7 @@
                 <header>
                     <button name="action_rfq_send" states="draft" string="Send RFQ by Email" type="object" context="{'send_rfq':True}" class="oe_highlight" groups="purchase.group_purchase_manager"/>
                     <button name="action_rfq_send" states="sent" string="Re-Send RFQ by Email" type="object" context="{'send_rfq':True}" groups="purchase.group_purchase_manager"/>
-                    <button name="action_rfq_send" states="draft" string="Pre-Payment" type="object" context="{'prepayment':True}" groups="purchase.group_purchase_manager"/>
+                    <button name="action_rfq_send" states="draft" string="선입금요청" type="object" context="{'prepayment':True}" groups="purchase.group_purchase_manager"/>
                     <button name="print_quotation" string="Print RFQ" type="object" states="draft" class="oe_highlight" groups="purchase.group_purchase_manager"/>
                     <button name="print_quotation" string="Print RFQ" type="object" states="sent" groups="purchase.group_purchase_manager"/>
                     <button name="button_send_quotation" type="object" states="write" string="검토완료" class="oe_highlight"/>
