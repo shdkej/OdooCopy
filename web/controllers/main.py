@@ -846,7 +846,7 @@ class DataSet(http.Controller):
       menu_id = "357"
       action_id = "471"
       post_id = str(new_record)
-      url = str(request.httprequest.url_root)
+      url = "https://erp.gvmltd.com/"
       html = str('<a href="' + url + 
         'web#view_type=form&model=gvm.purchase_product&menu_id=' + menu_id + 
         '&action' + action_id + 

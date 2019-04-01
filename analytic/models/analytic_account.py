@@ -130,9 +130,12 @@ class AccountAnalyticLine(models.Model):
          if record.date_to and record.date_from:
            fmt = '%Y-%m-%d %H:%M:%S'
            td = timedelta(hours=9)
-           d1 = datetime.strptime(record.date_to,fmt) + td
-           d2 = datetime.strptime(record.date_from,fmt) + td
+           d1 = datetime.strptime(record.date_to,fmt) + td #퇴근
+           d2 = datetime.strptime(record.date_from,fmt) + td #출근
            day_end_standard = d2.replace(hour=19, minute=00)
+	   if d2.year <= 2019 and d2.month < 4:
+             day_end_standard = d2.replace(hour=18, minute=00)
+	     
            dayDiff = d1-day_end_standard
 	   weekendDiff = d1-d2
            count = (dayDiff.total_seconds()+60) / 3600
