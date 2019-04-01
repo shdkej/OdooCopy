@@ -150,7 +150,7 @@
 			<td class="tdcolor">부서</td>
 			<td width="40%"><field name="dep_ids"/></td>
 			<td class="tdcolor">이름</td>
-			<td width="40%"><field name="user_id" readonly="1"/>                           <span attrs="{'invisible':[('sign_ids','!=',1)]}"> dd : <field name="holiday_count"/></span>
+			<td width="40%"><field name="user_id" readonly="1"/>                           <span attrs="{'invisible':[('sign_ids','!=',1)]}"> (남은 연차개수 : <field name="holiday_count"/> 일)</span>
 			</td>
 		</tr>
 		<tr>
