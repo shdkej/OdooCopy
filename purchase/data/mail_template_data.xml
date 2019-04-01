@@ -33,7 +33,6 @@ ${object.state in ('draft', 'sent') and '견적요청서' or '구매요청서'} 
 ]]></field>
         </record>
 
-
         <!--Email template -->
         <record id="email_template_edi_purchase_done" model="mail.template">
             <field name="name">Purchase Order - Send by Email</field>
@@ -56,6 +55,34 @@ ${object.state in ('draft', 'sent') and '견적요청서' or '구매요청서'} 
     (RFQ origin: ${object.origin})
 % endif
 를 송부해 드립니다. 첨부파일 확인 바랍니다.
+</p>
+
+<p>도면문의 : ${user.email}</p>
+<p>구매문의 : ${object.create_uid.name}</p>
+<p>문의사항이 있으시면 답장 부탁드리겠습니다.</p>
+<p>감사합니다.</p>
+]]></field>
+        </record>
+
+        <!--Email template -->
+        <record id="email_template_edi_purchase_prepayment" model="mail.template">
+            <field name="name">Purchase Order - Request Pre-Payment</field>
+            <field name="email_from">${(object.create_uid.email and '%s &lt;%s&gt;' % (object.create_uid.name, object.create_uid.email) or '')|safe}</field>
+            <field name="subject">${object.partner_id.name} 선입금 요청 (Ref ${object.name or 'n/a' })</field>
+            <field name="partner_to">130,134,169,192</field>
+            <field name="model_id" ref="purchase.model_purchase_order"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="report_template" ref="action_report_purchase_order"/>
+            <field name="report_name">RPP_${(object.name or '').replace('/','_')}</field>
+            <field name="lang">${object.partner_id.lang}</field>
+            <field name="body_html"><![CDATA[
+<p>안녕하십니까. ${object.create_uid.name} 입니다.</p>
+<p>
+${object.order_man.name}님의 요청으로
+% if object.purchase_product[0].project_id:
+    ${object.purchase_product[0].project_id} 프로젝트의
+% endif
+${object.partner_id.name} 업체 선입금 요청 드립니다.
 </p>
 
 <p>도면문의 : ${user.email}</p>

@@ -150,7 +150,12 @@
 			<td class="tdcolor">부서</td>
 			<td width="40%"><field name="dep_ids"/></td>
 			<td class="tdcolor">이름</td>
+<<<<<<< HEAD
 			<td width="40%"><field name="user_id" readonly="1"/>                           <span attrs="{'invisible':[('sign_ids','!=',1)]}"> (남은 연차개수 : <field name="holiday_count"/> 일)</span>
+=======
+			<td width="40%"><field name="user_id" readonly="1"/>
+			<span attrs="{'invisible':[('sign_ids','!=',1)]}"> (남은 연차개수 : <span id="red_text"><field name="holiday_count"/></span> 일)</span>
+>>>>>>> d0bbe09ef8622165a70f541164d1854a88404689
 			</td>
 		</tr>
 		<tr>
@@ -252,6 +257,13 @@ window.print();
 });
 $("#toexcel").click(function(){
 console.log('excel');
+});
+$(document).ready(function(){
+  var value = $("#red_text");
+  if (value[0].innerText){
+    console.log(value[0].innerText);
+    value.css("color","red");
+  }
 });
 </script>
         </sheet>

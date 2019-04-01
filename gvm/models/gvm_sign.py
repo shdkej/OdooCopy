@@ -359,7 +359,7 @@ class GvmSignContent(models.Model):
 	})
 	if self.sign.num == 1:
 	  count = self.check_holiday_count()
-	  hr_name = self.env['hr.employee'].search([('name','=',self.user_id.name)])
+	  hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
 	  h_count = float(hr_name.holiday_count) - float(count)
 	  if h_count < -7:
             raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
@@ -403,7 +403,8 @@ class GvmSignContent(models.Model):
        
         menu_id = "320"
         post_id = str(postId)
-        url = str(request.httprequest.url_root)
+        #url = str(request.httprequest.url_root)
+	url = "https://erp.gvmltd.com/"
         html = str('<a href="' + url + 
           'web#view_type=form&model=gvm.signcontent&menu_id=' + menu_id + 
           '" style="padding: 5px 10px; font-size: 12px; line-height: 18px; color: #FFFFFF; border-color:#875A7B; text-decoration: none; display: inline-block; margin-bottom: 0px; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; white-space: nowrap; background-image: none; background-color: #875A7B; border: 1px solid #875A7B; border-radius:3px">바로가기</a>')
