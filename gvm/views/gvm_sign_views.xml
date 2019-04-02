@@ -284,8 +284,12 @@ $(document).ready(function(){
                     <field name="name" string="번호"/>
                     <field name="user_id" string="작성자"/>
                     <field name="sign" string="결재문서"/>
-                    <field name="create_date" string="상신일"/>
+                    <field name="rest1" string="상태"/>
+                    <field name="date_from" string="시작일"/>
+                    <field name="date_to" string="종료일"/>
                     <field name="state" string="상태"/>
+                    <field name="create_date" string="작성일"/>
+                    <field name="confirm_date" string="상신일"/>
                     <field name="check1" invisible="1"/>
                     <field name="check2" invisible="1"/>
                     <field name="next_check" invisible="1"/>
@@ -324,7 +328,6 @@ $(document).ready(function(){
                     <templates>
                         <t t-name="kanban-box">
                             <div t-attf-class="oe_kanban_card oe_kanban_global_click">
-                            <div t-if="['write', 'check1', 'check2','done','cancel'].indexOf(record.state.raw_value) > -1" name="stock_picking">
                                 <div t-attf-class="#{kanban_color(record.color.raw_value)}">
                                     <div class="o_kanban_card_header">
                                         <div class="o_kanban_card_header_title">
@@ -386,7 +389,6 @@ $(document).ready(function(){
                                         </div>
                                     </div>
                                 </div>
-                            </div>
                             </div>
                         </t>
                     </templates>

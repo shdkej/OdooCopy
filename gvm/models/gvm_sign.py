@@ -118,6 +118,7 @@ class GvmSignContent(models.Model):
         ('cancel', '반려')
         ], string='Status', readonly=True, index=True, copy=False, default='temp', track_visibility='onchange')
     holiday_count = fields.Char('holiday_count', compute='_compute_holiday_count')
+    confirm_date = fields.Date('confirm_date')
     
     @api.depends('date_from','date_to','job_ids')
     def _compute_basic_cost(self):
@@ -348,14 +349,15 @@ class GvmSignContent(models.Model):
 
     @api.multi
     def button_confirm(self):
-        self.gvm_send_mail(self, self.id)
+        #self.gvm_send_mail(self, self.id)
 	check_name = ''
 	if self.request_check1:
 	 check_name = self.request_check1.name
 	elif self.request_check3:
 	 check_name = self.request_check3.name
 	self.write({'next_check':check_name,
-	    	    'state':'write'
+	    	    'state':'write',
+		    'confirm_date':datetime.today()
 	})
 	if self.sign.num == 1:
 	  count = self.check_holiday_count()
