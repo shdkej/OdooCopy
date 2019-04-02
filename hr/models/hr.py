@@ -175,7 +175,7 @@ class Employee(models.Model):
 	employees = self.env['hr.employee'].search([])
         for record in employees:
           fmt = '%Y-%m-%d'
-          d1 = datetime.datetime.now().date() - datetime.timedelta(days=1)
+          d1 = datetime.datetime.now().date() - datetime.timedelta(days=10)
 	  if record.join_date:
             d1 = datetime.datetime.strptime(record.join_date,fmt).date()
 	  guideline = datetime.datetime.strptime('2017-05-30',fmt).date()
@@ -199,6 +199,7 @@ class Employee(models.Model):
 	    if year_entering < 2 and not ((year_entering-1)%2):
 	      record.holiday_max_count += 1
 	    record.holiday_count = record.holiday_max_count
+	    _logger.warning(record.name)
 	_logger.warning("Check Holiday Complete")
 
     @api.onchange('address_id')
