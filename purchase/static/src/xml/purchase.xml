@@ -5,7 +5,7 @@
 	<div>
 	  <button id="gvm_save" class="btn btn-sm">SAVE</button>
 	  <button id="gvm_purchase_order" class="btn btn-sm btn-default">발주</button>
-	  <span style='font-size:10px;'>상태: A-정상,  B-가공불량, C-설계불량, D-작업자파손, E-구매불량, F-분실</span>
+	  <span style='font-size:10px;'>상태: A-정상,  B-가공불량, C-설계불량, D-작업자파손, E-구매불량, F-분실, G-업체미스</span>
 	</div>
 	<div>
           프로젝트 : <select id="gvm_search_product" width="100px">

@@ -98,6 +98,7 @@ class GvmProduct(models.Model):
 	('D', '작업자 파손'),
 	('E', '구매불량'),
 	('F', '분실'),
+	('G', '업체미스'),
 	], string='불량유형', default='A')
     release_place = fields.Many2one('gvm.product.release',string='출고지')
 
