@@ -498,6 +498,8 @@
                     <field name="order_man"/>
                     <field name="message_unread" invisible="1"/>
                     <field name="name" string="Reference"/>
+		    <field name="project_id"/>
+		    <field name="issue"/>
                     <field name="date_order" />
                     <field name="partner_id"/>
                     <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>

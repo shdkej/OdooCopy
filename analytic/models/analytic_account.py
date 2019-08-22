@@ -141,7 +141,7 @@ class AccountAnalyticLine(models.Model):
            count = (dayDiff.total_seconds()+60) / 3600
 	   if d2.weekday() > 4 or record.holiday:
 	     record.weekend = True
-	     count = (weekendDiff.total_seconds()+60) / 3600 - 1
+	     count = (weekendDiff.total_seconds()+60) / 3600
 	   if d2.hour >= 18:
 	     count = (weekendDiff.total_seconds()+60) / 3600
 
