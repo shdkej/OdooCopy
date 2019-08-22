@@ -256,7 +256,7 @@ console.log('excel');
 });
 $(document).ready(function(){
   var value = $("#red_text");
-  if (value[0].innerText){
+  if (!value[0].innerText.indexOf('-')){
     console.log(value[0].innerText);
     value.css("color","red");
   }
@@ -427,7 +427,7 @@ $(document).ready(function(){
             <field name="name">Sign Content</field>
             <field name="res_model">gvm.signcontent</field>
             <field name="view_type">form</field>
-            <field name="view_mode">kanban,tree,form</field>
+            <field name="view_mode">tree,kanban,form</field>
             <field name="context">{}</field>
             <field name="domain">[('user_id','=',uid)]</field>
             <field name="search_view_id"/>

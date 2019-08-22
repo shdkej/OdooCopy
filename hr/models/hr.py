@@ -190,6 +190,7 @@ class Employee(models.Model):
 
 	  if d1 > guideline and today == one_of_months:# and 매달1일:
 	    record.holiday_max_count += 1
+	    record.holiday_count += 1
 	  if d1 == today:
 	    prev_count = record.holiday_count
 	    #전년도 연차 개수가 - 상태면 올해 연차에서 차감
