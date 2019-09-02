@@ -258,14 +258,21 @@ class PurchaseOrder(models.Model):
         product = last_id.purchase_product
 	for pd in product:
 	  if pd:
-            pd.write({'state':'purchasing',
-	    	      'purchase':res.id
+            pd.write({'state' : 'purchasing',
+	              'partner_ids' : last_id.partner_id.id,
+	    	      'purchase' : res.id
 	    })
         return res
 
     @api.multi
     def write(self, vals):
         res = super(PurchaseOrder, self).write(vals)
+	for record in self:
+	  if record.purchase_product:
+	    for product in record.purchase_product:
+	      product.write({'partner_ids': record.partner_id.id,
+	        'purchase': record.id
+	      })
 	return res
 
     @api.multi
@@ -364,7 +371,10 @@ class PurchaseOrder(models.Model):
         try:
             if self.env.context.get('send_rfq', False):
                 template_id = ir_model_data.get_object_reference('purchase', 'email_template_edi_purchase')[1]
-            else:
+            elif self.env.context.get('prepayment', True):
+	        _logger.warning("test")
+                template_id = ir_model_data.get_object_reference('purchase', 'email_template_edi_purchase_prepayment')[1]
+            elif self.env.context.get('send_rfq', True):
                 template_id = ir_model_data.get_object_reference('purchase', 'email_template_edi_purchase_done')[1]
         except ValueError:
             template_id = False

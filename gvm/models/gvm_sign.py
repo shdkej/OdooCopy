@@ -85,7 +85,15 @@ class GvmSignContent(models.Model):
     work = fields.One2many('gvm.signcontent.work','sign', string='work')
     timesheet = fields.Many2many('account.analytic.line','sign','timesheet',domain="[('user_id','=',uid)]",store=True,compute='_onchange_timesheet')
     reason = fields.Text('reason')
-    rest1 = fields.Selection([('day','연차'),('half','반차'),('quarter','반반차'),('vacation','휴가'),('refresh','리프레시 휴가'),('publicvacation','공가(예비군 등)'),('etc','기타')])
+    rest1 = fields.Selection([('day','연차'),
+      ('half','반차'),
+      ('quarter','반반차'),
+      ('vacation','휴가'),
+      ('refresh','리프레시 휴가'),
+      ('publicvacation','공가(예비군 등)'),
+      ('sick','병가'),
+      ('special','출산/특별휴가'),
+      ('etc','기타')])
     basic_cost = fields.Integer('basic_cost',compute='_compute_basic_cost')
     had_cost = fields.Integer('had_cost')
     finally_cost = fields.Integer('finally_cost',compute='_compute_finally_cost')
@@ -109,6 +117,8 @@ class GvmSignContent(models.Model):
         ('done', '결재완료'),
         ('cancel', '반려')
         ], string='Status', readonly=True, index=True, copy=False, default='temp', track_visibility='onchange')
+    holiday_count = fields.Char('holiday_count', compute='_compute_holiday_count')
+    confirm_date = fields.Date('confirm_date')
     
     @api.depends('date_from','date_to','job_ids')
     def _compute_basic_cost(self):
@@ -119,7 +129,7 @@ class GvmSignContent(models.Model):
            d2 = datetime.strptime(record.date_from,fmt)
            dayDiff = str((d1-d2).days+1)
            job_id = record.job_ids.no_of_hired_employee
-           record.basic_cost = int(dayDiff) * 8000
+           record.basic_cost = 0
 	   
     @api.depends('basic_cost','had_cost','cost')
     def _compute_finally_cost(self):
@@ -199,6 +209,12 @@ class GvmSignContent(models.Model):
             record.next_check = record[i].name
 	    break
 
+    @api.depends('user_id')
+    def _compute_holiday_count(self):
+      for record in self:
+	hr_name = self.env['hr.employee'].search([('name','=',record.user_id.name)])
+        record.holiday_count = hr_name.holiday_count
+
     @api.model
     def _compute_my_check_count(self):
       my_doc = self.env['gvm.signcontent'].search([('user_id','=',self.env.uid)])
@@ -249,7 +265,7 @@ class GvmSignContent(models.Model):
     def _onchange_timesheet(self):
       for record in self:
         if record.sign_ids == 2:
-         worktime = self.env['account.analytic.line'].search([('date_from','>=',record.date_from),('date_to','<=',record.date_to),('user_id','=',self.env.uid),('unit_amount','>=',1)])
+         worktime = self.env['account.analytic.line'].search([('date_from','>=',record.date_from),('date_to','<=',record.date_to),('user_id','=',record.writer),('unit_amount','>=',1)])
          record.timesheet = worktime
 
     @api.model
@@ -340,8 +356,32 @@ class GvmSignContent(models.Model):
 	elif self.request_check3:
 	 check_name = self.request_check3.name
 	self.write({'next_check':check_name,
-	    	    'state':'write'
+	    	    'state':'write',
+		    'confirm_date':datetime.today()
 	})
+	if self.sign.num == 1:
+	  count = self.check_holiday_count()
+	  hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
+	  h_count = float(hr_name.holiday_count) - float(count)
+	  #if h_count < -7:
+          #  raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
+	  hr_name.holiday_count = str(h_count)
+
+    def check_holiday_count(self):
+        count = 0
+	if self.rest1 in ['refresh','publicvacation','special']:
+	  return count
+	if self.rest1 == 'half':
+	  count = 0.5
+	  return count
+	elif self.rest1 == 'quarter':
+	  count = 0.25
+	  return count
+        fmt = '%Y-%m-%d'
+        d1 = datetime.strptime(self.date_to,fmt)
+        d2 = datetime.strptime(self.date_from,fmt)
+        count = (d1-d2).days+1
+	return count
 
     def gvm_send_mail(self, vals, postId):
         dep = self.env['hr.department'].search([('member_ids.user_id','=',self.env.uid)]).id
@@ -365,7 +405,8 @@ class GvmSignContent(models.Model):
        
         menu_id = "320"
         post_id = str(postId)
-        url = str(request.httprequest.url_root)
+        #url = str(request.httprequest.url_root)
+	url = "https://erp.gvmltd.com/"
         html = str('<a href="' + url + 
           'web#view_type=form&model=gvm.signcontent&menu_id=' + menu_id + 
           '" style="padding: 5px 10px; font-size: 12px; line-height: 18px; color: #FFFFFF; border-color:#875A7B; text-decoration: none; display: inline-block; margin-bottom: 0px; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; white-space: nowrap; background-image: none; background-color: #875A7B; border: 1px solid #875A7B; border-radius:3px">바로가기</a>')
