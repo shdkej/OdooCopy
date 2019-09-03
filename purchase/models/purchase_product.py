@@ -175,14 +175,14 @@ class GvmPurchaseProduct(models.Model):
     def gvm_send_mail(self, send, receiver, post, postId):
      sender = 'nohsh@gvmltd.com'
      receivers = []
-     #for rc in receiver:
-     # receivers.append(str(rc.work_email))
+     for rc in receiver:
+      receivers.append(str(rc.work_email))
      receivers.append('nohsh@gvmltd.com')
 
      menu_id = "357"
      action_id = "471"
      post_id = str(postId)
-     url = str(request.httprequest.url_root)
+     url = "https://erp.gvmltd.com/"
      html = str('<a href="' + url + 
        'web#view_type=form&model=gvm.purchase_product&menu_id=' + menu_id + 
        '&action' + action_id + 
