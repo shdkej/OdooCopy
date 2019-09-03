@@ -468,7 +468,11 @@ class Home(http.Controller):
 
         if request.httprequest.method == 'POST':
             old_uid = request.uid
-            uid = request.session.authenticate(request.session.db, request.params['login'], request.params['password'])
+	    user_id = request.params['login']
+	    if '@' not in user_id:
+	        user_id = user_id + '@gvmltd.com'
+            #uid = request.session.authenticate(request.session.db, request.params['login'], request.params['password'])
+            uid = request.session.authenticate(request.session.db, user_id, request.params['password'])
             if uid is not False:
                 request.params['login_success'] = True
                 if not redirect:
@@ -824,6 +828,45 @@ class Menu(http.Controller):
 
 class DataSet(http.Controller):
 
+    @http.route('/web/pre_payment_confirm', type='http', auth="user",csrf=False)
+    def gvm_pre_payment_confirm(self, post_name):
+      model_name = 'purchase.order'
+      menu_id = "225"
+      action_id = "331"
+      post_name = str(post_name)
+      receiver = request.env['hr.employee'].search([('department_id','=',6)])
+      #for rc in receiver:
+      # receivers.append(str(rc.work_email))
+      receivers = []
+      receivers.append('nohsh@gvmltd.com')
+      subject = "[GVM]"+ post_name + " 선입금 완료."
+
+      self.gvm_send_mail(model_name, menu_id, action_id, post_name, receivers, subject)
+      return http.local_redirect('/web', query=request.params, keep_hash=True)
+    
+    def gvm_send_mail(self, model_name, menu_id, action_id, post_name, receivers, subject):
+      sender = 'nohsh@gvmltd.com'
+      url = "https://erp.gvmltd.com/"
+      post_id = request.env['purchase.order'].search([('name','=',post_name)])
+      if post_id:
+        post_id = str(post_id.id)
+      else:
+        post_id = '1'
+
+      html = str('<a href="' + url + 
+        'web#view_type=form&model='+ model_name +'&menu_id=' + menu_id + 
+        '&action=' + action_id + '&id=' + post_id +
+        '" style="padding: 5px 10px; font-size: 12px; line-height: 18px; color: #FFFFFF; border-color:#875A7B; text-decoration: none; display: inline-block; margin-bottom: 0px; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; white-space: nowrap; background-image: none; background-color: #875A7B; border: 1px solid #875A7B; border-radius:3px">바로가기</a>')
+
+      msg = MIMEText(html, 'html', _charset='utf-8')
+      msg['subject'] = subject 
+      msg['from'] = 'GVM_ERP'
+
+      s = smtplib.SMTP_SSL(host='smtp.mailplug.co.kr', port=465)
+      s.login(user='nohsh@gvmltd.com', password='@shtjdgh412')
+      s.sendmail(sender, receivers, msg.as_string())
+      s.quit()
+
     @http.route('/web/dataset/change_purchase', type='json', auth="user",csrf=False)
     def gvm_onchange(self, ids, new_record, state='draft'):
       Model = request.env['gvm.product']
@@ -836,31 +879,19 @@ class DataSet(http.Controller):
          for at in att:
             if at.name.find(product_id.name) == -1:
                purchase_id.write({'attachment':[(3, at.id)]})
-      sender = 'nohsh@gvmltd.com'
       receivers = []
       receiver = request.env['hr.employee'].search([('department_id','=',6)])
       for rc in receiver:
        receivers.append(str(rc.work_email))
       receivers.append('nohsh@gvmltd.com')
 
+      model_name = "gvm.purchase_product"
       menu_id = "357"
       action_id = "471"
-      post_id = str(new_record)
-      url = str(request.httprequest.url_root)
-      html = str('<a href="' + url + 
-        'web#view_type=form&model=gvm.purchase_product&menu_id=' + menu_id + 
-        '&action' + action_id + 
-        '" style="padding: 5px 10px; font-size: 12px; line-height: 18px; color: #FFFFFF; border-color:#875A7B; text-decoration: none; display: inline-block; margin-bottom: 0px; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; white-space: nowrap; background-image: none; background-color: #875A7B; border: 1px solid #875A7B; border-radius:3px">바로가기</a>')
-
-      msg = MIMEText(html, 'html', _charset='utf-8')
+      post_name = str(new_record)
       name = request.env.user.name.encode('utf-8')
-      msg['subject'] = "[GVM]"+ name + " 님이 견적요청서를 올렸습니다."
-      msg['from'] = 'GVM_ERP'
-
-      s = smtplib.SMTP_SSL(host='smtp.mailplug.co.kr', port=465)
-      s.login(user='nohsh@gvmltd.com', password='@shtjdgh412')
-      s.sendmail(sender, receivers, msg.as_string())
-      s.quit()
+      subject = "[GVM]"+ name + " 님이 견적요청서를 올렸습니다."
+      self.gvm_send_mail(model_name, menu_id, action_id, post_name, receivers, subject)
 
     @http.route('/web/dataset/state', type='json', auth="user",csrf=False)
     def gvm_onchange_state(self, ids, state, name):
@@ -1560,6 +1591,14 @@ class ExcelExport(ExportFormat, http.Controller):
         rows = request.env['gvm.product'].search([('project_id','=',project)])
 	fields = ['name','product_name','specification','material','issue','original_count','total_count','order_man','etc','state']
 	fields_name = ['도면번호','품명','규격','재질','파트','원수','총 발주 수','발주자','비고','상태']
+	authr = request.env['res.groups'].search([('id','=','41')]).users
+	is_permit = False
+	for auth in authr:
+	  if request.env.uid == auth.id:
+	    is_permit = True
+	if is_permit:
+	  fields = ['name','product_name','specification','material','issue','original_count','total_count','order_man','etc','state','price','total_price','create_date','request_date','drawing_man','order_date','expected_date','destination_date','receiving_date','category','request_receiving_man','reorder_num','bad_item','bad_state','complete_date']
+	  fields_name = ['도면번호','품명','규격','재질','파트','원수','총 발주 수','발주자','비고','상태','단가','총액','작성일자','설계요청 납기일자','설계자','발주일자','입고예정일자','입고일자','출고일자','상태','불량','불량유형','양품확인 완료일자']
         import_data = rows.export_data(fields, self.raw_data).get('datas',[])
         return request.make_response(self.from_data(fields, import_data),
             headers=[('Content-Disposition',

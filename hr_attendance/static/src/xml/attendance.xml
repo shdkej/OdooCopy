@@ -24,11 +24,11 @@
                 <t t-if="widget.employee">
                     <h1>Welcome <t t-esc="widget.employee.name"/></h1>
                     <t t-if="widget.employee.attendance_state=='checked_out'">
-                        <h2>Click to check in</h2>
+                        <h2>출근</h2>
                         <i class="fa fa-sign-in btn-primary o_hr_attendance_sign_in_out_icon"/>
                     </t>
                     <t t-if="widget.employee.attendance_state=='checked_in'">
-                        <h2>Click to check out</h2>
+                        <h2>퇴근</h2>
                         <i class="fa fa-sign-out btn-primary o_hr_attendance_sign_in_out_icon"/>
                     </t>
                 </t>
@@ -95,10 +95,10 @@
                 <t t-if="widget.attendance">
                     <t t-if="widget.attendance.check_out">
                         <h1 class="o_hr_attendance_validation">
-                            Checked out at <t t-esc="widget.attendance.check_out_time"/>
+                            퇴근시간 <t t-esc="widget.attendance.check_out_time"/>
                         </h1>
                         <h2 class="o_hr_attendance_message_message">
-                            Goodbye <t t-esc="widget.employee_name"/>
+                            안녕히가십시오. <t t-esc="widget.employee_name"/>
                             <br/>
                         </h2>
                         <h3 class="o_hr_attendance_random_message"></h3>
@@ -107,10 +107,10 @@
                     </t>
                     <t t-if="!widget.attendance.check_out">
                         <h1 class="o_hr_attendance_validation">
-                            Checked in at <t t-esc="widget.attendance.check_in_time"/>
+                            출근시간 <t t-esc="widget.attendance.check_in_time"/>
                         </h1>
                         <h2 class="o_hr_attendance_message_message">
-                            Welcome <t t-esc="widget.employee_name"/>
+                            반갑습니다. <t t-esc="widget.employee_name"/>
                             <br/>
                         </h2>
                         <h3 class="o_hr_attendance_random_message"></h3>

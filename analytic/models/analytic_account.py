@@ -130,9 +130,12 @@ class AccountAnalyticLine(models.Model):
          if record.date_to and record.date_from:
            fmt = '%Y-%m-%d %H:%M:%S'
            td = timedelta(hours=9)
-           d1 = datetime.strptime(record.date_to,fmt) + td
-           d2 = datetime.strptime(record.date_from,fmt) + td
-           day_end_standard = d2.replace(hour=18, minute=00)
+           d1 = datetime.strptime(record.date_to,fmt) + td #퇴근
+           d2 = datetime.strptime(record.date_from,fmt) + td #출근
+           day_end_standard = d2.replace(hour=19, minute=00)
+	   if d2.year <= 2019 and d2.month < 4:
+             day_end_standard = d2.replace(hour=18, minute=00)
+	     
            dayDiff = d1-day_end_standard
 	   weekendDiff = d1-d2
            count = (dayDiff.total_seconds()+60) / 3600
@@ -142,8 +145,9 @@ class AccountAnalyticLine(models.Model):
 	   if d2.hour >= 18:
 	     count = (weekendDiff.total_seconds()+60) / 3600
 
-	   if record.lunch != '0':
-	     count = count - int(record.lunch) + 1
+	   if d2.weekday() > 4 or record.holiday:
+	     if record.lunch != '0':
+	       count = count - int(record.lunch) + 1
            if count <= 0:
              count = 0
 	   if count:
@@ -155,7 +159,7 @@ class AccountAnalyticLine(models.Model):
 	     if d2.weekday() > 4 or record.holiday:
 	       count = count * 1.2
              record.unit_amount = count
-           record.sudo(1).write({'date':d2.date()})
+           #record.sudo(1).write({'date':d2.date()})
 
     @api.onchange('date_from','date_to')
     def _onchage_lunch(self):
@@ -247,5 +251,8 @@ class AccountAnalyticLine(models.Model):
       if self.date_from:
         fmt = '%Y-%m-%d %H:%M:%S'
         td = timedelta(hours=9)
-        same_day = (datetime.strptime(self.date_from,fmt)+td).replace(hour=10, minute=00)
-        self.date_to = same_day
+        d1 = datetime.strptime(self.date_from,fmt) + td
+        d2 = datetime.strptime(self.date_to,fmt) + td
+	if d1.day != d2.day:
+          same_day = (datetime.strptime(self.date_from,fmt)+td).replace(hour=10, minute=00)
+          self.date_to = same_day
