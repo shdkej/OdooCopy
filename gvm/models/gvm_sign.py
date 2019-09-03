@@ -129,7 +129,7 @@ class GvmSignContent(models.Model):
            d2 = datetime.strptime(record.date_from,fmt)
            dayDiff = str((d1-d2).days+1)
            job_id = record.job_ids.no_of_hired_employee
-           record.basic_cost = int(dayDiff) * 8000
+           record.basic_cost = 0
 	   
     @api.depends('basic_cost','had_cost','cost')
     def _compute_finally_cost(self):
@@ -271,7 +271,7 @@ class GvmSignContent(models.Model):
     def _onchange_timesheet(self):
       for record in self:
         if record.sign_ids == 2:
-         worktime = self.env['account.analytic.line'].search([('date_from','>=',record.date_from),('date_to','<=',record.date_to),('user_id','=',self.env.uid),('unit_amount','>=',1)])
+         worktime = self.env['account.analytic.line'].search([('date_from','>=',record.date_from),('date_to','<=',record.date_to),('user_id','=',record.writer),('unit_amount','>=',1)])
          record.timesheet = worktime
 
     @api.model
@@ -355,7 +355,7 @@ class GvmSignContent(models.Model):
 
     @api.multi
     def button_confirm(self):
-        #self.gvm_send_mail(self, self.id)
+        self.gvm_send_mail(self, self.id)
 	check_name = ''
 	if self.request_check1:
 	 check_name = self.request_check1.name
@@ -369,8 +369,8 @@ class GvmSignContent(models.Model):
 	  count = self.check_holiday_count()
 	  hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
 	  h_count = float(hr_name.holiday_count) - float(count)
-	  if h_count < -7:
-            raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
+	  #if h_count < -7:
+          #  raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
 	  hr_name.holiday_count = str(h_count)
 
     def check_holiday_count(self):
