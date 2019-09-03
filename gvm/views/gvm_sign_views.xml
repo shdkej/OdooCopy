@@ -119,11 +119,15 @@
                                       <field name="request_check3" domain="[('job_id.no_of_hired_employee','>',3)]" attrs="{'invisible':[('check3','!=',False)]}" options="{'no_create_edit':True}"/></td>
 			</tr>
 			<tr height="30" attrs="{'invisible':[('sign_ids','not in',[2,3,5,6])]}">
+				<td class="td_check check_hidden" attrs="{'invisible':[('request_check1','=',False),('check1','=',False)]}"></td>
+				<td class="td_check check_hidden" attrs="{'invisible':[('request_check2','=',False),('check2','=',False)]}"></td>
 				<td class="tdcolor" attrs="{'invisible':[('sign_ids','not in',[2,3,5,6])]}">합의</td>
 				<td class="tdcolor" attrs="{'invisible':[('sign_ids','not in',[2,3,5,6])]}">합의</td>
 				<td class="tdcolor check_hidden" attrs="{'invisible':[('request_check6','=',False),('check6','=',False)]}">합의</td>
 			</tr>
 			<tr height="80" attrs="{'invisible':[('sign_ids','not in',[2,3,4,5,6])]}">
+				<td class="td_check check_hidden" attrs="{'invisible':[('request_check1','=',False),('check1','=',False)]}"></td>
+				<td class="td_check check_hidden" attrs="{'invisible':[('request_check2','=',False),('check2','=',False)]}"></td>
 				<td attrs="{'invisible':[('sign_ids','=',1)]}">
                                       <field name="check4" readonly="1"/>
 				      <field name="check4_date" readonly="1"/>
@@ -253,13 +257,6 @@ window.print();
 });
 $("#toexcel").click(function(){
 console.log('excel');
-});
-$(document).ready(function(){
-  var value = $("#red_text");
-  if (value[0].innerText){
-    console.log(value[0].innerText);
-    value.css("color","red");
-  }
 });
 </script>
         </sheet>
@@ -427,7 +424,7 @@ $(document).ready(function(){
             <field name="name">Sign Content</field>
             <field name="res_model">gvm.signcontent</field>
             <field name="view_type">form</field>
-            <field name="view_mode">kanban,tree,form</field>
+            <field name="view_mode">tree,kanban,form</field>
             <field name="context">{}</field>
             <field name="domain">[('user_id','=',uid)]</field>
             <field name="search_view_id"/>

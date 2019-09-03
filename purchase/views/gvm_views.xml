@@ -224,7 +224,7 @@
 			<pivot string="gvm product">
 				<field name="project_id" type="row"/>
 				<field name="destination_date" interval="month" type="col"/>
-				<field name="tax_price" type="measure"/>
+				<field name="total_price" type="measure"/>
 			</pivot>
 		</field>
 	</record>
