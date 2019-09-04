@@ -212,7 +212,7 @@ class GvmSignContent(models.Model):
     @api.depends('user_id')
     def _compute_holiday_count(self):
       for record in self:
-	hr_name = self.env['hr.employee'].search([('name','=',record.user_id.name)])
+	hr_name = self.env['hr.employee'].search([('id','=',self.env.uid)])
         record.holiday_count = hr_name.holiday_count
 
     @api.model
@@ -241,13 +241,19 @@ class GvmSignContent(models.Model):
           dep = self.env['hr.department'].search([('member_ids.user_id','=',user)],limit=1)
           boss = dep.manager_id.id
           manager = self.env['hr.employee'].search([('department_id','=',10)])
-          if record.sign_ids in [2,3,6]:
+          ceo = self.env['hr.employee'].search([('id','=',126)])
+          if record.sign_ids in [2,3]:
             record.request_check3 = boss
             record.request_check4 = manager[1].id
             record.request_check5 = manager[0].id
           elif record.sign_ids == 5:
             record.request_check3 = boss
             record.request_check4 = manager[2].id
+            record.request_check5 = manager[0].id
+	  elif record.sign_ids == 6:
+	    record.request_check2 = boss
+	    record.request_check3 = ceo
+            record.request_check4 = manager[1].id
             record.request_check5 = manager[0].id
 	  #elif record.sign_ids == 1:
 	  #  dep_list = []

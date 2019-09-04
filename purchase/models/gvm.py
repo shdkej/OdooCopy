@@ -55,7 +55,7 @@ class GvmProduct(models.Model):
     reorder_text = fields.Html('사유')
     price = fields.Integer('단가')
     total_price = fields.Integer('총액', compute='_compute_total_price')
-    tax_price = fields.Integer('합계', compute='_compute_tax')
+    tax_price = fields.Integer('합계', compute='_compute_tax', store=True)
     department = fields.Char('부서',store=True, compute='_compute_department')
     exid = fields.Char('이름',compute='_compute_xml_id')
     known_price = fields.Integer('이전 가격',compute='_compute_set_price')
@@ -215,6 +215,10 @@ class GvmProduct(models.Model):
         self.write({'destination_date': datetime.today(), 
 	            'destination_man': self.env.user.name,
 		    'state': 'destination'})
+	Product = request.env['gvm.product']
+	Update = Product.search([])
+	for record in Update:
+          record.tax_price = record.total_price + record.total_price * 0.1
         return {}
 
     @api.multi
