@@ -54,7 +54,7 @@ class GvmProduct(models.Model):
     reorder_num = fields.Char('A')
     reorder_text = fields.Html('사유')
     price = fields.Integer('단가')
-    total_price = fields.Integer('총액', compute='_compute_total_price')
+    total_price = fields.Integer('총액', compute='_compute_total_price',store=True)
     tax_price = fields.Integer('합계', compute='_compute_tax')
     department = fields.Char('부서',store=True, compute='_compute_department')
     exid = fields.Char('이름',compute='_compute_xml_id')
