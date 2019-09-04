@@ -119,11 +119,15 @@
                                       <field name="request_check3" domain="[('job_id.no_of_hired_employee','>',3)]" attrs="{'invisible':[('check3','!=',False)]}" options="{'no_create_edit':True}"/></td>
 			</tr>
 			<tr height="30" attrs="{'invisible':[('sign_ids','not in',[2,3,5,6])]}">
+				<td class="td_check check_hidden" attrs="{'invisible':[('request_check1','=',False),('check1','=',False)]}"></td>
+				<td class="td_check check_hidden" attrs="{'invisible':[('request_check2','=',False),('check2','=',False)]}"></td>
 				<td class="tdcolor" attrs="{'invisible':[('sign_ids','not in',[2,3,5,6])]}">합의</td>
 				<td class="tdcolor" attrs="{'invisible':[('sign_ids','not in',[2,3,5,6])]}">합의</td>
 				<td class="tdcolor check_hidden" attrs="{'invisible':[('request_check6','=',False),('check6','=',False)]}">합의</td>
 			</tr>
 			<tr height="80" attrs="{'invisible':[('sign_ids','not in',[2,3,4,5,6])]}">
+				<td class="td_check check_hidden" attrs="{'invisible':[('request_check1','=',False),('check1','=',False)]}"></td>
+				<td class="td_check check_hidden" attrs="{'invisible':[('request_check2','=',False),('check2','=',False)]}"></td>
 				<td attrs="{'invisible':[('sign_ids','=',1)]}">
                                       <field name="check4" readonly="1"/>
 				      <field name="check4_date" readonly="1"/>
