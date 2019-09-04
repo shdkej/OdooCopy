@@ -149,7 +149,7 @@ class Employee(models.Model):
     city = fields.Char(related='address_id.city')
     login = fields.Char(related='user_id.login', readonly=True)
     last_login = fields.Datetime(related='user_id.login_date', string='Latest Connection', readonly=True)
-    holiday_count = fields.Char('연차', default=0)
+    holiday_count = fields.Float('남은연차', default=0.0)
     join_date = fields.Date('join_date')
     holiday_max_count = fields.Integer('연차총개수')
 
@@ -169,39 +169,70 @@ class Employee(models.Model):
     def _check_parent_id(self):
         for employee in self:
             if not employee._check_recursion():
-                raise ValidationError(_('Error! You cannot create recursive hierarchy of Employee(s).'))
+               raise ValidationError(_('Error! You cannot create recursive hierarchy of Employee(s).'))
 
+     #sh
     def _check_holiday_count(self):
-	employees = self.env['hr.employee'].search([])
-        for record in employees:
-          fmt = '%Y-%m-%d'
-          d1 = datetime.datetime.now().date() - datetime.timedelta(days=10)
-	  if record.join_date:
-            d1 = datetime.datetime.strptime(record.join_date,fmt).date()
-	  guideline = datetime.datetime.strptime('2017-05-30',fmt).date()
-          today = datetime.datetime.now().date()
-          one_of_months = today.replace(day=1)
-	  #재직년수 구한다
-	  year_entering = today.year - d1.year
-	  if year_entering < 1:
-	    record.holiday_max_count = 0
-	  else:
-	    record.holiday_max_count = 15
+      _logger.warning("test")
 
-	  if d1 > guideline and today == one_of_months:# and 매달1일:
-	    record.holiday_max_count += 1
-	    record.holiday_count += 1
-	  if d1 == today:
-	    prev_count = record.holiday_count
-	    #전년도 연차 개수가 - 상태면 올해 연차에서 차감
-	    if prev_count < 1:
-	      record.holiday_max_count -= prev_count
-	    #3년이상 재직 시 2년마다 연차 총 개수 1개씩 증가
-	    if year_entering < 2 and not ((year_entering-1)%2):
-	      record.holiday_max_count += 1
-	    record.holiday_count = record.holiday_max_count
-	    _logger.warning(record.name)
-	_logger.warning("Check Holiday Complete")
+      #입사일기준
+      employees = self.env['hr.employee'].search([])
+      companyDate = ""
+      for record in employees:
+       fmt = '%Y-%m-%d'
+       if record.join_date:
+        companyDate = datetime.datetime.strptime(record.join_date,fmt).date()
+      
+      companyYear = companyDate.year
+      companyMonth = companyDate.month
+      companyDay = companyDate.day
+
+      #현재시간
+      now = datetime.datetime.now()
+      presentYear = now.year
+      presentMonth = now.month
+      presentDay = now.day
+
+      #3년이상 종사자
+      year_entering = presentYear - companyYear
+      year_check = year_entering % 2.0
+
+      for record in employees:
+       #1년미만 입사자
+       if companyYear == presentYear and companyMonth != presentMonth and companyDay == presentDay:
+        #연차 1개를 증가시킨다.
+        record.holiday_count += 1.0
+       #1년
+       elif companyYear != presentYear and companyMonth == presentMonth and companyDay == presentDay:
+        #2년이상 입사자 해당
+        if (presentYear - companyYear) >= 2.0:
+         #남은 연차의 갯수가 + 일경우 연차 초기화
+         if record.holiday_count > 0.0:
+          record.holiday_count = 0.0
+
+        #연차 15개를 증가시킨다.
+        record.holiday_count += 15.0
+            
+       #3년이상 재직 시 2년마다 연차 총 개수 1개씩 증가
+       if year_entering > 2.0 and companyMonth == presentMonth and companyDay == presentDay:   
+        #짝수
+	if year_check == 0.0:
+	 year_1count = (year_entering / 2.0) - 1.0
+         record.holiday_count += year_1count
+	#홀수
+	else:
+ 	 year_2count = (year_entering - 1.0) / 2.0
+	 record.holiday_count += year_2count
+	
+       #1년미만 입사자는 max_count = 0 
+       if companyYear == presentYear and companyMonth != presentMonth and companyDay == presentDay:
+        record.holiday_max_count = 0
+       else:
+        record.holiday_max_count = record.holiday_count
+
+      _logger.warning(record.name)
+      _logger.warning("Check Holiday Complete")
+
 
     @api.onchange('address_id')
     def _onchange_address(self):
@@ -219,7 +250,7 @@ class Employee(models.Model):
 
     @api.onchange('user_id')
     def _onchange_user(self):
-        self.work_email = self.user_id.email
+        self.work_email = self.user_id.email    
         self.name = self.user_id.name
         self.image = self.user_id.image
 

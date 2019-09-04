@@ -86,7 +86,8 @@ class GvmSignContent(models.Model):
     timesheet = fields.Many2many('account.analytic.line','sign','timesheet',domain="[('user_id','=',uid)]",store=True,compute='_onchange_timesheet')
     reason = fields.Text('reason')
     rest1 = fields.Selection([('day','연차'),
-      ('half','반차'),
+      ('half','오전반차'),
+      ('half','오후반차'),
       ('quarter','반반차'),
       ('vacation','휴가'),
       ('refresh','리프레시 휴가'),
@@ -353,9 +354,10 @@ class GvmSignContent(models.Model):
             'context': "{}"
         }
 
+    #sh
     @api.multi
     def button_confirm(self):
-        self.gvm_send_mail(self, self.id)
+#        self.gvm_send_mail(self, self.id)
 	check_name = ''
 	if self.request_check1:
 	 check_name = self.request_check1.name
@@ -369,9 +371,13 @@ class GvmSignContent(models.Model):
 	  count = self.check_holiday_count()
 	  hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
 	  h_count = float(hr_name.holiday_count) - float(count)
-	  #if h_count < -7:
-          #  raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
-	  hr_name.holiday_count = str(h_count)
+	  _logger.warning(h_count)
+
+	  if h_count < -7:
+           raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
+	  hr_name.holiday_count = float(h_count)
+	  _logger.warning(hr_name.holiday_count)
+
 
     def check_holiday_count(self):
         count = 0
