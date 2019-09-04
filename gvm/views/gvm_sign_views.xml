@@ -178,19 +178,25 @@
 			<td class="tdcolor">분류</td>
 			<td width="90%" colspan="3"><field name="rest1"/></td>
 		</tr>
-		<tr attrs="{'invisible':[('sign_ids','!=',6)]}">
-			<td class="tdcolor">기본 가지급액</td>
-			<td width="90%" colspan="3"><field name="basic_cost"/></td>
-		</tr>
 		<tr attrs="{'invisible':[('sign_ids','not in',[3,4])]}">
 			<td class="tdcolor">파일첨부</td>
                         <td width="90%" colspan="3"><field name="attachment" widget="many2many_binary"/></td>
 		</tr>
-		<tr>
-			<td class="tdcolor">내용</td>
-			<td width="90%" height="500" colspan="6" attrs="{'invisible':[('sign_ids','in',[2,3,5,6])]}" class="tdleft">
+                <tr attrs="{'invisible':[('sign_ids','!=',6)]}">
+                        <td class="tdcolor">출장목적</td>
+                        <td width="90%" height="400" colspan="6" class="tdleft">
                         <field name="content"/></td>
-                        <td width="90%" height="500" colspan="6" attrs="{'invisible':[('sign_ids','!=',6)]}">
+	        </tr>
+	        <tr attrs="{'invisible':[('sign_ids','!=',6)]}">
+	                <td class="tdcolor">비고</td>
+	                <td width="90%" height="150" colspan="6" class="tdleft">
+	                <field name="content"/></td>
+	        </tr>
+	        <tr attrs="{'invisible':[('sign_ids','in',6)]}">
+			<td class="tdcolor">내용</td>
+			<td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','in',[2,3,5,6])]}" class="tdleft">
+                        <field name="content"/></td>
+                        <td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','!=',6)]}">
                         출장 목적 : <field name="content2"/>
                         가지급신청 :
                         <field name="cost2">
@@ -202,7 +208,7 @@
                           </tree>
                         </field>
                         </td>
-                        <td width="90%" height="500" colspan="6" attrs="{'invisible':[('sign_ids','not in',[3,5])]}">
+                        <td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','not in',[3,5])]}">
 			<div id="exceltable">
                         <group>
                         <group>
@@ -226,7 +232,7 @@
                         <h3>최종 결산 금액 : <field name="finally_cost" widget="monet"/>원</h3>
                         </span>
                         </td>
-                        <td width="90%" height="500" colspan="6" attrs="{'invisible':[('sign_ids','!=',2)]}">
+                        <td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','!=',2)]}">
 			<div id="exceltable2">
                         <field name="timesheet">
                           <tree editable="1" decoration-info='weekend==True' decoration-bf='weekend==True'>
