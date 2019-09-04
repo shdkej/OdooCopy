@@ -468,7 +468,11 @@ class Home(http.Controller):
 
         if request.httprequest.method == 'POST':
             old_uid = request.uid
-            uid = request.session.authenticate(request.session.db, request.params['login'], request.params['password'])
+	    user_id = request.params['login']
+	    if '@' not in user_id:
+	        user_id = user_id + '@gvmltd.com'
+            #uid = request.session.authenticate(request.session.db, request.params['login'], request.params['password'])
+            uid = request.session.authenticate(request.session.db, user_id, request.params['password'])
             if uid is not False:
                 request.params['login_success'] = True
                 if not redirect:
@@ -1587,6 +1591,14 @@ class ExcelExport(ExportFormat, http.Controller):
         rows = request.env['gvm.product'].search([('project_id','=',project)])
 	fields = ['name','product_name','specification','material','issue','original_count','total_count','order_man','etc','state']
 	fields_name = ['도면번호','품명','규격','재질','파트','원수','총 발주 수','발주자','비고','상태']
+	authr = request.env['res.groups'].search([('id','=','41')]).users
+	is_permit = False
+	for auth in authr:
+	  if request.env.uid == auth.id:
+	    is_permit = True
+	if is_permit:
+	  fields = ['name','product_name','specification','material','issue','original_count','total_count','order_man','etc','state','price','total_price','create_date','request_date','drawing_man','order_date','expected_date','destination_date','receiving_date','category','request_receiving_man','reorder_num','bad_item','bad_state','complete_date']
+	  fields_name = ['도면번호','품명','규격','재질','파트','원수','총 발주 수','발주자','비고','상태','단가','총액','작성일자','설계요청 납기일자','설계자','발주일자','입고예정일자','입고일자','출고일자','상태','불량','불량유형','양품확인 완료일자']
         import_data = rows.export_data(fields, self.raw_data).get('datas',[])
         return request.make_response(self.from_data(fields, import_data),
             headers=[('Content-Disposition',

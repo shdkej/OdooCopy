@@ -258,6 +258,13 @@ window.print();
 $("#toexcel").click(function(){
 console.log('excel');
 });
+$(document).ready(function(){
+  var value = $("#red_text");
+  if (!value[0].innerText.indexOf('-')){
+    console.log(value[0].innerText);
+    value.css("color","red");
+  }
+});
 </script>
         </sheet>
                 </form>
