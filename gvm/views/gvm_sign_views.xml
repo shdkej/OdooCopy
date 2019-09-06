@@ -70,6 +70,7 @@
             <field name="arch" type="xml">
                 <form string="Sign">
                   <header>
+                     <button name="button_remove" string="취소" type="object" states="write" groups="hr.group_hr_manager"  confirm="취소하시겠습니까?"/>
                      <input type="button" class="print" name="print" id="print" value="프린트"/>
                      <input type="button" class="toexcel" name="toexcel" id="toexcel" value="엑셀"/>
 		     <span attrs="{'invisible':[('check','=',False)]}"><input type="button" class="sign_button" id="sign_button" value="결재"/></span>
@@ -77,6 +78,7 @@
 		     <button name="button_confirm" string="상신" type="object" states="temp" confirm="상신하시겠습니까?"/>
 		     <button name="button_check_all" string="전결" type="object" groups="hr.group_hr_manager" attrs="{'invisible':['|','|',('state','=','done'),('check_all','=',False),('check','=',False)]}" confirm="전결하시겠습니까?"/>
 		     <button name="button_reorder" string="재상신" type="object" states="cancel"/>
+		     <button name="button_reorder" string="재상신" type="object" states="remove"/>
                      <field name="state" widget="statusbar" statusbar_visible="write,check1,check2,done" readonly="1"/>
                   </header>
           <sheet>
