@@ -23,14 +23,14 @@
             <div class="o_hr_attendance_kiosk_mode">
                 <t t-if="widget.employee">
                     <h1>Welcome <t t-esc="widget.employee.name"/></h1>
-                    <t t-if="widget.employee.attendance_state=='checked_out'">
+                    <t t-if="widget.employee.attendance_state=='checked_out'" > 
                         <h2>출근</h2>
                         <i class="fa fa-sign-in btn-primary o_hr_attendance_sign_in_out_icon"/>
                     </t>
                     <t t-if="widget.employee.attendance_state=='checked_in'">
                         <h2>퇴근</h2>
                         <i class="fa fa-sign-out btn-primary o_hr_attendance_sign_in_out_icon"/>
-                    </t>
+                    </t> 
                 </t>
                 <t t-if="!widget.employee">
                     Error : Could not find employee linked to user.
@@ -107,7 +107,7 @@
                         <h2 class="o_hr_attendance_warning_message"></h2>
                         
                     </t>
-                    <t t-if="!widget.attendance.check_out">
+		     <t t-if="!widget.attendance.check_out">
                         <h1 class="o_hr_attendance_validation">
                             출근시간 <t t-esc="widget.attendance.check_in_time"/>
 			    <br/>
@@ -120,7 +120,7 @@
                         <h3 class="o_hr_attendance_random_message"></h3>
                         <h2 class="o_hr_attendance_warning_message"></h2>
                     </t>
-                </t>
+		  </t> 
                 <t t-if="!widget.attendance">
                     Invalid request, please return to the main menu.<br/>
                 </t>

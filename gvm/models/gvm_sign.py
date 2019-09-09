@@ -118,8 +118,9 @@ class GvmSignContent(models.Model):
         ('check4', '결재'),
         ('check5', '결재'),
         ('done', '결재완료'),
-        ('cancel', '반려')
-        ], string='Status', readonly=True, index=True, copy=False, default='temp', track_visibility='onchange')
+        ('cancel', '반려'),
+        ('remove', '취소')
+	], string='Status', readonly=True, index=True, copy=False, default='temp', track_visibility='onchange')
     holiday_count = fields.Char('holiday_count', compute='_compute_holiday_count')
     confirm_date = fields.Date('confirm_date')
     
@@ -320,6 +321,12 @@ class GvmSignContent(models.Model):
 					  'request_check4':check4 or self.request_check4.id,
 					  'request_check5':check5 or self.request_check5.id,
 					  'next_check':self.check1.name})
+         #sh
+        if self.sign.num == 1:
+         count = self.check_holiday_count()
+         hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
+         h_count = float(hr_name.holiday_count) - float(count)
+         hr_name.holiday_count = float(h_count)
         return {}
 
     @api.multi
@@ -355,8 +362,17 @@ class GvmSignContent(models.Model):
             'limit': 80,
             'context': "{}"
         }
-
+    
     #sh
+    def button_remove(self):
+    	if self.sign.num == 1:
+	 count = self.check_holiday_count()
+	 hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
+	 h_count = float(hr_name.holiday_count) + float(count)
+	 _logger.warning(h_count)
+         hr_name.holiday_count = float(h_count)
+         self.write({'state':'remove'})
+
     @api.multi
     def button_confirm(self):
         a = gvm_mail()
@@ -460,7 +476,7 @@ class GvmSignContent(models.Model):
     def write(self, vals):
         allower = [1,168,294]
         for record in self:
-            if record.state in ['temp','write','cancel']:
+            if record.state in ['temp','write','cancel','remove']:
 	     if self.env.user.name != record.user_id.name and self.env.uid != 1:
                raise UserError(_('본인 외 수정 불가'))
             else:
