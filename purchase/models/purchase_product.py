@@ -172,31 +172,37 @@ class GvmPurchaseProduct(models.Model):
 	
 
     @api.model
-    def gvm_send_mail(self, send, receiver, post, postId):
+    def gvm_send_mail(self, send, receiver, post, postId, model_name):
      sender = 'nohsh@gvmltd.com'
      receivers = []
-     for rc in receiver:
-      receivers.append(str(rc.work_email))
+     test_server = True
+     if not test_server:
+       if receiver:
+         for rc in receiver:
+           receivers.append(str(rc.work_email))
      receivers.append('nohsh@gvmltd.com')
 
      menu_id = "357"
      action_id = "471"
      post_id = str(postId)
+     po_num = self.env[model_name].search([('id','=',postId)]).name
      url = "https://erp.gvmltd.com/"
      html = str('<a href="' + url + 
-       'web#view_type=form&model=gvm.purchase_product&menu_id=' + menu_id + 
-       '&action' + action_id + 
+       'web#view_type=form&model=' + model_name + '&menu_id=' + menu_id + 
+       '&action=' + action_id + '&id=' + post_id +
        '" style="padding: 5px 10px; font-size: 12px; line-height: 18px; color: #FFFFFF; border-color:#875A7B; text-decoration: none; display: inline-block; margin-bottom: 0px; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; white-space: nowrap; background-image: none; background-color: #875A7B; border: 1px solid #875A7B; border-radius:3px">바로가기</a>')
 
      msg = MIMEText(html, 'html', _charset='utf-8')
      name = send.env.user.name.encode('utf-8')
-     msg['subject'] = "[GVM]"+ name + " 님이 "+ post +" 를 올렸습니다."
+     subject = "[GVM]["+str(po_num)+"]"+ name + " 님이 "+ post +" 를 올렸습니다."
+     if test_server:
+       subject = '[TEST]' + subject
+     msg['subject'] = subject
      msg['from'] = 'GVM_ERP'
 
      s = smtplib.SMTP_SSL(host='smtp.mailplug.co.kr', port=465)
      s.login(user='nohsh@gvmltd.com', password='@shtjdgh412')
      s.sendmail(sender, receivers, msg.as_string())
-#     s.sendmail(sender, sender, msg.as_string())
      s.quit()
 
     @api.model

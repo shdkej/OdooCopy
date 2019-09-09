@@ -96,6 +96,8 @@
                     <t t-if="widget.attendance.check_out">
                         <h1 class="o_hr_attendance_validation">
                             퇴근시간 <t t-esc="widget.attendance.check_out_time"/>
+			    <br/>
+                            <t t-esc="widget.attendance.check_out_place"/>
                         </h1>
                         <h2 class="o_hr_attendance_message_message">
                             안녕히가십시오. <t t-esc="widget.employee_name"/>
@@ -108,6 +110,8 @@
                     <t t-if="!widget.attendance.check_out">
                         <h1 class="o_hr_attendance_validation">
                             출근시간 <t t-esc="widget.attendance.check_in_time"/>
+			    <br/>
+                            <t t-esc="widget.attendance.check_in_place"/>
                         </h1>
                         <h2 class="o_hr_attendance_message_message">
                             반갑습니다. <t t-esc="widget.employee_name"/>

@@ -21,7 +21,9 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 import re
 from odoo.http import request
-
+import sys
+abspath = sys.path.append(os.path.abspath('gvm/models'))
+from gvmsendmail import gvm_mail
 
 _logger = logging.getLogger(__name__)
 
@@ -357,7 +359,11 @@ class GvmSignContent(models.Model):
     #sh
     @api.multi
     def button_confirm(self):
-#        self.gvm_send_mail(self, self.id)
+        a = gvm_mail()
+	model_name = 'gvm.signcontent'
+        po_num = self.env[model_name].search([('id','=',self.id)]).name
+	a.gvm_send_mail(self.env.user.name, '', '결재문서', self.id, po_num, model_name)
+
 	check_name = ''
 	if self.request_check1:
 	 check_name = self.request_check1.name

@@ -890,7 +890,7 @@ class DataSet(http.Controller):
       action_id = "471"
       post_name = str(new_record)
       name = request.env.user.name.encode('utf-8')
-      subject = "[GVM]"+ name + " 님이 견적요청서를 올렸습니다."
+      subject = "[GVM]["+post_name+"]"+ name + " 님이 견적요청서를 올렸습니다."
       self.gvm_send_mail(model_name, menu_id, action_id, post_name, receivers, subject)
 
     @http.route('/web/dataset/state', type='json', auth="user",csrf=False)
