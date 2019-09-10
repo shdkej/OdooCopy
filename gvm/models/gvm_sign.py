@@ -375,11 +375,6 @@ class GvmSignContent(models.Model):
 
     @api.multi
     def button_confirm(self):
-        a = gvm_mail()
-	model_name = 'gvm.signcontent'
-        po_num = self.env[model_name].search([('id','=',self.id)]).name
-	a.gvm_send_mail(self.env.user.name, '', '결재문서', self.id, po_num, model_name)
-
 	check_name = ''
 	if self.request_check1:
 	 check_name = self.request_check1.name
@@ -391,7 +386,7 @@ class GvmSignContent(models.Model):
 	})
 	if self.sign.num == 1:
 	  count = self.check_holiday_count()
-	  hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
+	  hr_name = self.env['hr.employee'].sudo(1).search([('id','=',self.env.uid)])
 	  h_count = float(hr_name.holiday_count) - float(count)
 	  _logger.warning(h_count)
 
@@ -399,6 +394,22 @@ class GvmSignContent(models.Model):
            raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
 	  hr_name.holiday_count = float(h_count)
 	  _logger.warning(hr_name.holiday_count)
+
+        a = gvm_mail()
+	model_name = 'gvm.signcontent'
+	postId = self.id
+        po_num = self.env[model_name].search([('id','=',postId)]).name
+
+	receivers = []
+        check1 = self.request_check1.id
+        check2 = self.request_check2.id
+        check3 = self.request_check3.id
+        we = self.env['hr.employee'].search([('id','in',(check1,check2,check3))])
+        menu_id = "320"
+	action_id = ""
+        for person in we:
+          receivers.append(str(person.work_email))
+	a.gvm_send_mail(self.env.user.name, receivers, '결재문서', postId, po_num, model_name, menu_id, action_id)
 
 
     def check_holiday_count(self):
@@ -416,47 +427,6 @@ class GvmSignContent(models.Model):
         d2 = datetime.strptime(self.date_from,fmt)
         count = (d1-d2).days+1
 	return count
-
-    def gvm_send_mail(self, vals, postId):
-        dep = self.env['hr.department'].search([('member_ids.user_id','=',self.env.uid)]).id
-#        same_dep = self.env['hr.employee'].search([('department_id','=',dep),('job_id.no_of_hired_employee','>',3)])
-        check1 = vals.request_check1.id
-        check2 = vals.request_check2.id
-        check3 = vals.request_check3.id
-        we = self.env['hr.employee'].search([('id','in',(check1,check2,check3))])
-
-        post = '결재문서'
-        sender = 'nohsh@gvmltd.com'
-        receivers = []
-#        for rc in same_dep:
-#         receivers.append(str(rc.work_email))
-        for person in we:
-          receivers.append(str(person.work_email))
-        receivers.append(sender)
-        head = ['kangky@gvmltd.com','kimgt@gvmltd.com']
-#        if dep != 3:
-#          receivers.append(head)
-       
-        menu_id = "320"
-        post_id = str(postId)
-        #url = str(request.httprequest.url_root)
-	url = "https://erp.gvmltd.com/"
-        html = str('<a href="' + url + 
-          'web#view_type=form&model=gvm.signcontent&menu_id=' + menu_id + 
-          '" style="padding: 5px 10px; font-size: 12px; line-height: 18px; color: #FFFFFF; border-color:#875A7B; text-decoration: none; display: inline-block; margin-bottom: 0px; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; white-space: nowrap; background-image: none; background-color: #875A7B; border: 1px solid #875A7B; border-radius:3px">바로가기</a>')
-
-        msg = MIMEText(html, 'html', _charset='utf-8')
-        name = self.env.user.name.encode('utf-8')
-        msg['subject'] = "[GVM]"+ name +" 님이 " + post + " 를 상신했습니다."
-        msg['from'] = 'GVM_ERP'
-        s = smtplib.SMTP_SSL(host='smtp.mailplug.co.kr', port=465)
-        s.login(user='nohsh@gvmltd.com', password='@shtjdgh412')
-        s.sendmail(sender, receivers, msg.as_string())
-#        if dep in [4,5,7]:
-#          msg['subject'] = "[참고][GVM]"+ name +" 님이 " + post + " 를 상신했습니다."
-#          s.sendmail(sender, head, msg.as_string())
-#        s.sendmail(sender, sender, msg.as_string())
-        s.quit()
 
     @api.model
     def create(self, vals):

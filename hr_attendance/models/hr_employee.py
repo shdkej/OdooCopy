@@ -29,7 +29,7 @@ class HrEmployee(models.Model):
     attendance_state = fields.Selection(string="Attendance", compute='_compute_attendance_state', selection=[('checked_out', "Checked out"), ('checked_in', "Checked in")])
     manual_attendance = fields.Boolean(string='Manual Attendance', compute='_compute_manual_attendance', inverse='_inverse_manual_attendance',
                                        help='The employee will have access to the "My Attendances" menu to check in and out from his session')
-
+    check_today_attendance = fields.Boolean()
     _sql_constraints = [('barcode_uniq', 'unique (barcode)', "The Badge ID must be unique, this one is already assigned to another employee.")]
 
     @api.multi
@@ -123,7 +123,7 @@ class HrEmployee(models.Model):
             attendance = self.env['hr.attendance'].search([('employee_id', '=', self.id), ('check_out', '=', False)], limit=1)
             if attendance:
                 attendance.check_out = action_date
-		attendnace.check_out_place = address
+		attendance.check_out_place = address
             else:
                 raise exceptions.UserError(_('Cannot perform check out on %(empl_name)s, could not find corresponding check in. '
                     'Your attendances have probably been modified manually by human resources.') % {'empl_name': self.name, })
