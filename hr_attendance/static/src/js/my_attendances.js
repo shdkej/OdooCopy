@@ -13,7 +13,7 @@ var MyAttendances = Widget.extend({
     events: {
         "click .o_hr_attendance_sign_in_out_icon": function() {
             this.$('.o_hr_attendance_sign_in_out_icon').attr("disabled", "disabled");
-            this.update_attendance();
+            this.get_geolocation();
         },
     },
 
@@ -36,10 +36,10 @@ var MyAttendances = Widget.extend({
         return this._super.apply(this, arguments);
     },
 
-    update_attendance: function () {
+    update_attendance: function (my_location) {
         var self = this;
         var hr_employee = new Model('hr.employee');
-        hr_employee.call('attendance_manual', [[self.employee.id], 'hr_attendance.hr_attendance_action_my_attendances'])
+        hr_employee.call('attendance_manual', [[self.employee.id], 'hr_attendance.hr_attendance_action_my_attendances', my_location])
             .then(function(result) {
                 if (result.action) {
                     self.do_action(result.action);
@@ -47,6 +47,35 @@ var MyAttendances = Widget.extend({
                     self.do_warn(result.warning);
                 }
             });
+    },
+
+    get_geolocation: function () {
+      var startPos;
+      var result;
+      var self = this;
+      var hr_employee = new Model('hr.employee');
+      var geoOptions = {
+        timeout: 10* 1000
+      }
+
+      var geoSuccess = function(position) {
+        startPos = position;
+	var lat = startPos.coords.latitude;
+	var lng = startPos.coords.longitude;
+	console.log(lat + ',' + lng);
+	result = [lat, lng];
+        
+	hr_employee.call('geocode', [[], result])
+	  .then(function(result) {
+            self.update_attendance(result);
+	    console.log(result);
+	});
+      };
+      var geoError = function(error) {
+	alert(error.message)
+      };
+
+      navigator.geolocation.getCurrentPosition(geoSuccess, geoError, geoOptions)
     },
 });
 

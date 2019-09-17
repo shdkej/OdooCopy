@@ -5,8 +5,11 @@ from random import choice
 from string import digits
 
 from odoo import models, fields, api, exceptions, _, SUPERUSER_ID
+from datetime import datetime
 import requests
+import logging
 
+_logger = logging.getLogger(__name__)
 
 class HrEmployee(models.Model):
     _inherit = "hr.employee"
@@ -73,15 +76,16 @@ class HrEmployee(models.Model):
             {'warning': _('No employee corresponding to barcode %(barcode)s') % {'barcode': barcode}}
 
     @api.multi
-    def attendance_manual(self, next_action, entered_pin=None):
+    def attendance_manual(self, next_action, address, entered_pin=None):
         self.ensure_one()
         if not (entered_pin is None) or self.env['res.users'].browse(SUPERUSER_ID).has_group('hr_attendance.group_hr_attendance_use_pin') and (self.user_id and self.user_id.id != self._uid or not self.user_id):
             if entered_pin != self.pin:
                 return {'warning': _('Wrong PIN')}
-        return self.attendance_action(next_action)
+	
+        return self.attendance_action(next_action, address)
 
     @api.multi
-    def attendance_action(self, next_action):
+    def attendance_action(self, next_action, location):
         """ Changes the attendance of the employee.
             Returns an action to the check in/out message,
             next_action defines which menu the check in/out message should return to. ("My Attendances" or "Kiosk Mode")
@@ -93,20 +97,20 @@ class HrEmployee(models.Model):
         action_message['next_action'] = next_action
 
         if self.user_id:
-            modified_attendance = self.sudo(self.user_id.id).attendance_action_change()
+            modified_attendance = self.sudo(self.user_id.id).attendance_action_change(location)
         else:
             modified_attendance = self.sudo().attendance_action_change()
         action_message['attendance'] = modified_attendance.read()[0]
         return {'action': action_message}
 
     @api.multi
-    def attendance_action_change(self):
+    def attendance_action_change(self, location):
         """ Check In/Check Out action
             Check In: create a new attendance record
             Check Out: modify check_out field of appropriate attendance record
         """
-        location = self.geolocation()
-        address = self.geocode(location[0], location[1])
+        #location = self.geolocation()
+        #address = self.geocode(location[0], location[1])
 
         if len(self) > 1:
             raise exceptions.UserError(_('Cannot perform check in or check out on multiple employees.'))
@@ -116,14 +120,14 @@ class HrEmployee(models.Model):
             vals = {
                 'employee_id': self.id,
                 'check_in': action_date,
-		'check_in_place': address
+		'check_in_place': location
             }
             return self.env['hr.attendance'].create(vals)
         else:
             attendance = self.env['hr.attendance'].search([('employee_id', '=', self.id), ('check_out', '=', False)], limit=1)
             if attendance:
                 attendance.check_out = action_date
-		attendance.check_out_place = address
+		attendance.check_out_place = location
             else:
                 raise exceptions.UserError(_('Cannot perform check out on %(empl_name)s, could not find corresponding check in. '
                     'Your attendances have probably been modified manually by human resources.') % {'empl_name': self.name, })
@@ -152,15 +156,17 @@ class HrEmployee(models.Model):
                     self._table, column_name, employee_id[0])
                 self.env.cr.execute(query, (default_value,))
 
-    def geocode(self, lat, lng):
-        url = 'https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyB99SRIPe6V5HCvbhf9rzaEbi8E2jP_1Zg&latlng=' + lat + ',' + lng
+    def geocode(self, location):
+        url = 'https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyB99SRIPe6V5HCvbhf9rzaEbi8E2jP_1Zg&latlng=' + str(location[0]) + ',' + str(location[1])
         r = requests.get(url).json()
         address = r['plus_code']['compound_code']
+	global_address = address
         return address
 
     def geolocation(self):
         url = 'https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyB99SRIPe6V5HCvbhf9rzaEbi8E2jP_1Zg'
         r = requests.post(url).json()
+	_logger.warning(r)
         lat = str(r['location']['lat'])
         lng = str(r['location']['lng'])
         latlng = [lat,lng]

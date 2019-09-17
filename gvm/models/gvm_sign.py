@@ -298,11 +298,19 @@ class GvmSignContent(models.Model):
         return {}
     @api.multi
     def button_reorder(self):
-        check1 = self.env['hr.employee'].search([('user_id','=',self.check1.id)],limit=1).id
-        check2 = self.env['hr.employee'].search([('user_id','=',self.check2.id)],limit=1).id
-        check3 = self.env['hr.employee'].search([('user_id','=',self.check3.id)],limit=1).id
-        check4 = self.env['hr.employee'].search([('user_id','=',self.check4.id)],limit=1).id
-        check5 = self.env['hr.employee'].search([('user_id','=',self.check5.id)],limit=1).id
+        sign = self.env['gvm.signcontent'].search([('id','=',self.id)])
+	check1,check2,check3,check4,check5 = 0,0,0,0,0
+	if sign.check1:
+          check1 = self.env['hr.employee'].search([('user_id','=',sign.check1.id)]).id
+	if sign.check2:
+          check2 = self.env['hr.employee'].search([('user_id','=',sign.check2.id)]).id
+	if sign.check3:
+          check3 = self.env['hr.employee'].search([('user_id','=',sign.check3.id)]).id
+	if sign.check4:
+          check4 = self.env['hr.employee'].search([('user_id','=',sign.check4.id)]).id
+	if sign.check5:
+          check5 = self.env['hr.employee'].search([('user_id','=',sign.check5.id)]).id
+	_logger.warning(check1)
         self.sudo(self.user_id.id).write({'state': 'write',
 	                                  'check1':False,
 					  'check2':False,
@@ -324,7 +332,7 @@ class GvmSignContent(models.Model):
          #sh
         if self.sign.num == 1:
          count = self.check_holiday_count()
-         hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
+         hr_name = self.env['hr.employee'].sudo(1).search([('id','=',self.user_id.id)])
          h_count = float(hr_name.holiday_count) - float(count)
          hr_name.holiday_count = float(h_count)
         return {}

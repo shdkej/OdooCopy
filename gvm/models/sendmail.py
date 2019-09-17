@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import smtplib
 from email.mime.text import MIMEText
+import os
 
 class gvm_mail():
   def gvm_send_mail(self, uname, receiver, post, postId, po_num, model_name, menu_id, action_id):
@@ -11,12 +12,12 @@ class gvm_mail():
      subject = "[GVM]["+str(po_num)+"]"+ name + " 님이 "+ post +" 를 올렸습니다."
      url = "https://erp.gvmltd.com/"
 
-     test_server = True
-     if not test_server:
+     real_server = os.getenv('GVM_ERP')
+     if real_server == 'True':#True
        if receiver:
          for rc in receiver:
            receivers.append(str(rc.work_email))
-     else:
+     else:#Blank
        subject = '[TEST]' + subject
        url = "http://192.168.0.3/"
        
