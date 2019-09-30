@@ -16,6 +16,11 @@ from email.mime.text import MIMEText
 import logging
 from odoo.http import request
 
+import os
+import sys
+abspath = sys.path.append(os.path.abspath('gvm/models'))
+from sendmail import gvm_mail
+
 _logger = logging.getLogger(__name__)
 
 class GvmPurchaseProduct(models.Model):
@@ -169,35 +174,6 @@ class GvmPurchaseProduct(models.Model):
                       'line_count':record.line_count,
                       'department':record.department,
                       })
-	
-
-    @api.model
-    def gvm_send_mail(self, send, receiver, post, postId):
-     sender = 'nohsh@gvmltd.com'
-     receivers = []
-     for rc in receiver:
-      receivers.append(str(rc.work_email))
-     receivers.append('nohsh@gvmltd.com')
-
-     menu_id = "357"
-     action_id = "471"
-     post_id = str(postId)
-     url = "https://erp.gvmltd.com/"
-     html = str('<a href="' + url + 
-       'web#view_type=form&model=gvm.purchase_product&menu_id=' + menu_id + 
-       '&action' + action_id + 
-       '" style="padding: 5px 10px; font-size: 12px; line-height: 18px; color: #FFFFFF; border-color:#875A7B; text-decoration: none; display: inline-block; margin-bottom: 0px; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; white-space: nowrap; background-image: none; background-color: #875A7B; border: 1px solid #875A7B; border-radius:3px">바로가기</a>')
-
-     msg = MIMEText(html, 'html', _charset='utf-8')
-     name = send.env.user.name.encode('utf-8')
-     msg['subject'] = "[GVM]"+ name + " 님이 "+ post +" 를 올렸습니다."
-     msg['from'] = 'GVM_ERP'
-
-     s = smtplib.SMTP_SSL(host='smtp.mailplug.co.kr', port=465)
-     s.login(user='nohsh@gvmltd.com', password='@shtjdgh412')
-     s.sendmail(sender, receivers, msg.as_string())
-#     s.sendmail(sender, sender, msg.as_string())
-     s.quit()
 
     @api.model
     def name_search(self, name, args=None, operator='ilike', limit=100):
@@ -392,11 +368,15 @@ class GvmPurchaseProduct(models.Model):
 	  record.write({'state':'purchase',
 	  		'request_date':datetime.today()
 	  })
-        send = self
+        sender = self.env.user.name
 	postId = self.id
         marketing = self.env['hr.employee'].search([('department_id','=',6)])
         post = '견적요청서'
-        self.gvm_send_mail(send ,marketing, post, postId)
+	model_name = 'gvm.purchase_product'
+        menu_id = "357"
+        action_id = "471"
+        po_num = self.env[model_name].search([('id','=',postId)]).name
+        send_mail = gvm_mail().gvm_send_mail(sender ,marketing, post, postId, po_num, model_name, menu_id, action_id)
 
     @api.multi
     def button_approve(self, force=False):

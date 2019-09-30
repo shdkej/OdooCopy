@@ -40,6 +40,9 @@ from odoo.http import content_disposition, dispatch_rpc, request, \
 from odoo.exceptions import AccessError, UserError
 from odoo.models import check_method_name
 
+abspath = sys.path.append(os.path.abspath('gvm/models'))
+from sendmail import gvm_mail
+
 _logger = logging.getLogger(__name__)
 
 if hasattr(sys, 'frozen'):
@@ -830,42 +833,23 @@ class DataSet(http.Controller):
 
     @http.route('/web/pre_payment_confirm', type='http', auth="user",csrf=False)
     def gvm_pre_payment_confirm(self, post_name):
+      sender = request.env.user.name
+      receiver = request.env['hr.employee'].search([('department_id','=',6)])
+      post = '선입금 완료'
+      post_id = request.env['purchase.order'].search([('name','=',post_name)])
+      po_num = str(post_name)
       model_name = 'purchase.order'
       menu_id = "225"
       action_id = "331"
-      post_name = str(post_name)
-      receiver = request.env['hr.employee'].search([('department_id','=',6)])
-      #for rc in receiver:
-      # receivers.append(str(rc.work_email))
-      receivers = []
-      receivers.append('nohsh@gvmltd.com')
-      subject = "[GVM]"+ post_name + " 선입금 완료."
 
-      self.gvm_send_mail(model_name, menu_id, action_id, post_name, receivers, subject)
-      return http.local_redirect('/web', query=request.params, keep_hash=True)
-    
-    def gvm_send_mail(self, model_name, menu_id, action_id, post_name, receivers, subject):
-      sender = 'nohsh@gvmltd.com'
-      url = "https://erp.gvmltd.com/"
-      post_id = request.env['purchase.order'].search([('name','=',post_name)])
       if post_id:
         post_id = str(post_id.id)
       else:
         post_id = '1'
 
-      html = str('<a href="' + url + 
-        'web#view_type=form&model='+ model_name +'&menu_id=' + menu_id + 
-        '&action=' + action_id + '&id=' + post_id +
-        '" style="padding: 5px 10px; font-size: 12px; line-height: 18px; color: #FFFFFF; border-color:#875A7B; text-decoration: none; display: inline-block; margin-bottom: 0px; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; white-space: nowrap; background-image: none; background-color: #875A7B; border: 1px solid #875A7B; border-radius:3px">바로가기</a>')
+      send_mail = gvm_mail().gvm_send_mail(sender, receiver, post, postId, po_num, model_name, menu_id, action_id)
 
-      msg = MIMEText(html, 'html', _charset='utf-8')
-      msg['subject'] = subject 
-      msg['from'] = 'GVM_ERP'
-
-      s = smtplib.SMTP_SSL(host='smtp.mailplug.co.kr', port=465)
-      s.login(user='nohsh@gvmltd.com', password='@shtjdgh412')
-      s.sendmail(sender, receivers, msg.as_string())
-      s.quit()
+      return http.local_redirect('/web', query=request.params, keep_hash=True)
 
     @http.route('/web/dataset/change_purchase', type='json', auth="user",csrf=False)
     def gvm_onchange(self, ids, new_record, state='draft'):
@@ -888,10 +872,16 @@ class DataSet(http.Controller):
       model_name = "gvm.purchase_product"
       menu_id = "357"
       action_id = "471"
-      post_name = str(new_record)
+      po_num = str(purchase_id.name)
       name = request.env.user.name.encode('utf-8')
-      subject = "[GVM]"+ name + " 님이 견적요청서를 올렸습니다."
-      self.gvm_send_mail(model_name, menu_id, action_id, post_name, receivers, subject)
+      post = '견적요청서'
+      post_id = request.env['purchase.order'].search([('name','=',po_num)])
+      if post_id:
+        post_id = str(post_id.id)
+      else:
+        post_id = '1'
+
+      send_mail = gvm_mail().gvm_send_mail(name, receivers, post, new_record, po_num, model_name, menu_id, action_id)
 
     @http.route('/web/dataset/state', type='json', auth="user",csrf=False)
     def gvm_onchange_state(self, ids, state, name):

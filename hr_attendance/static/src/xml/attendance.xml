@@ -23,14 +23,15 @@
             <div class="o_hr_attendance_kiosk_mode">
                 <t t-if="widget.employee">
                     <h1>Welcome <t t-esc="widget.employee.name"/></h1>
-                    <t t-if="widget.employee.attendance_state=='checked_out'">
+		    <t t-esc="widget.check_today_attendance"/>
+                    <t t-if="widget.employee.attendance_state=='checked_out'" > 
                         <h2>출근</h2>
                         <i class="fa fa-sign-in btn-primary o_hr_attendance_sign_in_out_icon"/>
                     </t>
                     <t t-if="widget.employee.attendance_state=='checked_in'">
                         <h2>퇴근</h2>
                         <i class="fa fa-sign-out btn-primary o_hr_attendance_sign_in_out_icon"/>
-                    </t>
+                    </t> 
                 </t>
                 <t t-if="!widget.employee">
                     Error : Could not find employee linked to user.
@@ -96,6 +97,8 @@
                     <t t-if="widget.attendance.check_out">
                         <h1 class="o_hr_attendance_validation">
                             퇴근시간 <t t-esc="widget.attendance.check_out_time"/>
+                            <br/>
+                            <t t-esc="widget.attendance.check_out_place"/>
                         </h1>
                         <h2 class="o_hr_attendance_message_message">
                             안녕히가십시오. <t t-esc="widget.employee_name"/>
@@ -108,6 +111,8 @@
                     <t t-if="!widget.attendance.check_out">
                         <h1 class="o_hr_attendance_validation">
                             출근시간 <t t-esc="widget.attendance.check_in_time"/>
+                            <br/>
+                            <t t-esc="widget.attendance.check_in_place"/>
                         </h1>
                         <h2 class="o_hr_attendance_message_message">
                             반갑습니다. <t t-esc="widget.employee_name"/>
@@ -116,7 +121,7 @@
                         <h3 class="o_hr_attendance_random_message"></h3>
                         <h2 class="o_hr_attendance_warning_message"></h2>
                     </t>
-                </t>
+                </t> 
                 <t t-if="!widget.attendance">
                     Invalid request, please return to the main menu.<br/>
                 </t>
