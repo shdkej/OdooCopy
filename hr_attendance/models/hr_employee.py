@@ -3,7 +3,6 @@
 
 from random import choice
 from string import digits
-from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from odoo.exceptions import UserError
 from odoo import models, fields, api, exceptions, _, SUPERUSER_ID
@@ -118,7 +117,7 @@ class HrEmployee(models.Model):
         if len(self) > 1:
             raise exceptions.UserError(_('Cannot perform check in or check out on multiple employees.'))
 	#sh
-#        action_date = fields.Datetime.now()
+        action_dates = fields.Datetime.now()
 	action_date = datetime.now()
 	hr_attendance = self.env['hr.attendance'].search([('employee_id', '=', self.id)], limit=1)
 	date = hr_attendance.check_in
@@ -134,7 +133,8 @@ class HrEmployee(models.Model):
 	       if action_date > cut_line:
 	         vals = {
                     'employee_id': self.id,
-                    'check_in': action_date,
+                    'check_in': action_dates,
+		    'check_in_place': location
                  }
 	         return self.env['hr.attendance'].create(vals)
 	       else:
@@ -142,14 +142,15 @@ class HrEmployee(models.Model):
 	     else:
 	       vals = {
 	         'employee_id': self.id,
-	         'check_in': action_date,
+	         'check_in': action_dates,
+		 'check_in_place': location
 	       }
 	       return self.env['hr.attendance'].create(vals)
         else:
             attendance = self.env['hr.attendance'].search([('employee_id', '=', self.id), ('check_out', '=', False)], limit=1)
             if attendance:
-                attendance.check_out = action_date
-		attendance.check_out_place = location
+                attendance.check_out = action_dates
+                attendance.check_out_place = location
             else:
                 raise exceptions.UserError(_('Cannot perform check out on %(empl_name)s, could not find corresponding check in. '
                     'Your attendances have probably been modified manually by human resources.') % {'empl_name': self.name, })
