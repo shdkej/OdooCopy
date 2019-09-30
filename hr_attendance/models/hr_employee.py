@@ -8,6 +8,7 @@ from odoo import models, fields, api, exceptions, _, SUPERUSER_ID
 from datetime import datetime
 import requests
 import logging
+import sys
 
 _logger = logging.getLogger(__name__)
 
@@ -156,12 +157,42 @@ class HrEmployee(models.Model):
                     self._table, column_name, employee_id[0])
                 self.env.cr.execute(query, (default_value,))
 
-    def geocode(self, location):
+    def google_geocode(self, location):
         url = 'https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyB99SRIPe6V5HCvbhf9rzaEbi8E2jP_1Zg&latlng=' + str(location[0]) + ',' + str(location[1])
         r = requests.get(url).json()
         address = r['plus_code']['compound_code']
 	global_address = address
         return address
+
+    def naver_geocode(self, location):
+        reload(sys)
+        sys.setdefaultencoding('utf-8')
+	url = 'https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?coords=' + str(location[1]) + ',' + str(location[0]) + '&output=json&orders=legalcode,roadaddr'
+        url = 'https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?coords=127.1580072,36.88948390000001&output=json&orders=legalcode,roadaddr'
+	headers = {
+	  'X-NCP-APIGW-API-KEY-ID':'39295gvivi',
+	  'X-NCP-APIGW-API-KEY':'vmc51DB35kxwYIW8BivXpZwMhJTKMKzYm9VUcHoP'
+	}
+	r = requests.get(url, headers=headers).json()
+	address = r
+        full_address = ''
+        address = r
+        status = address['status']['name']
+        if status == 'ok':
+          name4 = str(address['results'][0]['region']['area4']['name'])
+          name3 = str(address['results'][0]['region']['area3']['name'])
+          name2 = str(address['results'][0]['region']['area2']['name'])
+          name1 = str(address['results'][0]['region']['area1']['name'])
+          name0 = str(address['results'][0]['region']['area0']['name'])
+
+          roadaddr0, roadaddr1 = '',''
+	  if len(address['results']) > 1:
+            roadaddr0 = str(address['results'][1]['land']['name'])
+            roadaddr1 = str(address['results'][1]['land']['number1'])
+
+          full_address = name1 + name2 + name3 + name4 + roadaddr0 + roadaddr1
+
+        return full_address
 
     def geolocation(self):
         url = 'https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyB99SRIPe6V5HCvbhf9rzaEbi8E2jP_1Zg'

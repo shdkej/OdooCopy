@@ -55,17 +55,18 @@ var MyAttendances = Widget.extend({
       var self = this;
       var hr_employee = new Model('hr.employee');
       var geoOptions = {
-        timeout: 10* 1000
+        timeout: 10 * 1000
       }
 
       var geoSuccess = function(position) {
         startPos = position;
+        alert("OK");
 	var lat = startPos.coords.latitude;
 	var lng = startPos.coords.longitude;
 	console.log(lat + ',' + lng);
 	result = [lat, lng];
         
-	hr_employee.call('geocode', [[], result])
+	hr_employee.call('naver_geocode', [[], result])
 	  .then(function(result) {
             self.update_attendance(result);
 	    console.log(result);
