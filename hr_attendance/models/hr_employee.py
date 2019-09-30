@@ -119,7 +119,6 @@ class HrEmployee(models.Model):
 	#sh
         action_dates = fields.Datetime.now()
 	action_date = datetime.now()
-	_logger.warning(action_date)
 	hr_attendance = self.env['hr.attendance'].search([('employee_id', '=', self.id)], limit=1)
 	date = hr_attendance.check_in
 	cut_line = ""
@@ -127,7 +126,7 @@ class HrEmployee(models.Model):
 	 check_in_last_time = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
 	 cut_line = check_in_last_time + relativedelta(days=1)
 	 cut_line = cut_line.replace(hour=0, minute=0,second=0)
-	 #_logger.warning(check_in_last_time)
+	 _logger.warning(check_in_last_time)
 
 	if self.attendance_state != 'checked_in':
 	     if date != False:
