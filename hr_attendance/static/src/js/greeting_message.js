@@ -60,7 +60,7 @@ var GreetingMessage = Widget.extend(BarcodeHandlerMixin, {
         var now = new Date((new Date(this.attendance.check_in)).valueOf() - (new Date()).getTimezoneOffset()*60*1000);
         this.return_to_main_menu = setTimeout( function() { self.do_action(self.next_action, {clear_breadcrumbs: true}); }, 5000);
 
-        if (now.getHours() < 5) {
+        /*if (now.getHours() < 5) {
             this.$('.o_hr_attendance_message_message').append(_t("Good night"));
         } else if (now.getHours() < 12) {
             if (now.getHours() < 8 && Math.random() < 0.3) {
@@ -88,7 +88,7 @@ var GreetingMessage = Widget.extend(BarcodeHandlerMixin, {
                     this.$('.o_hr_attendance_random_message').html(_t("If a job is worth doing, it is worth doing well!"));
                 }
             }
-        }
+        }*/
     },
 
     farewell_message: function() {
@@ -99,15 +99,15 @@ var GreetingMessage = Widget.extend(BarcodeHandlerMixin, {
         if(this.previous_attendance_change_date){
             var last_check_in_date = new Date((new Date(this.previous_attendance_change_date)).valueOf() - (new Date()).getTimezoneOffset()*60*1000);
             if(now.valueOf() - last_check_in_date.valueOf() > 1000*60*60*12){
-                this.$('.o_hr_attendance_warning_message').append(_t("Warning! Last check in was over 12 hours ago.<br/>If this isn't right, please contact Human Resources."));
+                this.$('.o_hr_attendance_warning_message').append(_t("Warning! 마지막 체크인이 12시간 전입니다. <br/> 만약, 맞지않다면 총무팀에게 문의하세요."));
                 clearTimeout(this.return_to_main_menu);
                 this.stop_listening();
-            } else if(now.valueOf() - last_check_in_date.valueOf() > 1000*60*60*8){
+            }/* else if(now.valueOf() - last_check_in_date.valueOf() > 1000*60*60*8){
                 this.$('.o_hr_attendance_random_message').html(_t("Another good day's work! See you soon!"));
-            }
+            }*/
         }
 
-        if (now.getHours() < 12) {
+/*        if (now.getHours() < 12) {
             this.$('.o_hr_attendance_message_message').append(_t("Have a good day!"));
         } else if (now.getHours() < 14) {
             this.$('.o_hr_attendance_message_message').append(_t("Have a nice lunch!"));
@@ -124,7 +124,7 @@ var GreetingMessage = Widget.extend(BarcodeHandlerMixin, {
             } else {
                 this.$('.o_hr_attendance_message_message').append(_t("Have a good evening"));
             }
-        }
+        }*/
     },
 
     on_barcode_scanned: function(barcode) {

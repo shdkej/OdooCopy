@@ -3,7 +3,9 @@
 
 from random import choice
 from string import digits
-
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from odoo.exceptions import UserError
 from odoo import models, fields, api, exceptions, _, SUPERUSER_ID
 from datetime import datetime
 import requests
@@ -115,15 +117,36 @@ class HrEmployee(models.Model):
 
         if len(self) > 1:
             raise exceptions.UserError(_('Cannot perform check in or check out on multiple employees.'))
-        action_date = fields.Datetime.now()
+	#sh
+#        action_date = fields.Datetime.now()
+	action_date = datetime.now()
+	hr_attendance = self.env['hr.attendance'].search([('employee_id', '=', self.id)], limit=1)
+	date = hr_attendance.check_in
+	cut_line = ""
+	if date != False :
+	 check_in_last_time = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+	 cut_line = check_in_last_time + relativedelta(days=1)
+	 cut_line = cut_line.replace(hour=0, Minute=0,second=0)
+	 _logger.warning(check_in_last_time)
 
-        if self.attendance_state != 'checked_in':
-            vals = {
-                'employee_id': self.id,
-                'check_in': action_date,
-		'check_in_place': location
-            }
-            return self.env['hr.attendance'].create(vals)
+	if self.attendance_state != 'checked_in':
+	     if date != False:
+	       if action_date > cut_line:
+	         vals = {
+                    'employee_id': self.id,
+                    'check_in': action_date,
+		    'check_in_place': address
+                 }
+	         return self.env['hr.attendance'].create(vals)
+	       else:
+	         raise UserError(_('출근시간이 아닙니다.'))
+	     else:
+	       vals = {
+	         'employee_id': self.id,
+	         'check_in': action_date,
+	         'check_in_place': address
+	       }
+	       return self.env['hr.attendance'].create(vals)
         else:
             attendance = self.env['hr.attendance'].search([('employee_id', '=', self.id), ('check_out', '=', False)], limit=1)
             if attendance:
