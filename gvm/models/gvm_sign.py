@@ -23,7 +23,7 @@ import re
 from odoo.http import request
 import sys
 abspath = sys.path.append(os.path.abspath('gvm/models'))
-from sendmail import gvm_mail
+#from sendmail import gvm_mail
 
 _logger = logging.getLogger(__name__)
 
