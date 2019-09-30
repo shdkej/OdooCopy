@@ -8,9 +8,9 @@
     <t t-name="HrAttendanceKioskMode">
         <div class="o_hr_attendance_kiosk_mode_container">
             <div class="o_hr_attendance_kiosk_mode">
-                <h1>Welcome to <t t-esc="widget.company_name"/></h1>
+                <h1>GVM:  <t t-esc="widget.company_name"/>님</h1>
                 <img t-attf-src="{{widget.company_image_url}}" alt="Company Logo"/>
-                <h2>Scan your badge</h2>
+                <h2>소속을 Scan 해주세요. </h2>
                 <h4>or</h4>
                 <button class="o_hr_attendance_button_employees btn btn-primary btn-lg">Select Employee</button>
             </div>
@@ -22,7 +22,7 @@
         <div class="o_hr_attendance_kiosk_mode_container">
             <div class="o_hr_attendance_kiosk_mode">
                 <t t-if="widget.employee">
-                    <h1>Welcome <t t-esc="widget.employee.name"/></h1>
+                    <h1>GVM: <t t-esc="widget.employee.name"/>님</h1>
 		    <t t-esc="widget.check_today_attendance"/>
                     <t t-if="widget.employee.attendance_state=='checked_out'" > 
                         <h2>출근</h2>
@@ -44,23 +44,23 @@
         <div class="o_hr_attendance_kiosk_mode_container">
             <div class="o_hr_attendance_kiosk_mode">
                 <t t-if="widget.employee_id">
-                    <h1>Welcome <t t-esc="widget.employee_name"/></h1>
+                    <h1>GVM: <t t-esc="widget.employee_name"/>님</h1>
                     <t t-if="!widget.use_pin">
                         <t t-if="widget.employee_state=='checked_in'">
-                            <h2>Check out</h2>
+                            <h2>퇴근</h2>
                             <a class="fa btn-primary o_hr_attendance_sign_in_out_icon fa-sign-out fa-sign-in"/>
                         </t>
                         <t t-if="widget.employee_state=='checked_out'">
-                            <h2>Check in</h2>
+                            <h2>출근</h2>
                             <a class="fa btn-primary o_hr_attendance_sign_in_out_icon fa-sign-out fa-sign-out"/>
                         </t>
                     </t>
                     <t t-if="widget.use_pin">
                         <t t-if="widget.employee_state=='checked_in'">
-                            <h2>Please enter your PIN to check out</h2>
+                            <h2>핀번호를 입력해주세요</h2>
                         </t>
                         <t t-if="widget.employee_state=='checked_out'">
-                            <h2>Please enter your PIN to check in</h2>
+                            <h2>핀번호를 입력해주세요</h2>
                         </t>
                         <div class="row">
                             <div class="col-sm-8 col-sm-offset-2">
@@ -101,12 +101,11 @@
                             <t t-esc="widget.attendance.check_out_place"/>
                         </h1>
                         <h2 class="o_hr_attendance_message_message">
-                            안녕히가십시오. <t t-esc="widget.employee_name"/>
-                            <br/>
+                         오늘도 수고하셨습니다. <t t-esc="widget.employee_name"/>님
+			    <br/>                            
                         </h2>
-                        <h3 class="o_hr_attendance_random_message"></h3>
-                        <h2 class="o_hr_attendance_warning_message"></h2>
-                        
+			<h3 class="o_hr_attendance_random_message"></h3>
+                        <h2 class="o_hr_attendance_warning_message"></h2>                       
                     </t>
                     <t t-if="!widget.attendance.check_out">
                         <h1 class="o_hr_attendance_validation">
@@ -115,7 +114,7 @@
                             <t t-esc="widget.attendance.check_in_place"/>
                         </h1>
                         <h2 class="o_hr_attendance_message_message">
-                            반갑습니다. <t t-esc="widget.employee_name"/>
+                          오늘도 좋은 하루되세요. <t t-esc="widget.employee_name"/>님
                             <br/>
                         </h2>
                         <h3 class="o_hr_attendance_random_message"></h3>
@@ -128,5 +127,5 @@
                 <button class="o_hr_attendance_button_dismiss btn btn-primary btn-sm">ok</button>
             </div>
         </div>
-    </t>
+  </t>
 </template>

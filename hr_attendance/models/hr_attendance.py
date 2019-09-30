@@ -6,6 +6,9 @@ from datetime import datetime
 from odoo import models, fields, api, exceptions, _
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class HrAttendance(models.Model):
     _name = "hr.attendance"
@@ -75,7 +78,6 @@ class HrAttendance(models.Model):
                     'empl_name': attendance.employee_id.name_related,
                     'datetime': fields.Datetime.to_string(fields.Datetime.context_timestamp(self, fields.Datetime.from_string(attendance.check_in))),
                 })
-
             if not attendance.check_out:
                 # if our attendance is "open" (no check_out), we verify there is no other "open" attendance
                 no_check_out_attendances = self.env['hr.attendance'].search([
@@ -96,6 +98,7 @@ class HrAttendance(models.Model):
                     ('check_in', '<', attendance.check_out),
                     ('id', '!=', attendance.id),
                 ], order='check_in desc', limit=1)
+		
                 if last_attendance_before_check_out and last_attendance_before_check_in != last_attendance_before_check_out:
                     raise exceptions.ValidationError(_("Cannot create new attendance record for %(empl_name)s, the employee was already checked in on %(datetime)s") % {
                         'empl_name': attendance.employee_id.name_related,
