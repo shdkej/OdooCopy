@@ -126,7 +126,7 @@ class HrEmployee(models.Model):
 	if date != False :
 	 check_in_last_time = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
 	 cut_line = check_in_last_time + relativedelta(days=1)
-	 cut_line = cut_line.replace(hour=0, Minute=0,second=0)
+	 cut_line = cut_line.replace(hour=0, minute=0,second=0)
 	 _logger.warning(check_in_last_time)
 
 	if self.attendance_state != 'checked_in':
@@ -135,7 +135,6 @@ class HrEmployee(models.Model):
 	         vals = {
                     'employee_id': self.id,
                     'check_in': action_date,
-		    'check_in_place': address
                  }
 	         return self.env['hr.attendance'].create(vals)
 	       else:
@@ -144,7 +143,6 @@ class HrEmployee(models.Model):
 	       vals = {
 	         'employee_id': self.id,
 	         'check_in': action_date,
-	         'check_in_place': address
 	       }
 	       return self.env['hr.attendance'].create(vals)
         else:
