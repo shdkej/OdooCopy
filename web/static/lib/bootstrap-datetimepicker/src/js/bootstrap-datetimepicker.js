@@ -388,9 +388,9 @@ THE SOFTWARE.
         fillDow = function () {
             moment.locale(picker.options.language);
             var html = $('<tr>'), weekdaysMin = moment.weekdaysMin(), i;
-            if (picker.options.calendarWeeks === true) {
-                html.append('<th class="cw">#</th>');
-            }
+//            if (picker.options.calendarWeeks === true) {
+//                html.append('<th class="cw">#</th>');
+//            }
             if (moment().localeData()._week.dow === 0) { // starts on Sunday
                 for (i = 0; i < 7; i++) {
                     html.append('<th class="dow">' + weekdaysMin[i] + '</th>');
@@ -452,9 +452,9 @@ THE SOFTWARE.
                 if (prevMonth.weekday() === moment().startOf('week').weekday()) {
                     row = $('<tr>');
                     html.push(row);
-                    if (picker.options.calendarWeeks === true) {
-                        row.append('<td class="cw">' + prevMonth.week() + '</td>');
-                    }
+//                    if (picker.options.calendarWeeks === true) {
+//                        row.append('<td class="cw">' + prevMonth.week() + '</td>');
+//                    }
                 }
                 clsName = '';
                 if (prevMonth.year() < year || (prevMonth.year() === year && prevMonth.month() < month)) {
