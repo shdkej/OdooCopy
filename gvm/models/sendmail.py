@@ -7,7 +7,7 @@ class gvm_mail():
   def gvm_send_mail(self, uname, receiver, post, postId, po_num, model_name, menu_id, action_id):
      sender = 'nohsh@gvmltd.com'
      receivers = []
-     name = str(uname)
+     name = uname.encode('utf-8')
      url = "https://erp.gvmltd.com/"
      subject = "[GVM]["+str(po_num)+"]"+ name + " 님이 "+ post +" 를 올렸습니다."
      url = "https://erp.gvmltd.com/"

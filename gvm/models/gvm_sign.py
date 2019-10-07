@@ -216,7 +216,7 @@ class GvmSignContent(models.Model):
     @api.depends('user_id')
     def _compute_holiday_count(self):
       for record in self:
-	hr_name = self.env['hr.employee'].search([('id','=',self.env.uid)])
+	hr_name = self.env['hr.employee'].search([('name','=',self.user_id.name)])
         record.holiday_count = hr_name.holiday_count
 
     @api.model
@@ -275,7 +275,7 @@ class GvmSignContent(models.Model):
     def _onchange_timesheet(self):
       for record in self:
         if record.sign_ids == 2:
-         worktime = self.env['account.analytic.line'].search([('date_from','>=',record.date_from),('date_to','<=',record.date_to),('user_id','=',record.writer),('unit_amount','>=',1)])
+         worktime = self.env['account.analytic.line'].search([('date_from','>=',record.date_from),('date_to','<=',record.date_to),('user_id','=',record.user_id.id),('unit_amount','>=',1)])
          record.timesheet = worktime
 
     @api.model
@@ -332,7 +332,7 @@ class GvmSignContent(models.Model):
          #sh
         if self.sign.num == 1:
          count = self.check_holiday_count()
-         hr_name = self.env['hr.employee'].sudo(1).search([('id','=',self.user_id.id)])
+         hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
          h_count = float(hr_name.holiday_count) - float(count)
          hr_name.holiday_count = float(h_count)
         return {}
@@ -394,7 +394,7 @@ class GvmSignContent(models.Model):
 	})
 	if self.sign.num == 1:
 	  count = self.check_holiday_count()
-	  hr_name = self.env['hr.employee'].sudo(1).search([('id','=',self.env.uid)])
+	  hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
 	  h_count = float(hr_name.holiday_count) - float(count)
 	  _logger.warning(h_count)
 

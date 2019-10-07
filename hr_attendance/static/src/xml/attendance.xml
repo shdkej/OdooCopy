@@ -8,9 +8,9 @@
     <t t-name="HrAttendanceKioskMode">
         <div class="o_hr_attendance_kiosk_mode_container">
             <div class="o_hr_attendance_kiosk_mode">
-                <h1>GVM:  <t t-esc="widget.company_name"/>님</h1>
+                <h1>GVM: <t t-esc="widget.company_name"/>님</h1>
                 <img t-attf-src="{{widget.company_image_url}}" alt="Company Logo"/>
-                <h2>소속을 Scan 해주세요. </h2>
+                <h2>소속을 Scan 해주세요.</h2>
                 <h4>or</h4>
                 <button class="o_hr_attendance_button_employees btn btn-primary btn-lg">Select Employee</button>
             </div>
@@ -57,10 +57,10 @@
                     </t>
                     <t t-if="widget.use_pin">
                         <t t-if="widget.employee_state=='checked_in'">
-                            <h2>핀번호를 입력해주세요</h2>
+                            <h2>핀번호를 입력 해주세요</h2>
                         </t>
                         <t t-if="widget.employee_state=='checked_out'">
-                            <h2>핀번호를 입력해주세요</h2>
+                            <h2>핀번호를 입력 해주세요</h2>
                         </t>
                         <div class="row">
                             <div class="col-sm-8 col-sm-offset-2">
@@ -101,8 +101,8 @@
                             <t t-esc="widget.attendance.check_out_place"/>
                         </h1>
                         <h2 class="o_hr_attendance_message_message">
-                         오늘도 수고하셨습니다. <t t-esc="widget.employee_name"/>님
-			    <br/>                            
+                            오늘도 수고하셨습니다. <t t-esc="widget.employee_name"/>님
+                            <br/>
                         </h2>
 			<h3 class="o_hr_attendance_random_message"></h3>
                         <h2 class="o_hr_attendance_warning_message"></h2>                       
@@ -114,7 +114,7 @@
                             <t t-esc="widget.attendance.check_in_place"/>
                         </h1>
                         <h2 class="o_hr_attendance_message_message">
-                          오늘도 좋은 하루되세요. <t t-esc="widget.employee_name"/>님
+                            오늘도 좋은 하루되세요. <t t-esc="widget.employee_name"/>님
                             <br/>
                         </h2>
                         <h3 class="o_hr_attendance_random_message"></h3>
