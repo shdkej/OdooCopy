@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <menuitem name="생산관리"
+                  id="menu_gvm_mrp_root"
+                  web_icon="gvm_mrp,static/description/icon.png"
+                  sequence="25"/>
+
+        <record id="act_gvm_mrp_sub" model="ir.actions.act_window">
+            <field name="res_model">gvm.mrp.sub</field>
+            <field name="view_type">form</field>
+            <field name="name">Issues</field>
+            <field name="view_mode">kanban,tree,form,graph,pivot</field>
+            <field name="context">{
+	            'group_by':'task',
+                    'search_default_main_mrp': [active_id],
+                    'default_main_mrp': active_id,
+                }
+            </field>
+            <field name="help" type="html">
+                <p>
+                    The Odoo issues tracker allows you to efficiently manage things
+                </p>
+            </field>
+        </record>
+        <record id="act_gvm_mrp_sub_calendar" model="ir.actions.act_window">
+            <field name="res_model">gvm.mrp.content</field>
+            <field name="view_type">form</field>
+            <field name="name">Issues</field>
+            <field name="view_mode">calendar,kanban,tree,form,graph,pivot</field>
+            <field name="context">{
+                    'search_default_sub_mrp': [active_id],
+                    'default_sub_mrp': active_id,
+                }
+            </field>
+            <field name="help" type="html">
+                <p>
+                    The Odoo issues tracker allows you to efficiently manage things
+                </p>
+            </field>
+        </record>
+        <record id="gvm_mrp_form" model="ir.ui.view">
+            <field name="name">gvm_mrp.form</field>
+            <field name="model">gvm.mrp</field>
+            <field name="arch" type="xml">
+                <form string="Project">
+                        <field name="num"/>
+                        <field name="name"/>
+                        <field name="date"/>
+                        <field name="project_sub"/>
+                        <field name="site"/>
+                </form>
+            </field>
+        </record>
+       <record id="view_gvm_mrp_filter" model="ir.ui.view">
+            <field name="name">gvm.mrp.select</field>
+            <field name="model">gvm.mrp</field>
+            <field name="arch" type="xml">
+                <search string="Search Sign Content">
+                    <field name="name" string="Reference"/>
+                    <field name="create_uid"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="site" name="site" domain="[]" context="{'group_by':'site'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+       <record id="view_gvm_mrp_sub_filter" model="ir.ui.view">
+            <field name="name">gvm.mrp.sub.select</field>
+            <field name="model">gvm.mrp.sub</field>
+            <field name="arch" type="xml">
+                <search string="Search Sign Content">
+                    <field name="name" string="Reference"/>
+                    <field name="create_uid"/>
+                    <field name="main_mrp"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                    </group>
+                </search>
+            </field>
+        </record>
+       <record id="view_gvm_mrp_content_filter" model="ir.ui.view">
+            <field name="name">gvm.mrp.content.select</field>
+            <field name="model">gvm.mrp.content</field>
+            <field name="arch" type="xml">
+                <search string="Search Sign Content">
+                    <field name="name" string="Reference"/>
+                    <field name="create_uid"/>
+                    <field name="main_mrp"/>
+                    <field name="sub_mrp"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="gvm_mrp_content_calendar" model="ir.ui.view">
+            <field name="name">gvm.mrp.calendar</field>
+            <field name="model">gvm.mrp.content</field>
+            <field name="arch" type="xml">
+                <calendar string="Calendar View" date_start="date" date_stop="date_to" color="sub_mrp" mode="month" event_open_popup="True">
+                    <field name="name"/>
+                </calendar>
+            </field>
+        </record>
+
+        <record id="gvm_mrp_sub_form" model="ir.ui.view">
+            <field name="name">gvm.mrp.sub.form</field>
+            <field name="model">gvm.mrp.sub</field>
+            <field name="arch" type="xml">
+                <form string="Sign">
+                  <header>
+                     <field name="card" widget="statusbar" statusbar_visible="personal" readonly="1"/>
+                  </header>
+                  <sheet>
+		  <group>
+                     <field name="name"/>
+		     <field name="attachment" widget="many2many_binary"/>
+		  </group>
+		  <group>
+		     <field name="content"/>
+		  </group>
+                  </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="gvm_mrp_content_form" model="ir.ui.view">
+            <field name="name">gvm_mrp_content.form</field>
+            <field name="model">gvm.mrp.content</field>
+            <field name="arch" type="xml">
+                <form string="Project">
+		      <sheet>
+		      <div class="oe_title">
+		        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name"/></h1>
+		      </div>
+		      <notebook>
+		      <page name="Content" string="Content">
+		        <group>
+                        <field name="date" string="일자"/>
+                        <field name="date_to"/>
+                        <field name="main_mrp" string="프로젝트" invisible="0"/>
+                        <field name="content" string="내용"/>
+                        <field name="client" string="고객사"/>
+			<field name="worker" widget="many2many_tags" option="{'no_create_edit':True}"/>
+                        <field name="description" string="특이사항"/>
+			<field name="sub_mrp" invisible="1"/>
+		        <field name="sub_attachment" widget="many2many_binary"/>
+			</group>
+		      </page>
+		      </notebook>
+		      </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="gvm_mrp_tree" model="ir.ui.view">
+            <field name="name">gvm.mrp.tree</field>
+            <field name="model">gvm.mrp</field>
+            <field name="arch" type="xml">
+                <tree string="Timesheet by Accounts">
+                    <field name="num"/>
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+        <record id="gvm.mrp_sub_tree" model="ir.ui.view">
+            <field name="name">gvm.mrp.sub.tree</field>
+            <field name="model">gvm.mrp.sub</field>
+            <field name="arch" type="xml">
+                <tree string="Timesheet by Accounts">
+                    <field name="name" string="번호"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="gvm.mrp_kanban">
+            <field name="name">gvm.mrp.kanban</field>
+            <field name="model">gvm.mrp</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_small_column o_kanban_project_tasks" create="1">
+                    <field name="name"/>
+                    <field name="create_date"/>
+                    <field name="date"/>
+                    <field name="color"/>
+                    <field name="priority"/>
+                    <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)} oe_kanban_card oe_kanban_global_click">
+
+                            <div class="o_dropdown_kanban dropdown" groups="base.group_user">
+                                <a class="dropdown-toggle btn" data-toggle="dropdown" href="#" >
+                                    <span class="fa fa-bars fa-lg"/>
+                                </a>
+                                <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                                    <t t-if="widget.editable"><li><a type="set_cover">Set Cover Image</a></li></t>
+                                    <t t-if="widget.editable"><li><a type="edit">Edit Task</a></li></t>
+                                    <t t-if="widget.deletable"><li><a type="delete">Delete</a></li></t>
+                                    <li><ul class="oe_kanban_colorpicker" data-field="color"/></li>
+                                </ul>
+                            </div>
+                            <div class="oe_kanban_content">
+		              <a name="%(act_gvm_mrp_sub)d" type="action">
+                                <div>
+                                    <strong><field name="name"/></strong>
+                                </div>
+                                <div class="text-muted">
+                                    <t t-if="record.date.raw_value and record.date.raw_value lt (new Date())" t-set="red">oe_kanban_text_red</t>
+                                    <span t-attf-class="#{red || ''}"><i><field name="date"/></i></span>
+                                </div>
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="priority" widget="priority"/>
+                                </div>
+			      </a>
+                            </div>
+                            <div class="oe_clear"></div>
+                        </div>
+                    </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="gvm.mrp_sub_kanban">
+            <field name="name">gvm.mrp.sub.kanban</field>
+            <field name="model">gvm.mrp.sub</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_small_column o_kanban_project_tasks" create="1">
+                    <field name="name"/>
+                    <field name="create_date"/>
+                    <field name="date"/>
+                    <field name="color"/>
+                    <field name="priority"/>
+                    <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)} oe_kanban_card oe_kanban_global_click">
+
+                            <div class="o_dropdown_kanban dropdown" groups="base.group_user">
+                                <a class="dropdown-toggle btn" data-toggle="dropdown" href="#" >
+                                    <span class="fa fa-bars fa-lg"/>
+                                </a>
+                                <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                                    <t t-if="widget.editable"><li><a type="set_cover">Set Cover Image</a></li></t>
+                                    <t t-if="widget.editable"><li><a type="edit">Edit Task</a></li></t>
+                                    <t t-if="widget.deletable"><li><a type="delete">Delete</a></li></t>
+                                    <li><ul class="oe_kanban_colorpicker" data-field="color"/></li>
+                                </ul>
+                            </div>
+                            <div class="oe_kanban_content">
+		              <a name="%(act_gvm_mrp_sub_calendar)d" type="action">
+                                <div>
+                                    <strong><field name="name"/></strong>
+                                </div>
+                                <div class="text-muted">
+                                    <t t-if="record.date.raw_value and record.date.raw_value lt (new Date())" t-set="red">oe_kanban_text_red</t>
+                                    <span t-attf-class="#{red || ''}"><i><field name="date"/></i></span>
+                                </div>
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="priority" widget="priority"/>
+                                </div>
+			      </a>
+                            </div>
+                            <div class="oe_clear"></div>
+                        </div>
+                    </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="act_gvm_mrp" model="ir.actions.act_window">
+            <field name="name">GVM Mrp</field>
+            <field name="res_model">gvm.mrp</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="domain">[]</field>
+            <field name="search_view_id" ref="view_gvm_mrp_filter"/>
+            <field name="context">{'search_default_site':1}</field>
+            <field name="search_view_id"/>
+        </record>
+        <record id="act_gvm_mrp_all" model="ir.actions.act_window">
+            <field name="name">GVM Product Management All</field>
+            <field name="res_model">gvm.mrp.content</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">calendar,tree,form</field>
+            <field name="context">{}</field>
+            <field name="domain">[]</field>
+            <field name="search_view_id"/>
+        </record>
+
+        <menuitem name="프로젝트" id="menu_gvm_mrp_content" parent="menu_gvm_mrp_root" action="act_gvm_mrp" sequence="2"/>
+        <menuitem name="전체" id="menu_gvm_mrp_all" parent="menu_gvm_mrp_root" action="act_gvm_mrp_all" sequence="3"/>
+
+</odoo>
