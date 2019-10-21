@@ -209,9 +209,10 @@ class GvmSignContent(models.Model):
     def _compute_next_check(self):
       index = ['request_check1','request_check2','request_check3','request_check4','request_check5','request_check6']
       for record in self:
-        if record.state == 'cancel':
-          record.next_check = record.writer
+        if record.state == 'cancel':	  
+	  record.next_check = record.writer
 	  return False
+
         for i in index:
 	  if record[i]:
             record.next_check = record[i].name
@@ -300,7 +301,7 @@ class GvmSignContent(models.Model):
     @api.multi
     def button_check_all(self):
         self.sudo(self.user_id.id).write({'state':'done', 'check3': self.env.uid, 'next_check':self.request_check4.id or 'done', 'check3_date': datetime.now()})
-        return {}
+	return {}
     @api.multi
     def button_reorder(self):
         sign = self.env['gvm.signcontent'].search([('id','=',self.id)])
@@ -380,25 +381,38 @@ class GvmSignContent(models.Model):
             'limit': 80,
             'context': "{}"
         }
-    
+    #sh
+    def return_holiday_count(self):
+         #근태신청서
+	 if self.sign.num == 1:
+	  #연차갯수
+	  count = self.check_holiday_count()
+	  #로그인한 유저정보
+	  hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.user_department.id)])
+	  #총 연차갯수 + 사용했던 연차갯수
+	  h_count = float(hr_name.holiday_count) + float(count)
+	  # 적용
+	  hr_name.holiday_count = float(h_count)
+
+
     #sh
     #취소버튼
     def button_remove(self):
-        #근태신청서
+	#근태신청서
     	if self.sign.num == 1:
 	 #연차갯수
 	 count = self.check_holiday_count()
-	 #로그인 유저 정보
-	 hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
-	 #총 연차 갯수 + 사용한 연차 갯수
+	 #로그인한 유저정보
+	 hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.user_department.id)])
+	 #총 연차갯수 + 사용했던 연차갯수
 	 h_count = float(hr_name.holiday_count) + float(count)
-	 #적용
+	 # 적용
          hr_name.holiday_count = float(h_count)
-	 #상태정보 : 취소상태
+	 #상태 정보: 취소상태
          self.write({'state':'remove'})
-	#출장비정산서
-	elif self.sign.num ==3:
-	 #상태정보 :  취소상태
+	
+	elif self.sign.num == 3:
+	 #상태 정보: 취소상태
 	 self.write({'state':'remove'})
 
     @api.multi
@@ -469,30 +483,30 @@ class GvmSignContent(models.Model):
 	return res
 
     @api.multi
-    def unlink(self):
+    def unlink(self):        
         for record in self:
             if not record.user_id.name == self.env.user.name:
                 raise UserError(_('본인 외 삭제 불가'))
 	    else:
-	     #sh
-	     #삭제되었을경우 연차 갯수 복귀
-	     #근태신청서
-	     if self.sign.num == 1:
-	       #연차갯수
-	       count = self.check_holiday_count()
-	       #로그인 유저 정보
-	       hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
-	       #총 연차 갯수 + 사용한 연차 갯수
-	       h_count = float(hr_name.holiday_count) + float(count)
-	       #적용
-	       hr_name.holiday_count = float(h_count)
+	      #sh
+	      #삭제되었을경우 연차 갯수 복귀
+	      #근태신청서
+	      if self.sign.num == 1:
+	        #연차갯수
+	        count = self.check_holiday_count()
+	        #로그인한 유저정보
+	        hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.user_department.id)])
+	        #총 연차갯수 + 사용했던 연차갯수
+	        h_count = float(hr_name.holiday_count) + float(count)
+	        # 적용
+	        hr_name.holiday_count = float(h_count)
         return super(GvmSignContent, self).unlink()
 
     @api.multi
     def write(self, vals):
         allower = [1,168,294]
         for record in self:
-            if record.state in ['temp','write','cancel','remove']:
+            if record.state in ['temp','write','cancel']:
 	     if self.env.user.name != record.user_id.name and self.env.uid != 1:
                raise UserError(_('본인 외 수정 불가'))
             else:
@@ -546,8 +560,9 @@ class GvmSignLine(models.Model):
     _name = "gvm.signcontent.line"
     _order = ''
 
-    name = fields.Many2one('hr.employee',string='name')
-    sequence = fields.Integer('순번')
-    state = fields.Selection([('sign','결재'),('2','합의'),('3','참조'),('4','열람')])
-    sign = fields.Many2one('gvm.signcontent','sign')
+    name = fields.Many2one ( ' hr.employee ' ,string = ' name ' )
+    sequence = fields.Integer ( ' 순번 ' )
+    state = fields.Selection ([( ' sign ' , ' 결재 ' ), ( ' 2 ' , ' 합의 ' ), ( ' 3 ' , ' 참조 ' ), ( ' 4 ' , ' 열람 ' )])
+    sign = fields.Many2one ( ' gvm.signcontent ' , ' sign ' )
+
 
