@@ -99,7 +99,7 @@ var GreetingMessage = Widget.extend(BarcodeHandlerMixin, {
         if(this.previous_attendance_change_date){
             var last_check_in_date = new Date((new Date(this.previous_attendance_change_date)).valueOf() - (new Date()).getTimezoneOffset()*60*1000);
             if(now.valueOf() - last_check_in_date.valueOf() > 1000*60*60*12){
-                this.$('.o_hr_attendance_warning_message').append(_t("Warning! 마지막 체크인이 12시간 전입니다. <br/> 만약, 맞지않다면 총무팀에게 문의하세요."));
+                this.$('.o_hr_attendance_warning_message').append(_t(""));
                 clearTimeout(this.return_to_main_menu);
                 this.stop_listening();
             }/* else if(now.valueOf() - last_check_in_date.valueOf() > 1000*60*60*8){

@@ -12,14 +12,14 @@ class gvm_mail():
      subject = "[GVM]["+str(po_num)+"]"+ name + " 님이 "+ post +" 를 올렸습니다."
      url = "https://erp.gvmltd.com/"
 
-     real_server = os.getenv('GVM_ERP')
-     if real_server == 'True':#True
-       if receiver:
-         for rc in receiver:
+     #real_server = os.getenv('GVM_ERP')
+     #if real_server == 'True':#True
+     if receiver:
+       for rc in receiver:
            receivers.append(str(rc.work_email))
-     else:#Blank
-       subject = '[TEST]' + subject
-       url = "http://192.168.0.3/"
+     #else:#Blank
+     #  subject = '[TEST]' + subject
+     #  url = "http://192.168.0.3/"
        
      receivers.append('nohsh@gvmltd.com')
 
