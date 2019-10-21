@@ -60,7 +60,7 @@ var MyAttendances = Widget.extend({
 
       var geoSuccess = function(position) {
         startPos = position;
-        alert("OK");
+        alert("확인되었습니다.");
 	var lat = startPos.coords.latitude;
 	var lng = startPos.coords.longitude;
 	console.log(lat + ',' + lng);

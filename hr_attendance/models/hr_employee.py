@@ -108,23 +108,29 @@ class HrEmployee(models.Model):
    #sh
     def _Check_check_out_time(self):
        """ 퇴근을 하지 않았을경우, 다음날 00시 00분 00초에 자동으로  퇴근이 된다."""
-	
+       #현재시간	
        date = datetime.now()
+       #현재 시
        hour = date.hour
+       #현재 분
        minute = date.minute
-
+       
+       #현재시간
        check_out_time = datetime.now()
+       #00시 00분 00초 
+       #한국과의 시차는9 시간
        check_out_time = check_out_time.replace(hour=15, minute=0,second=0)
- 
+       
+       #체크아웃 정보 가져오기
        hr_attendance = self.env['hr.attendance'].search([('check_out', '=', False)])
       
+       #체크아웃 시간이 00시 00분일때
        if hour == 15 and minute == 00:
+        #체크아웃을 작성
 	for att in hr_attendance:
            att.write({
 	     'check_out':check_out_time
 	   })
-       
-#	_logger.warning("abcde")
 #        return self.env['hr.attendance'].write(check_out_date)
 
     @api.multi
@@ -230,7 +236,6 @@ class HrEmployee(models.Model):
         reload(sys)
         sys.setdefaultencoding('utf-8')
 	url = 'https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?coords=' + str(location[1]) + ',' + str(location[0]) + '&output=json&orders=legalcode,roadaddr'
-        url = 'https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?coords=127.1580072,36.88948390000001&output=json&orders=legalcode,roadaddr'
 	headers = {
 	  'X-NCP-APIGW-API-KEY-ID':'39295gvivi',
 	  'X-NCP-APIGW-API-KEY':'vmc51DB35kxwYIW8BivXpZwMhJTKMKzYm9VUcHoP'
@@ -240,12 +245,14 @@ class HrEmployee(models.Model):
         full_address = ''
         address = r
         status = address['status']['name']
+	_logger.warning(status)
         if status == 'ok':
           name4 = str(address['results'][0]['region']['area4']['name'])
           name3 = str(address['results'][0]['region']['area3']['name'])
           name2 = str(address['results'][0]['region']['area2']['name'])
           name1 = str(address['results'][0]['region']['area1']['name'])
           name0 = str(address['results'][0]['region']['area0']['name'])
+	  _logger.warning(name0)
 
           roadaddr0, roadaddr1 = '',''
 	  if len(address['results']) > 1:
@@ -253,6 +260,9 @@ class HrEmployee(models.Model):
             roadaddr1 = str(address['results'][1]['land']['number1'])
 
           full_address = name1 + name2 + name3 + name4 + roadaddr0 + roadaddr1
+	else:
+	  full_address = self.google_geocode(location)
+
 
         return full_address
 

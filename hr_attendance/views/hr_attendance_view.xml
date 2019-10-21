@@ -9,9 +9,9 @@
         <field name="arch" type="xml">
             <tree string="Employee attendances">
                 <field name="employee_id"/>
-                <field name="check_in"/>
+		<field name="check_in"/>
+		<field name="check_in_place"/>
                 <field name="check_out"/>
-                <field name="check_in_place"/>
                 <field name="check_out_place"/>
             </tree>
         </field>
@@ -26,8 +26,8 @@
                     <group>
                         <field name="employee_id"/>
                         <field name="check_in"/>
-                        <field name="check_out"/>
-                        <field name="check_in_place"/>
+			 <field name="check_in_place"/>
+			 <field name="check_out"/>
                         <field name="check_out_place"/>
                     </group>
                 </sheet>

@@ -70,7 +70,7 @@
             <field name="arch" type="xml">
                 <form string="Sign">
                   <header>
-                     <button name="button_remove" string="취소" type="object" states="write" groups="hr.group_hr_manager"  confirm="취소하시겠습니까?"/>
+                     <button name="button_remove" string="취소" type="object" states="done" groups="hr.group_hr_manager"  confirm="취소하시겠습니까?"/>
                      <input type="button" class="print" name="print" id="print" value="프린트"/>
                      <input type="button" class="toexcel" name="toexcel" id="toexcel" value="엑셀"/>
 		     <span attrs="{'invisible':[('check','=',False)]}"><input type="button" class="sign_button" id="sign_button" value="결재"/></span>
@@ -223,7 +223,7 @@
                           <tree editable="1">
                             <field name="card" string="개인/법인"/>
                             <field name="name" string="항목명"/>
-                            <field name="date_from" widget="date" string="일자"/>
+                            <field name="date" string="일자"/>
                             <field name="cost" string="금액" widget="monet"/>
                             <field name="currency"/>
                             <field name="description" string="세부사항"/>
@@ -239,7 +239,7 @@
                         <field name="timesheet">
                           <tree editable="1" decoration-info='weekend==True' decoration-bf='weekend==True'>
                             <field name="project_id" string="프로젝트" readonly="1"/>
-                            <field name="date" string="일자" readonly="1"/>
+                            <field name="date_from" widget="date" string="일자" readonly="1"/>
                             <field name="unit_amount" string="잔업시간" widget="float_time" readonly="1"/>
                             <field name="weekend" string="일자" invisible="1"/>
                           </tree>

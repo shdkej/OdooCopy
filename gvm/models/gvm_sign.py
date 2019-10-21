@@ -78,8 +78,10 @@ class GvmSignContent(models.Model):
     my_check_count = fields.Integer('my_check', compute='_compute_my_check_count')
     my_ref_count = fields.Integer('my_ref', compute='_compute_my_check_count')
     create_date = fields.Date('create_date',default=fields.Datetime.now)
-    date_from = fields.Date('start',required=True)
-    date_to = fields.Date('end')
+    #sh
+    #달력외 표시 금지
+    date_from = fields.Date('start',required=True, default=fields.Datetime.now)
+    date_to = fields.Date('end', default=fields.Datetime.now)
     project = fields.Many2one('project.project',string='name')
     sign = fields.Many2one('gvm.sign', string='sign',required=True)
     cost = fields.One2many('gvm.signcontent.cost','sign', string='cost')
@@ -88,8 +90,10 @@ class GvmSignContent(models.Model):
     timesheet = fields.Many2many('account.analytic.line','sign','timesheet',domain="[('user_id','=',uid)]",store=True,compute='_onchange_timesheet')
     reason = fields.Text('reason')
     rest1 = fields.Selection([('day','연차'),
+      #sh
+      #오전반차 오후반차 구분
       ('half','오전반차'),
-      ('half','오후반차'),
+      ('half_2','오후반차'),
       ('quarter','반반차'),
       ('vacation','휴가'),
       ('refresh','리프레시 휴가'),
@@ -216,7 +220,7 @@ class GvmSignContent(models.Model):
     @api.depends('user_id')
     def _compute_holiday_count(self):
       for record in self:
-	hr_name = self.env['hr.employee'].search([('id','=',self.env.uid)])
+	hr_name = self.env['hr.employee'].search([('name','=',self.user_id.name)])
         record.holiday_count = hr_name.holiday_count
 
     @api.model
@@ -275,7 +279,8 @@ class GvmSignContent(models.Model):
     def _onchange_timesheet(self):
       for record in self:
         if record.sign_ids == 2:
-         worktime = self.env['account.analytic.line'].search([('date_from','>=',record.date_from),('date_to','<=',record.date_to),('user_id','=',record.writer),('unit_amount','>=',1)])
+	 #작성한 기간동안 검색을 위해서 삭제 //(하루전날로 체크해야했음)
+         worktime = self.env['account.analytic.line'].search([('date_from','>=',record.date_from),('date_to','<=',record.date_to),('user_id','=',record.user_id.id)])  #,('unit_amount','>=',1)])
          record.timesheet = worktime
 
     @api.model
@@ -329,11 +334,16 @@ class GvmSignContent(models.Model):
 					  'request_check4':check4 or self.request_check4.id,
 					  'request_check5':check5 or self.request_check5.id,
 					  'next_check':self.check1.name})
-         #sh
+        #sh
+	#근태신청서
         if self.sign.num == 1:
+	 #현재 연차 갯수
          count = self.check_holiday_count()
-         hr_name = self.env['hr.employee'].sudo(1).search([('id','=',self.user_id.id)])
+	 #로그인 유저 정보
+         hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
+	 #총 연차갯수 - 사용한 연차 갯수
          h_count = float(hr_name.holiday_count) - float(count)
+	 #적용
          hr_name.holiday_count = float(h_count)
         return {}
 
@@ -372,14 +382,24 @@ class GvmSignContent(models.Model):
         }
     
     #sh
+    #취소버튼
     def button_remove(self):
+        #근태신청서
     	if self.sign.num == 1:
+	 #연차갯수
 	 count = self.check_holiday_count()
+	 #로그인 유저 정보
 	 hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
+	 #총 연차 갯수 + 사용한 연차 갯수
 	 h_count = float(hr_name.holiday_count) + float(count)
-	 _logger.warning(h_count)
+	 #적용
          hr_name.holiday_count = float(h_count)
+	 #상태정보 : 취소상태
          self.write({'state':'remove'})
+	#출장비정산서
+	elif self.sign.num ==3:
+	 #상태정보 :  취소상태
+	 self.write({'state':'remove'})
 
     @api.multi
     def button_confirm(self):
@@ -394,7 +414,7 @@ class GvmSignContent(models.Model):
 	})
 	if self.sign.num == 1:
 	  count = self.check_holiday_count()
-	  hr_name = self.env['hr.employee'].sudo(1).search([('id','=',self.env.uid)])
+	  hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
 	  h_count = float(hr_name.holiday_count) - float(count)
 	  _logger.warning(h_count)
 
@@ -416,7 +436,7 @@ class GvmSignContent(models.Model):
         menu_id = "320"
 	action_id = ""
         for person in we:
-          receivers.append(str(person.work_email))
+          receivers.append(person)
 	a.gvm_send_mail(self.env.user.name, receivers, '결재문서', postId, po_num, model_name, menu_id, action_id)
 
 
@@ -424,7 +444,12 @@ class GvmSignContent(models.Model):
         count = 0
 	if self.rest1 in ['refresh','publicvacation','special']:
 	  return count
+	#sh 
+	#오전반차 오후반차 구분  
 	if self.rest1 == 'half':
+	  count = 0.5
+	  return count
+	elif self.rest1 == 'half_2':
 	  count = 0.5
 	  return count
 	elif self.rest1 == 'quarter':
@@ -448,6 +473,19 @@ class GvmSignContent(models.Model):
         for record in self:
             if not record.user_id.name == self.env.user.name:
                 raise UserError(_('본인 외 삭제 불가'))
+	    else:
+	     #sh
+	     #삭제되었을경우 연차 갯수 복귀
+	     #근태신청서
+	     if self.sign.num == 1:
+	       #연차갯수
+	       count = self.check_holiday_count()
+	       #로그인 유저 정보
+	       hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
+	       #총 연차 갯수 + 사용한 연차 갯수
+	       h_count = float(hr_name.holiday_count) + float(count)
+	       #적용
+	       hr_name.holiday_count = float(h_count)
         return super(GvmSignContent, self).unlink()
 
     @api.multi
