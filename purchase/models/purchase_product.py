@@ -396,9 +396,6 @@ class GvmPurchaseProduct(models.Model):
 	  record.write({'state':'purchase',
 	  		'request_date':datetime.today()
 	  })
-<<<<<<< HEAD
-        send = self
-=======
 
         # Find Stock
         if self.product:
@@ -437,7 +434,6 @@ class GvmPurchaseProduct(models.Model):
 
         # Send Mail
         sender = self.order_man.name
->>>>>>> 1066ed4... ADD STOCK
 	postId = self.id
         marketing = self.env['hr.employee'].search([('department_id','=',6)])
         post = '견적요청서'

@@ -355,15 +355,6 @@ class GvmSignContent(models.Model):
 	self.write({'next_check':check_name,
 	    	    'state':'write'
 	})
-<<<<<<< HEAD
-
-    def gvm_send_mail(self, vals, postId):
-        dep = self.env['hr.department'].search([('member_ids.user_id','=',self.env.uid)]).id
-#        same_dep = self.env['hr.employee'].search([('department_id','=',dep),('job_id.no_of_hired_employee','>',3)])
-        check1 = vals.request_check1.id
-        check2 = vals.request_check2.id
-        check3 = vals.request_check3.id
-=======
 	if self.sign.num == 1:
 	  count = self.check_holiday_count()
 	  hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
@@ -384,7 +375,6 @@ class GvmSignContent(models.Model):
         check1 = self.request_check1.id
         check2 = self.request_check2.id
         check3 = self.request_check3.id
->>>>>>> 1066ed4... ADD STOCK
         we = self.env['hr.employee'].search([('id','in',(check1,check2,check3))])
 
         post = '결재문서'
@@ -393,33 +383,6 @@ class GvmSignContent(models.Model):
 #        for rc in same_dep:
 #         receivers.append(str(rc.work_email))
         for person in we:
-<<<<<<< HEAD
-          receivers.append(str(person.work_email))
-        receivers.append(sender)
-        head = ['kangky@gvmltd.com','kimgt@gvmltd.com']
-#        if dep != 3:
-#          receivers.append(head)
-       
-        menu_id = "320"
-        post_id = str(postId)
-        url = str(request.httprequest.url_root)
-        html = str('<a href="' + url + 
-          'web#view_type=form&model=gvm.signcontent&menu_id=' + menu_id + 
-          '" style="padding: 5px 10px; font-size: 12px; line-height: 18px; color: #FFFFFF; border-color:#875A7B; text-decoration: none; display: inline-block; margin-bottom: 0px; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; white-space: nowrap; background-image: none; background-color: #875A7B; border: 1px solid #875A7B; border-radius:3px">바로가기</a>')
-
-        msg = MIMEText(html, 'html', _charset='utf-8')
-        name = self.env.user.name.encode('utf-8')
-        msg['subject'] = "[GVM]"+ name +" 님이 " + post + " 를 상신했습니다."
-        msg['from'] = 'GVM_ERP'
-        s = smtplib.SMTP_SSL(host='smtp.mailplug.co.kr', port=465)
-        s.login(user='nohsh@gvmltd.com', password='@shtjdgh412')
-        s.sendmail(sender, receivers, msg.as_string())
-#        if dep in [4,5,7]:
-#          msg['subject'] = "[참고][GVM]"+ name +" 님이 " + post + " 를 상신했습니다."
-#          s.sendmail(sender, head, msg.as_string())
-#        s.sendmail(sender, sender, msg.as_string())
-        s.quit()
-=======
           receivers.append(person)
 	a.gvm_send_mail(self.env.user.name, receivers, '결재문서', postId, po_num, model_name, menu_id, action_id)
 
@@ -456,7 +419,6 @@ class GvmSignContent(models.Model):
         d2 = datetime.strptime(date_from,fmt)
         count = (d1-d2).days+1
 	return count
->>>>>>> 1066ed4... ADD STOCK
 
     @api.model
     def create(self, vals):

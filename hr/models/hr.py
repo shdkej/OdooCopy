@@ -167,9 +167,6 @@ class Employee(models.Model):
     def _check_parent_id(self):
         for employee in self:
             if not employee._check_recursion():
-<<<<<<< HEAD
-                raise ValidationError(_('Error! You cannot create recursive hierarchy of Employee(s).'))
-=======
                raise ValidationError(_('Error! You cannot create recursive hierarchy of Employee(s).'))
 
      #sh
@@ -236,7 +233,6 @@ class Employee(models.Model):
       _logger.warning(record.name)
       _logger.warning("Check Holiday Complete")
 
->>>>>>> 1066ed4... ADD STOCK
 
     @api.onchange('address_id')
     def _onchange_address(self):

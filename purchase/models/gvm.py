@@ -276,12 +276,6 @@ class GvmProduct(models.Model):
 	  project_id = Project.search([('name','=',vals[0][9].encode('utf-8'))]).id
 	  part_id = Part.search([('name','=',vals[0][10].encode('utf-8')),('project_id','=',project_id)]).id
         for val in vals:
-<<<<<<< HEAD
-	  if str(val[0]) != 'None':
-  	    Update = Product.search([('id','=',val[0])])
-	    Update.write({
-	    	'state' : 'bad',
-=======
           product_checkbox = val[0]
           product_sequence_num = val[1]
           product_main_name = val[2].encode('utf-8')
@@ -299,7 +293,6 @@ class GvmProduct(models.Model):
 	    Update.write({
 	    	'state' : 'bad',
 		'bad_state': product_bad_state.upper().encode('utf-8'), 
->>>>>>> 1066ed4... ADD STOCK
 	    })
 
             # reorder text
@@ -330,20 +323,12 @@ class GvmProduct(models.Model):
 	  else:
 	    PONum = Product.create({
 	    		'sequence_num':val[1],
-<<<<<<< HEAD
-	    		'name':val[2].encode('utf-8'),
-	    		'product_name':val[3].encode('utf-8'),
-			'material':val[4].encode('utf-8'),
-			'original_count':val[5].encode('utf-8'),
-			'project_id':val[9].encode('utf-8'),
-=======
 	    		'name': product_main_name,
 	    		'product_name': product_name,
 			'bad_state': product_bad_state.upper().encode('utf-8'), 
 			'material': product_material,
 			'original_count': product_original_count,
 			'project_id': product_project_id,
->>>>>>> 1066ed4... ADD STOCK
 			'issue':part_id,
 			'request_date':datetime.today(),
 			'order_man':request.env.user.name,
