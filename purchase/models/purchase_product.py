@@ -208,6 +208,8 @@ class GvmPurchaseProduct(models.Model):
         res = super(GvmPurchaseProduct, self).create(vals)
         last_id = self.env['gvm.purchase_product'].search([('id','=',res.id)])
         issue = last_id.issue
+        if not last_id.project_id:
+          raise UserError(_('프로젝트를 입력해주세요'))
 	
         if last_id.project_id and issue:
           issue.write({'project_id':last_id.project_id.id})
@@ -216,7 +218,7 @@ class GvmPurchaseProduct(models.Model):
         for np in newProduct:
           #issue.write({'product':[(4,np.id)]})
 	  np.write({
-	    'project_id':last_id.project_id.id,
+	    'project_id':last_id.project_id.name,
 	    'project_set':[(4,last_id.project_id.id)],
 	    'issue':issue.id,
 	  })
@@ -378,6 +380,10 @@ class GvmPurchaseProduct(models.Model):
           for product in self.product:
             stock = self.env['product.product'].search([('specification','=',product.name),
                                                         ('stock','>=',1)],limit=1)
+            if not stock:
+              stock = self.env['product.product'].search([('specification','=',product.specification),
+                                                          ('stock','>=',1)],limit=1)
+              
             if stock:
               product.stock_item = True            
               # 개수가 모자라면 분할해야 함
@@ -460,6 +466,9 @@ class GvmPurchaseProduct(models.Model):
                 if pd.stock_item:
                   stock = self.env['product.product'].search([('specification','=',pd.name)
                                                              ],limit=1)
+                  if not stock:
+                     stock = self.env['product.product'].search([('specification','=',product.specification),
+                                                                 ('stock','>=',1)],limit=1)
                   if stock:
                     stock.stock = stock.stock + (pd.total_count)
             for pick in order.picking_ids:

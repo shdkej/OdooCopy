@@ -305,7 +305,7 @@
         <field name="search_view_id" eval="False"/> <!-- Force empty -->
         <field name="view_id" ref="gvm_product_tree_receiving"/>
         <field name="context">{"search_default_filter_to_sell":1}</field>
-        <field name="domain">[('state','=','destination')]</field>
+        <field name="domain">[('state','=',['destination','request_receiving','done'])]</field>
     </record>
     <record id="action_gvm_product_ready" model="ir.actions.act_window">
         <field name="name">제품</field>
@@ -316,7 +316,7 @@
         <field name="search_view_id" eval="False"/> <!-- Force empty -->
         <field name="view_id" ref="gvm_product_tree_receiving"/>
         <field name="context">{"search_default_filter_to_sell":1}</field>
-        <field name="domain">[('state','=','no')]</field>
+        <field name="domain">[('state','in',['purchase','purchasing'])]</field>
     </record>
         <record id="purchase_search_table_action" model="ir.actions.act_window">
             <field name="name">BOM</field>

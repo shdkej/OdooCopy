@@ -151,6 +151,7 @@ class GvmProduct(models.Model):
 	  record.project_set = record.purchase_by_maker.project_ids
 	else:
 	  record.project_set = record.purchase_by_maker.project_id
+        # 같은 이름 있으면 기존 제품은 불량으로 변경
         if record.reorder_num != 'A':
 	  same_product = self.env['gvm.product'].search([('project_id','=',record.project_id),('name','=',record.name)])
 	  if same_product:
