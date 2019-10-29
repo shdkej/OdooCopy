@@ -167,7 +167,76 @@ class Employee(models.Model):
     def _check_parent_id(self):
         for employee in self:
             if not employee._check_recursion():
+<<<<<<< HEAD
                 raise ValidationError(_('Error! You cannot create recursive hierarchy of Employee(s).'))
+=======
+               raise ValidationError(_('Error! You cannot create recursive hierarchy of Employee(s).'))
+
+     #sh
+    def _check_holiday_count(self):
+      _logger.warning("test")
+
+      #입사일기준
+      employees = self.env['hr.employee'].search([])
+      companyDate = ""
+      for record in employees:
+       fmt = '%Y-%m-%d'
+       if record.join_date:
+        companyDate = datetime.datetime.strptime(record.join_date,fmt).date()
+        companyYear = companyDate.year
+        companyMonth = companyDate.month
+        companyDay = companyDate.day
+
+        #현재시간
+        now = datetime.datetime.now()
+        presentYear = now.year
+        presentMonth = now.month
+        presentDay = now.day
+
+        #3년이상 종사자
+        year_entering = presentYear - companyYear
+        year_check = year_entering % 2.0
+
+       #1년미만 입사자
+       if year_entering == 0 and companyMonth != presentMonth and companyDay == presentDay:
+        #연차 1개를 증가시킨다.
+        record.holiday_count += 1.0
+       #1년미만 입사자
+       elif year_entering == 1 and companyMonth != presentMonth and companyDay == presentDay:
+         #연차 1개를 증가시킨다.
+	 record.holiday_count += 1.0
+       #1년
+       elif year_entering == 1 and companyMonth == presentMonth and companyDay == presentDay:
+        #2년이상 입사자 해당
+        if (presentYear - companyYear) >= 2.0:
+         #남은 연차의 갯수가 + 일경우 연차 초기화
+         if record.holiday_count > 0.0:
+          record.holiday_count = 0.0
+
+        #연차 15개를 증가시킨다.
+        record.holiday_count += 15.0
+            
+       #3년이상 재직 시 2년마다 연차 총 개수 1개씩 증가
+       if year_entering > 2.0 and companyMonth == presentMonth and companyDay == presentDay:   
+        #짝수
+	if year_check == 0.0:
+	 year_1count = (year_entering / 2.0) - 1.0
+         record.holiday_count += year_1count
+	#홀수
+	else:
+ 	 year_2count = (year_entering - 1.0) / 2.0
+	 record.holiday_count += year_2count
+	
+       #1년미만 입사자는 max_count = 0 
+       if year_entering == 0 and companyMonth != presentMonth and companyDay == presentDay:
+        record.holiday_max_count = 0
+       else:
+        record.holiday_max_count = record.holiday_count
+
+      _logger.warning(record.name)
+      _logger.warning("Check Holiday Complete")
+
+>>>>>>> 1066ed4... ADD STOCK
 
     @api.onchange('address_id')
     def _onchange_address(self):

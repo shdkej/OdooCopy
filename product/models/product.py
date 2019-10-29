@@ -150,6 +150,7 @@ class ProductProduct(models.Model):
         "Medium-sized image", compute='_compute_images', inverse='_set_image_medium',
         help="Image of the product variant (Medium-sized image of product template if false).")
 
+    stock = fields.Integer('stock')
     standard_price = fields.Float(
         'Cost', company_dependent=True,
         digits=dp.get_precision('Product Price'),

@@ -192,7 +192,20 @@ class GvmSignContent(models.Model):
       index = ['request_check1','request_check2','request_check3','request_check4','request_check5','request_check6']
       for record in self:
         if record.state == 'cancel':
-          record.next_check = record.writer
+	  #sh
+	  #현재 서버 페이지의 정보를 가져온다.
+	  rest1 = record.rest1
+	  date_to = record.date_to
+	  date_from = record.date_from
+	  #연차의 갯수를 상신 전상태로 돌린다.
+	  count = self.check_holiday_count(rest1,date_to,date_from)
+	  hr_name = self.env['hr.employee'].search([('name','=',record.user_id.name)])
+	  h_count = float(hr_name.holiday_count) +  float(count)
+	  hr_name.write({
+	            'holiday_count': h_count
+	  })
+	  #다음 결제권한을  작성자에게 넘긴다. 
+	  record.next_check = record.writer
 	  return False
         for i in index:
 	  if record[i]:
@@ -342,6 +355,7 @@ class GvmSignContent(models.Model):
 	self.write({'next_check':check_name,
 	    	    'state':'write'
 	})
+<<<<<<< HEAD
 
     def gvm_send_mail(self, vals, postId):
         dep = self.env['hr.department'].search([('member_ids.user_id','=',self.env.uid)]).id
@@ -349,6 +363,28 @@ class GvmSignContent(models.Model):
         check1 = vals.request_check1.id
         check2 = vals.request_check2.id
         check3 = vals.request_check3.id
+=======
+	if self.sign.num == 1:
+	  count = self.check_holiday_count()
+	  hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
+	  h_count = float(hr_name.holiday_count) - float(count)
+	  _logger.warning(h_count)
+
+	  #if h_count < -7:
+          # raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
+	  hr_name.holiday_count = float(h_count)
+	  _logger.warning(hr_name.holiday_count)
+
+        a = gvm_mail()
+	model_name = 'gvm.signcontent'
+	postId = self.id
+        po_num = self.env[model_name].search([('id','=',postId)]).name
+
+	receivers = []
+        check1 = self.request_check1.id
+        check2 = self.request_check2.id
+        check3 = self.request_check3.id
+>>>>>>> 1066ed4... ADD STOCK
         we = self.env['hr.employee'].search([('id','in',(check1,check2,check3))])
 
         post = '결재문서'
@@ -357,6 +393,7 @@ class GvmSignContent(models.Model):
 #        for rc in same_dep:
 #         receivers.append(str(rc.work_email))
         for person in we:
+<<<<<<< HEAD
           receivers.append(str(person.work_email))
         receivers.append(sender)
         head = ['kangky@gvmltd.com','kimgt@gvmltd.com']
@@ -382,6 +419,44 @@ class GvmSignContent(models.Model):
 #          s.sendmail(sender, head, msg.as_string())
 #        s.sendmail(sender, sender, msg.as_string())
         s.quit()
+=======
+          receivers.append(person)
+	a.gvm_send_mail(self.env.user.name, receivers, '결재문서', postId, po_num, model_name, menu_id, action_id)
+
+
+    def check_holiday_count(self, rest1=None, date_to=None, date_from=None):
+        count = 0
+	#반려를 클릭한 경우
+	if rest1 != None:
+	   rest = rest1
+	   date_to = date_to
+	   date_from = date_from
+	#반려를 클릭하지 않은경우
+	else:
+	   rest = self.rest1
+	   date_to = self.date_to
+	   date_from = self.date_from
+
+	if rest in ['refresh','publicvacation','special']:
+	  return count
+	#sh 
+	#오전반차 오후반차 구분  
+	if rest == 'half':
+	  count = 0.5
+	  return count
+	elif rest == 'half_2':
+	  count = 0.5
+	  return count
+	elif rest == 'quarter':
+	  count = 0.25
+	  return count
+	#연차일경우 갯수 파악  
+        fmt = '%Y-%m-%d'
+        d1 = datetime.strptime(date_to,fmt)
+        d2 = datetime.strptime(date_from,fmt)
+        count = (d1-d2).days+1
+	return count
+>>>>>>> 1066ed4... ADD STOCK
 
     @api.model
     def create(self, vals):

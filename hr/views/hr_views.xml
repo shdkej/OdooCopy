@@ -69,7 +69,13 @@
                                         <field name="job_id"/>
                                         <field name="parent_id"/>
                                         <field name="coach_id"/>
+<<<<<<< HEAD
                                         <field name="holiday_count" readonly="1"/>
+=======
+                                        <field name="join_date"/>
+                                        <field name="holiday_count"/>
+                                        <field name="holiday_max_count"/>
+>>>>>>> 1066ed4... ADD STOCK
                                     </group>
                                 </group>
                                 <field name="notes" placeholder="Other Information ..." colspan="4"/>

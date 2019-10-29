@@ -340,6 +340,8 @@
                             <field name="drawing_man"/>
                             <field name="order_man"/>
                             <field name="permit_man"/>
+			    <field name="request"/>
+			    <field name="charge"/>
                             <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
                             <field name="currency_id" groups="base.group_multi_currency"/>
                             <field name="is_shipped" invisible="1"/>
@@ -368,7 +370,7 @@
                     <notebook>
 		    <page string="Products">
 		    <field name="product">
-		     <tree editable="bottom" decoration-danger="emergency==True" decoration-bf="emergency==True" decoration-info="destination_date!=False" decoration-muted="state in ('cancel','bad')">
+		     <tree editable="bottom" decoration-danger="emergency==True or stock_item==True" decoration-bf="emergency==True" decoration-info="destination_date!=False" decoration-muted="state in ('cancel','bad')">
 		      <field name="sequence_num" widget="handle"/>
 		      <field name="product_ids" string="기존자재" options="{'no_create':True}"/>
 		      <field name="name" string="도면번호"/>

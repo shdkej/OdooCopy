@@ -70,6 +70,10 @@
             <field name="arch" type="xml">
                 <form string="Sign">
                   <header>
+<<<<<<< HEAD
+=======
+                     <button name="button_remove" string="취소" type="object" states="write" groups="hr.group_hr_manager"  confirm="취소하시겠습니까?" attrs="{'invisible':[('sign_ids','in',[2,4,5,6])]}"/>
+>>>>>>> 1066ed4... ADD STOCK
                      <input type="button" class="print" name="print" id="print" value="프린트"/>
                      <input type="button" class="toexcel" name="toexcel" id="toexcel" value="엑셀"/>
 		     <span attrs="{'invisible':[('check','=',False)]}"><input type="button" class="sign_button" id="sign_button" value="결재"/></span>

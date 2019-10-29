@@ -84,7 +84,7 @@
             <field name="name">gvm.product.tree_receiving</field>
             <field name="model">gvm.product</field>
             <field name="arch" type="xml">
-                <tree decoration-muted="state in ('cancel','bad')" decoration-danger="expected_date!=False and current_date>expected_date" decoration-bf="expected_date!=False and current_date>expected_date" default_order="create_date desc">
+                <tree decoration-muted="state in ('cancel','bad')" decoration-danger="expected_date!=False and current_date>expected_date or stock_item==True" decoration-bf="expected_date!=False and current_date>expected_date" default_order="create_date desc">
 		    <field name="sequence_num"/>
                     <field name="expected_date"/>
 		    <field name="partner_id" groups="purchase.group_purchase_manager"/>
@@ -110,6 +110,7 @@
                     <field name="state"/>
 		    <field name="bad_item"/>
 		    <field name="bad_state"/>
+		    <field name="stock_item"/>
 		    <field name="etc"/>
 		    <button name="button_destination" type="object" string="입고" class="oe_highlight" groups="purchase.group_purchase_manager" confirm="입고되었습니까?"/>
 		    <button name="button_request_receiving" type="object" string="출고요청" class="oe_highlight" confirm="출고 요청 하시겠습니까?"/>
@@ -335,6 +336,7 @@
                     <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
                     <field name="currency_id" invisible="1"/>
                     <field name="state"/>
+		    <field name="charge"/>
                     <field name="invoice_status" invisible="1"/>
                 </tree>
 	    </field>

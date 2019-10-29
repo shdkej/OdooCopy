@@ -276,14 +276,35 @@ class GvmProduct(models.Model):
 	  project_id = Project.search([('name','=',vals[0][9].encode('utf-8'))]).id
 	  part_id = Part.search([('name','=',vals[0][10].encode('utf-8')),('project_id','=',project_id)]).id
         for val in vals:
+<<<<<<< HEAD
 	  if str(val[0]) != 'None':
   	    Update = Product.search([('id','=',val[0])])
 	    Update.write({
 	    	'state' : 'bad',
+=======
+          product_checkbox = val[0]
+          product_sequence_num = val[1]
+          product_main_name = val[2].encode('utf-8')
+          product_name = val[3].encode('utf-8')
+          product_material = val[4].encode('utf-8')
+          product_original_count = val[5].encode('utf-8')
+          product_etc = val[6].encode('utf-8') if val[6].encode('utf-8') != 'false' else ''
+          product_bad_state = val[7]
+          product_project_id = val[9].encode('utf-8')
+
+	  if (product_bad_state == False or product_bad_state.upper().encode('utf-8') == 'FALSE'):
+	    product_bad_state = 'A'
+	  if str(product_checkbox) != 'None':
+  	    Update = Product.search([('id','=',product_checkbox)])
+	    Update.write({
+	    	'state' : 'bad',
+		'bad_state': product_bad_state.upper().encode('utf-8'), 
+>>>>>>> 1066ed4... ADD STOCK
 	    })
 
+            # reorder text
 	    reorder_text = Update.reorder_text or ''
-	    newPd = Product.create({'name':val[2].encode('utf-8')})
+	    newPd = Product.create({'name': product_main_name})
 	    for i in range(1,7):
 	      if Update[column[i]] != val[i]:
 	        #text = column[i] + ' : ' + Update[column[i]] + ' -> ' + val[i] + ' ( ' + str(datetime.today())[0:10] + ' )'
@@ -297,22 +318,32 @@ class GvmProduct(models.Model):
 	    if (val[7] == False or val[7].upper().encode('utf-8') == 'FALSE'):
 	      val[7] = 'A'
 	    Update.write({'reorder_text':reorder_text})
+
 	    #같은이름의 같은프로젝트에 있는 자재에 모두 이력을 쓰도록 해야겠다
 	    newPd.write({'reorder_text':reorder_text, 
-	    		 'project_id':val[9].encode('utf-8'),
-			 'bad_state':val[7].upper().encode('utf-8'), 
-			 'etc':val[6].encode('utf-8'),
+	    		 'project_id': product_project_id,
+			 'bad_state': product_bad_state.upper().encode('utf-8'), 
+			 'etc': product_etc,
 			 'issue':part_id, 
 			 'project_set':[(4, project_id)], 
 			 'order_man':request.env.user.name})
 	  else:
 	    PONum = Product.create({
 	    		'sequence_num':val[1],
+<<<<<<< HEAD
 	    		'name':val[2].encode('utf-8'),
 	    		'product_name':val[3].encode('utf-8'),
 			'material':val[4].encode('utf-8'),
 			'original_count':val[5].encode('utf-8'),
 			'project_id':val[9].encode('utf-8'),
+=======
+	    		'name': product_main_name,
+	    		'product_name': product_name,
+			'bad_state': product_bad_state.upper().encode('utf-8'), 
+			'material': product_material,
+			'original_count': product_original_count,
+			'project_id': product_project_id,
+>>>>>>> 1066ed4... ADD STOCK
 			'issue':part_id,
 			'request_date':datetime.today(),
 			'order_man':request.env.user.name,
@@ -329,6 +360,7 @@ class GvmProduct(models.Model):
     	Project = request.env['project.project']
     	Part = request.env['project.issue']
 	part_id = ''
+        newPo = ''
 	if vals:
 	  project_id = Project.search([('name','=',vals[0][9])]).id
 	  part_id = Part.search([('name','=',vals[0][10]),('project_id','=',project_id)]).id

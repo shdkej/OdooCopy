@@ -53,7 +53,7 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
     	var self = this;
 	var project_selected = $('#gvm_search_product option:selected').text();
         var Part = new Model('project.issue');
-	this.search_filter = [['project_id','=',project_selected],['state','!=','bad']];
+	this.search_filter = [['project_id','=',project_selected],['state','!=','bad'],['state','!=','cancel']];
 
 	$('#gvm_search_product_part option').remove();
 	$('#gvm_search_product_part').append('<option id="0" value="0"></option>');
@@ -96,29 +96,29 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         var change = function(instance, cell, value){
           var cellName = $(instance).jexcel('getColumnNameFromId', $(cell).prop('id'));
           $(cell).css('color','red');
-	  var cellNum = $(cell).prop('id').split('-')[1];
-	  var cellNum_col = $(cell).prop('id').split('-')[0];
-	  if (self.Numtmp_row.includes(cellNum) == false){
-	    self.Numtmp_row.push(cellNum);
-	    self.update_content.push(self.data[cellNum]);
-	  }
-	  if (self.Numtmp_col.includes(cellNum_col) == false){
-	    self.Numtmp_col.push(cellNum_col);
-	  }
+          var cellNum = $(cell).prop('id').split('-')[1];
+          var cellNum_col = $(cell).prop('id').split('-')[0];
+          if (self.Numtmp_row.includes(cellNum) == false){
+            self.Numtmp_row.push(cellNum);
+            self.update_content.push(self.data[cellNum]);
+	      }
+          if (self.Numtmp_col.includes(cellNum_col) == false){
+            self.Numtmp_col.push(cellNum_col);
+          }
         }
 
-	if (self.data.length == 0){
-	  self.data.push(['0','0']);
-	}
-	self.$('#mytable').jexcel({
-	  data: self.data, 
-	  colHeaders: self.colHeaders,
-	  colWidths: [30,40,190,140,100,50,100,50,80],
-	  onchange: change,
-	  columns: [
-	    {type: 'checkbox'},
-	  ]
-	});
+	  if (self.data.length == 0){
+	    self.data.push(['0','0']);
+	  }
+	  self.$('#mytable').jexcel({
+	    data: self.data, 
+	    colHeaders: self.colHeaders,
+	    colWidths: [30,40,190,140,100,50,100,50,80],
+	    onchange: change,
+	    columns: [
+	      {type: 'checkbox'},
+	    ]
+	  });
     },
     save: function(){
         var self = this;
