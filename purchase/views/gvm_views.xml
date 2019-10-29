@@ -105,6 +105,7 @@
 	            <field name="price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
 	            <field name="total_price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
 		    <field name="order_date"/>
+                    <field name="destination_date"/>
                     <field name="category" invisible="1"/>
 		    <field name="reorder_num" string="자재상태"/>
                     <field name="state"/>
@@ -112,8 +113,8 @@
 		    <field name="bad_state"/>
 		    <field name="stock_item"/>
 		    <field name="etc"/>
-		    <button name="button_destination" type="object" string="입고" class="oe_highlight" groups="purchase.group_purchase_manager" confirm="입고되었습니까?"/>
-		    <button name="button_request_receiving" type="object" string="출고요청" class="oe_highlight" confirm="출고 요청 하시겠습니까?"/>
+		    <button name="button_destination" type="object" string="입고" class="oe_highlight" attrs="{'invisible' :[('destination_date','!=',False)]}" groups="purchase.group_purchase_manager" confirm="입고되었습니까?"/>
+		    <button name="button_request_receiving" type="object" string="출고요청" class="oe_highlight" attrs="{'invisible' : [('state','!=','destination')]}" confirm="출고 요청 하시겠습니까?"/>
 		    <button name="button_receiving" type="object" string="출고" class="oe_highlight" attrs="{'invisible' :[('state','!=','request_receiving')]}" confirm="출고 승인 하시겠습니까?" groups="purchase.group_purchase_manager"/>
                 </tree>
 		</field>
@@ -167,7 +168,7 @@
 		</page>
 		<page string="이력">
 		<group>
-		    <field name="reorder_num"/>
+		    <field name="bad_state"/>
 		    <field name="reorder_text"/>
 		</group>
 		</page>
@@ -224,7 +225,7 @@
 			<pivot string="gvm product">
 				<field name="project_id" type="row"/>
 				<field name="destination_date" interval="month" type="col"/>
-				<field name="tax_price" type="measure"/>
+				<field name="total_price" type="measure"/>
 			</pivot>
 		</field>
 	</record>
@@ -239,6 +240,8 @@
                     <field name="specification"/>
                     <field name="create_uid"/>
 		    <field name="partner_id"/>
+		    <filter name="current_month" string="Current Month" domain="[('create_date','&lt;',(context_today()+relativedelta(months=1)).strftime('%%Y-%%m-01')),('create_date','&gt;=',time.strftime('%%Y-%%m-01'))]"/>
+		    <filter name="prev_month" string="Prev Month" domain="[('create_date','&gt;=',(context_today()-relativedelta(months=1)).strftime('%%Y-%%m-01')),('create_date','&lt;',time.strftime('%%Y-%%m-01'))]"/>
                     <filter name="cate_1" string="기구/가공품" domain="[('category','=',1)]"/>
                     <filter name="cate_2" string="기구/표준품" domain="[('category','=',2)]"/>
                     <filter name="cate_3" string="전장/가공품" domain="[('category','=',3)]"/>
@@ -246,6 +249,8 @@
                     <separator/>
                     <group expand="0" string="Group By">
                         <filter string="프로젝트" domain="[]" context="{'group_by':'project_id'}"/>
+                        <filter string="업체별" domain="[]" context="{'group_by':'partner_id'}"/>
+                        <filter string="요청일자별" domain="[]" context="{'group_by':'request_date'}"/>
                     </group>
                 </search>
             </field>

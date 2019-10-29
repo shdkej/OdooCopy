@@ -86,7 +86,15 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
 	  ['id','sequence_num','name','product_name','material','original_count','bad_state','purchase_by_maker','etc']
 	).filter(self.search_filter).limit(500).all().then(function(id){
 	  $.each(id, function(index, item){
-	    self.data.push([0, item.sequence_num, item.name, item.product_name, item.material, item.original_count, item.etc, item.bad_state, item.purchase_by_maker[1]]);
+	    self.data.push([0, //체크박스
+	                    item.sequence_num, 
+			    item.name, 
+			    item.product_name, 
+			    item.material, 
+			    item.original_count, 
+			    item.etc, 
+			    item.bad_state, 
+			    item.purchase_by_maker[1]]);
 	    self.data_id.push(item.id);
 	  })
 	});
@@ -129,6 +137,9 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
 	  $.each(self.update_content, function(id,row){
 	    reorder_text = '';
 	    row[0] = self.data_id[self.Numtmp_row[id]]; 
+	    if (row[7] == false){
+	      row[7] = 'A';
+	    }
 	    row[9] = selected_project.text();
 	    row[10] = selected_part.text();
 	    //$.each(self.Numtmp_col, function(id,col){
@@ -142,7 +153,7 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
 	  alert('save');
 	  this.search();
 	}else{
-	  alert('check project');
+	  alert('Please Check Project');
 	}
     },
     purchase: function(){

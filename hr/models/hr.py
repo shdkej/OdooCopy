@@ -149,7 +149,9 @@ class Employee(models.Model):
     city = fields.Char(related='address_id.city')
     login = fields.Char(related='user_id.login', readonly=True)
     last_login = fields.Datetime(related='user_id.login_date', string='Latest Connection', readonly=True)
-    holiday_count = fields.Integer('연차', default=0)
+    holiday_count = fields.Float('남은연차', default=0.0)
+    join_date = fields.Date('join_date')
+    holiday_max_count = fields.Integer('연차총개수')
 
     # image: all image fields are base64 encoded and PIL-supported
     image = fields.Binary("Photo", default=_default_image, attachment=True,
@@ -250,7 +252,7 @@ class Employee(models.Model):
 
     @api.onchange('user_id')
     def _onchange_user(self):
-        self.work_email = self.user_id.email
+        self.work_email = self.user_id.email    
         self.name = self.user_id.name
         self.image = self.user_id.image
 
@@ -305,7 +307,6 @@ class Employee(models.Model):
     def _message_auto_subscribe_notify(self, partner_ids):
         # Do not notify user it has been marked as follower of its employee.
         return
-
 
 class Department(models.Model):
 

@@ -78,6 +78,7 @@
 		     <button name="button_confirm" string="상신" type="object" states="temp" confirm="상신하시겠습니까?"/>
 		     <button name="button_check_all" string="전결" type="object" groups="hr.group_hr_manager" attrs="{'invisible':['|','|',('state','=','done'),('check_all','=',False),('check','=',False)]}" confirm="전결하시겠습니까?"/>
 		     <button name="button_reorder" string="재상신" type="object" states="cancel"/>
+		     <button name="button_reorder" string="재상신" type="object" states="remove"/>
                      <field name="state" widget="statusbar" statusbar_visible="write,check1,check2,done" readonly="1"/>
                   </header>
           <sheet>
@@ -86,7 +87,7 @@
              <field name="user_department" invisible="1"/>
              <field name="next_check" invisible="1"/>
          <div class="gvm_sign" id="gvm_sign">
-         <span><input type="button" id="add_check" name="0" class="check_button" value="추가" attrs="{'invisible':[('state','!=','write')]}"/></span>
+         <span><input type="button" id="add_check" name="0" class="check_button" value="추가" attrs="{'invisible':[('state','!=','temp')]}"/></span>
 	 <table width="100%">
 		<tbody>
 			<tr height="30" class="tr_head">
@@ -120,11 +121,15 @@
                                       <field name="request_check3" domain="[('job_id.no_of_hired_employee','>',3)]" attrs="{'invisible':[('check3','!=',False)]}" options="{'no_create_edit':True}"/></td>
 			</tr>
 			<tr height="30" attrs="{'invisible':[('sign_ids','not in',[2,3,5,6])]}">
+				<td class="td_check check_hidden" attrs="{'invisible':[('request_check1','=',False),('check1','=',False)]}"></td>
+				<td class="td_check check_hidden" attrs="{'invisible':[('request_check2','=',False),('check2','=',False)]}"></td>
 				<td class="tdcolor" attrs="{'invisible':[('sign_ids','not in',[2,3,5,6])]}">합의</td>
 				<td class="tdcolor" attrs="{'invisible':[('sign_ids','not in',[2,3,5,6])]}">합의</td>
 				<td class="tdcolor check_hidden" attrs="{'invisible':[('request_check6','=',False),('check6','=',False)]}">합의</td>
 			</tr>
 			<tr height="80" attrs="{'invisible':[('sign_ids','not in',[2,3,4,5,6])]}">
+				<td class="td_check check_hidden" attrs="{'invisible':[('request_check1','=',False),('check1','=',False)]}"></td>
+				<td class="td_check check_hidden" attrs="{'invisible':[('request_check2','=',False),('check2','=',False)]}"></td>
 				<td attrs="{'invisible':[('sign_ids','=',1)]}">
                                       <field name="check4" readonly="1"/>
 				      <field name="check4_date" readonly="1"/>
@@ -151,7 +156,9 @@
 			<td class="tdcolor">부서</td>
 			<td width="40%"><field name="dep_ids"/></td>
 			<td class="tdcolor">이름</td>
-			<td width="40%"><field name="user_id" readonly="1"/></td>
+			<td width="40%"><field name="user_id" readonly="1"/>
+			<span attrs="{'invisible':[('sign_ids','!=',1)]}"> (남은 연차개수 : <span id="red_text"><field name="holiday_count"/></span> 일)</span>
+			</td>
 		</tr>
 		<tr>
 			<td class="tdcolor">직급</td>
@@ -173,19 +180,25 @@
 			<td class="tdcolor">분류</td>
 			<td width="90%" colspan="3"><field name="rest1"/></td>
 		</tr>
-		<tr attrs="{'invisible':[('sign_ids','!=',6)]}">
-			<td class="tdcolor">기본 가지급액</td>
-			<td width="90%" colspan="3"><field name="basic_cost"/></td>
-		</tr>
 		<tr attrs="{'invisible':[('sign_ids','not in',[3,4])]}">
 			<td class="tdcolor">파일첨부</td>
                         <td width="90%" colspan="3"><field name="attachment" widget="many2many_binary"/></td>
 		</tr>
-		<tr>
-			<td class="tdcolor">내용</td>
-			<td width="90%" height="500" colspan="6" attrs="{'invisible':[('sign_ids','in',[2,3,5,6])]}" class="tdleft">
+                <tr attrs="{'invisible':[('sign_ids','!=',6)]}">
+                        <td class="tdcolor">출장목적</td>
+                        <td width="90%" height="400" colspan="6" class="tdleft">
                         <field name="content"/></td>
-                        <td width="90%" height="500" colspan="6" attrs="{'invisible':[('sign_ids','!=',6)]}">
+	        </tr>
+	        <tr attrs="{'invisible':[('sign_ids','!=',6)]}">
+	                <td class="tdcolor">비고</td>
+	                <td width="90%" height="150" colspan="6" class="tdleft">
+	                <field name="content"/></td>
+	        </tr>
+	        <tr attrs="{'invisible':[('sign_ids','in',6)]}">
+			<td class="tdcolor">내용</td>
+			<td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','in',[2,3,5,6])]}" class="tdleft">
+                        <field name="content"/></td>
+                        <td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','!=',6)]}">
                         출장 목적 : <field name="content2"/>
                         가지급신청 :
                         <field name="cost2">
@@ -197,7 +210,7 @@
                           </tree>
                         </field>
                         </td>
-                        <td width="90%" height="500" colspan="6" attrs="{'invisible':[('sign_ids','not in',[3,5])]}">
+                        <td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','not in',[3,5])]}">
 			<div id="exceltable">
                         <group>
                         <group>
@@ -221,12 +234,12 @@
                         <h3>최종 결산 금액 : <field name="finally_cost" widget="monet"/>원</h3>
                         </span>
                         </td>
-                        <td width="90%" height="500" colspan="6" attrs="{'invisible':[('sign_ids','!=',2)]}">
+                        <td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','!=',2)]}">
 			<div id="exceltable2">
                         <field name="timesheet">
                           <tree editable="1" decoration-info='weekend==True' decoration-bf='weekend==True'>
                             <field name="project_id" string="프로젝트" readonly="1"/>
-                            <field name="date" string="일자" readonly="1"/>
+                            <field name="date_from" widget="date" string="일자" readonly="1"/>
                             <field name="unit_amount" string="잔업시간" widget="float_time" readonly="1"/>
                             <field name="weekend" string="일자" invisible="1"/>
                           </tree>
@@ -253,6 +266,13 @@ window.print();
 $("#toexcel").click(function(){
 console.log('excel');
 });
+$(document).ready(function(){
+  var value = $("#red_text");
+  if (!value[0].innerText.indexOf('-')){
+    console.log(value[0].innerText);
+    value.css("color","red");
+  }
+});
 </script>
         </sheet>
                 </form>
@@ -276,8 +296,12 @@ console.log('excel');
                     <field name="name" string="번호"/>
                     <field name="user_id" string="작성자"/>
                     <field name="sign" string="결재문서"/>
-                    <field name="create_date" string="상신일"/>
+                    <field name="rest1" string="분류"/>
+                    <field name="date_from" string="시작일"/>
+                    <field name="date_to" string="종료일"/>
                     <field name="state" string="상태"/>
+                    <field name="create_date" string="작성일"/>
+                    <field name="confirm_date" string="상신일"/>
                     <field name="check1" invisible="1"/>
                     <field name="check2" invisible="1"/>
                     <field name="next_check" invisible="1"/>
@@ -316,7 +340,6 @@ console.log('excel');
                     <templates>
                         <t t-name="kanban-box">
                             <div t-attf-class="oe_kanban_card oe_kanban_global_click">
-                            <div t-if="['write', 'check1', 'check2','done','cancel'].indexOf(record.state.raw_value) > -1" name="stock_picking">
                                 <div t-attf-class="#{kanban_color(record.color.raw_value)}">
                                     <div class="o_kanban_card_header">
                                         <div class="o_kanban_card_header_title">
@@ -379,7 +402,6 @@ console.log('excel');
                                     </div>
                                 </div>
                             </div>
-                            </div>
                         </t>
                     </templates>
                 </kanban>
@@ -417,7 +439,7 @@ console.log('excel');
             <field name="name">Sign Content</field>
             <field name="res_model">gvm.signcontent</field>
             <field name="view_type">form</field>
-            <field name="view_mode">kanban,tree,form</field>
+            <field name="view_mode">tree,kanban,form</field>
             <field name="context">{}</field>
             <field name="domain">[('user_id','=',uid)]</field>
             <field name="search_view_id"/>

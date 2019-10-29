@@ -174,6 +174,7 @@
                 <header>
                     <button name="action_rfq_send" states="draft" string="Send RFQ by Email" type="object" context="{'send_rfq':True}" class="oe_highlight" groups="purchase.group_purchase_manager"/>
                     <button name="action_rfq_send" states="sent" string="Re-Send RFQ by Email" type="object" context="{'send_rfq':True}" groups="purchase.group_purchase_manager"/>
+                    <button name="action_rfq_send" states="draft" string="선입금요청" type="object" context="{'prepayment':True}" groups="purchase.group_purchase_manager"/>
                     <button name="print_quotation" string="Print RFQ" type="object" states="draft" class="oe_highlight" groups="purchase.group_purchase_manager"/>
                     <button name="print_quotation" string="Print RFQ" type="object" states="sent" groups="purchase.group_purchase_manager"/>
                     <button name="button_send_quotation" type="object" states="write" string="검토완료" class="oe_highlight"/>
@@ -247,6 +248,7 @@
 		      <field name="known_price" attrs="{'invisible':[('known_price','==',0)]}" groups="purchase.group_purchase_manager"/>
 		      <field name="price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
 		      <field name="total_price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
+		      <field name="bad_state"/>
 		      <field name="etc"/>
 		      <field name="emergency"/>
 		      <field name="stock_item"/>
@@ -383,7 +385,7 @@
 		      <field name="expected_date"/>
 		      <field name="destination_date"/>
 		      <field name="receiving_date"/>
-		      <field name="reorder_num"/>
+		      <field name="bad_state"/>
 		      <field name="original_count"/>
 		      <field name="total_count"/>
 		      <field name="known_price" attrs="{'invisible':[('known_price','==',0)]}" groups="purchase.group_purchase_manager"/>
@@ -498,6 +500,8 @@
                     <field name="order_man"/>
                     <field name="message_unread" invisible="1"/>
                     <field name="name" string="Reference"/>
+		    <field name="project_id"/>
+		    <field name="issue"/>
                     <field name="date_order" />
                     <field name="partner_id"/>
                     <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
