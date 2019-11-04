@@ -192,6 +192,7 @@ class PurchaseOrder(models.Model):
     partner_ids = fields.Many2many('res.partner', string='Vendor', states=READONLY_STATES, change_default=True, track_visibility='always')
     post_cost = fields.Integer('post')
 
+
     @api.depends('order_man')
     def _compute_department(self):
       for record in self:

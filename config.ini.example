@@ -1,0 +1,6 @@
+[TEST]
+TEST_SERVER = True
+
+[MAIL]
+MAIL_ID = <mail_id>
+MAIL_PW = <mail_password>

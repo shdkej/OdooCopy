@@ -2,6 +2,17 @@
 import smtplib
 from email.mime.text import MIMEText
 import os
+import ConfigParser
+import logging
+
+_logger = logging.getLogger(__name__)
+
+config = ConfigParser.ConfigParser()
+config.read('config.ini')
+
+is_test = config.get('TEST','TEST_SERVER')
+gvm_mail_id = config.get('MAIL','MAIL_ID')
+gvm_mail_pw = config.get('MAIL','MAIL_PW')
 
 class gvm_mail():
   def gvm_send_mail(self, uname, receiver, post, postId, po_num, model_name, menu_id, action_id):
@@ -10,18 +21,18 @@ class gvm_mail():
      name = uname.encode('utf-8')
      url = "https://erp.gvmltd.com/"
      subject = "[GVM]["+str(po_num)+"]"+ name + " 님이 "+ post +" 를 올렸습니다."
-     url = "https://erp.gvmltd.com/"
 
-     #real_server = os.getenv('GVM_ERP')
-     #if real_server == 'True':#True
-     if receiver:
-       for rc in receiver:
-           receivers.append(str(rc.work_email))
-     #else:#Blank
-     #  subject = '[TEST]' + subject
-     #  url = "http://192.168.0.3/"
+     if is_test == 'True':#True
+       subject = '[TEST]' + subject
+       url = "http://192.168.0.3/"
+     else:#Blank
+       if receiver:
+         for rc in receiver:
+	   if rc.work_email:
+             receivers.append(str(rc.work_email))
        
      receivers.append('nohsh@gvmltd.com')
+     _logger.warning(receivers)
 
      post_id = str(postId)
      html = str('<a href="' + url + 
@@ -34,6 +45,6 @@ class gvm_mail():
      msg['from'] = 'GVM_ERP'
 
      s = smtplib.SMTP_SSL(host='smtp.mailplug.co.kr', port=465)
-     s.login(user='nohsh@gvmltd.com', password='@shtjdgh312')
+     s.login(user=gvm_mail_id, password=gvm_mail_pw)
      s.sendmail(sender, receivers, msg.as_string())
      s.quit()

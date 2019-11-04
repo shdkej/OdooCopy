@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#/ -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import smtplib
@@ -112,7 +112,7 @@ class GvmSignContent(models.Model):
     sign_line = fields.One2many('gvm.signcontent.line','sign','sign_line')
 
     check_all = fields.Boolean('전결')
-    next_check = fields.Char(string='next_check',compute='_compute_next_check',store=True)
+    next_check = fields.Char(string='next_check',compute='_compute_next_check')
     state = fields.Selection([
         ('temp', '임시저장'),
         ('write', '상신'),
@@ -123,11 +123,33 @@ class GvmSignContent(models.Model):
         ('check5', '결재'),
         ('done', '결재완료'),
         ('cancel', '반려'),
-        ('remove', '취소')
-	], string='Status', readonly=True, index=True, copy=False, default='temp', track_visibility='onchange')
+        ('remove', '취소')])
     holiday_count = fields.Char('holiday_count', compute='_compute_holiday_count')
     confirm_date = fields.Date('confirm_date')
-    
+
+    #sh
+    #외근계획서
+    #외근목적
+    out_of_work_purpose = fields.Selection([
+            ('meeting','미팅'),
+            ('education','교육'),
+            ('exposition', '박람회'),
+            ('etc','기타(주요업무란에 상세기재)')])
+    #외근장소
+    out_of_work_area = fields.Char(string='out_of_work_area')
+    #외근동행자
+    out_of_work_companion = fields.Char(string='out_of_work_companion')
+    #이동수단
+    out_of_work_transport = fields.Selection([
+    	('car','자가용'),
+	('publictransport','대중교통'),
+       	('taxi','택시'),
+	('companycar','법인차량')])
+    out_of_work_content = fields.Text(string='content',store=True)
+    out_of_work_content2 = fields.Text(string='content2',store=True)
+    out_of_work_date_to = fields.Datetime(default = datetime.today())
+    out_of_work_date_from = fields.Datetime(default = datetime.today())
+	
     @api.depends('date_from','date_to','job_ids')
     def _compute_basic_cost(self):
         for record in self:
@@ -225,6 +247,7 @@ class GvmSignContent(models.Model):
 	  #다음 결제권한을  작성자에게 넘긴다. 
 	  record.next_check = record.writer
 	  return False
+
         for i in index:
 	  if record[i]:
             record.next_check = record[i].name
@@ -269,8 +292,7 @@ class GvmSignContent(models.Model):
             record.request_check5 = manager[0].id
           elif record.sign_ids == 5:
             record.request_check3 = boss
-            record.request_check4 = manager[2].id
-            record.request_check5 = manager[0].id
+            record.request_check5 = manager[2].id
 	  elif record.sign_ids == 6:
 	    record.request_check2 = boss
 	    record.request_check3 = ceo
@@ -313,7 +335,7 @@ class GvmSignContent(models.Model):
     @api.multi
     def button_check_all(self):
         self.sudo(self.user_id.id).write({'state':'done', 'check3': self.env.uid, 'next_check':self.request_check4.id or 'done', 'check3_date': datetime.now()})
-        return {}
+	return {}
     @api.multi
     def button_reorder(self):
         sign = self.env['gvm.signcontent'].search([('id','=',self.id)])
@@ -364,7 +386,7 @@ class GvmSignContent(models.Model):
     def sign_view(self):
         uname = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).id
         username = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).name
-        domain = ['|','&','|',('request_check1','=',uname),('request_check2','=',uname),('request_check3','=',uname),('next_check','=',username)]
+        domain = ['&','|','&','|',('request_check1','=',uname),('request_check2','=',uname),('request_check3','=',uname),('next_check','=',username),('state','!=','temp')]
         return {
             'name': _('Sign'),
             'domain': domain,
@@ -393,25 +415,38 @@ class GvmSignContent(models.Model):
             'limit': 80,
             'context': "{}"
         }
-    
+    #sh
+    def return_holiday_count(self):
+         #근태신청서
+	 if self.sign.num == 1:
+	  #연차갯수
+	  count = self.check_holiday_count()
+	  #로그인한 유저정보
+	  hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.user_department.id)])
+	  #총 연차갯수 + 사용했던 연차갯수
+	  h_count = float(hr_name.holiday_count) + float(count)
+	  # 적용
+	  hr_name.holiday_count = float(h_count)
+
+
     #sh
     #취소버튼
     def button_remove(self):
-        #근태신청서
+	#근태신청서
     	if self.sign.num == 1:
 	 #연차갯수
 	 count = self.check_holiday_count()
-	 #로그인 유저 정보
-	 hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
-	 #총 연차 갯수 + 사용한 연차 갯수
+	 #로그인한 유저정보
+	 hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.user_department.id)])
+	 #총 연차갯수 + 사용했던 연차갯수
 	 h_count = float(hr_name.holiday_count) + float(count)
-	 #적용
+	 # 적용
          hr_name.holiday_count = float(h_count)
-	 #상태정보 : 취소상태
+	 #상태 정보: 취소상태
          self.write({'state':'remove'})
-	#출장비정산서
-	elif self.sign.num ==3:
-	 #상태정보 :  취소상태
+	
+	elif self.sign.num == 3:
+	 #상태 정보: 취소상태
 	 self.write({'state':'remove'})
 
     @api.multi
@@ -494,30 +529,30 @@ class GvmSignContent(models.Model):
 	return res
 
     @api.multi
-    def unlink(self):
+    def unlink(self):        
         for record in self:
             if not record.user_id.name == self.env.user.name:
                 raise UserError(_('본인 외 삭제 불가'))
 	    else:
-	     #sh
-	     #삭제되었을경우 연차 갯수 복귀
-	     #근태신청서
-	     if self.sign.num == 1:
-	       #연차갯수
-	       count = self.check_holiday_count()
-	       #로그인 유저 정보
-	       hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
-	       #총 연차 갯수 + 사용한 연차 갯수
-	       h_count = float(hr_name.holiday_count) + float(count)
-	       #적용
-	       hr_name.holiday_count = float(h_count)
+	      #sh
+	      #삭제되었을경우 연차 갯수 복귀
+	      #근태신청서
+	      if self.sign.num == 1:
+	        #연차갯수
+	        count = self.check_holiday_count()
+	        #로그인한 유저정보
+	        hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.user_department.id)])
+	        #총 연차갯수 + 사용했던 연차갯수
+	        h_count = float(hr_name.holiday_count) + float(count)
+	        # 적용
+	        hr_name.holiday_count = float(h_count)
         return super(GvmSignContent, self).unlink()
 
     @api.multi
     def write(self, vals):
         allower = [1,168,294]
         for record in self:
-            if record.state in ['temp','write','cancel','remove']:
+            if record.state in ['temp','write','cancel']:
 	     if self.env.user.name != record.user_id.name and self.env.uid != 1:
                raise UserError(_('본인 외 수정 불가'))
             else:
@@ -571,8 +606,9 @@ class GvmSignLine(models.Model):
     _name = "gvm.signcontent.line"
     _order = ''
 
-    name = fields.Many2one('hr.employee',string='name')
-    sequence = fields.Integer('순번')
-    state = fields.Selection([('sign','결재'),('2','합의'),('3','참조'),('4','열람')])
-    sign = fields.Many2one('gvm.signcontent','sign')
+    name = fields.Many2one ( ' hr.employee ' ,string = ' name ' )
+    sequence = fields.Integer ( ' 순번 ' )
+    state = fields.Selection ([( ' sign ' , ' 결재 ' ), ( ' 2 ' , ' 합의 ' ), ( ' 3 ' , ' 참조 ' ), ( ' 4 ' , ' 열람 ' )])
+    sign = fields.Many2one ( ' gvm.signcontent ' , ' sign ' )
+
 
