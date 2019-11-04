@@ -26,11 +26,19 @@
 		    <t t-esc="widget.check_today_attendance"/>
                     <t t-if="widget.employee.attendance_state=='checked_out'" > 
                         <h2>출근</h2>
-                        <i class="fa fa-sign-in btn-primary o_hr_attendance_sign_in_out_icon"/>
+                        
+			<i class="fa fa-sign-in btn-primary o_hr_attendance_sign_in_out_icon"/>
+			<!--	
+			<i class="fa fa-arrow-circle-left btn-primary o_hr_attendance_sign_in_out_icon"/>
+			-->
                     </t>
                     <t t-if="widget.employee.attendance_state=='checked_in'">
                         <h2>퇴근</h2>
+			
                         <i class="fa fa-sign-out btn-primary o_hr_attendance_sign_in_out_icon"/>
+			<!--
+			<i class="fa fa-arrow-circle-right btn-primary o_hr_attendance_sign_in_out_icon"/>
+			-->
                     </t> 
                 </t>
                 <t t-if="!widget.employee">

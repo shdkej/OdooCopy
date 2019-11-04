@@ -219,7 +219,7 @@
                             <field name="partner_ref"/>
                             <field name="date_order"/>
                             <field name="order_man"/>
-                            <field name="permit_man"/>
+                            <field name="permit_man"/>    
                             <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
                             <field name="currency_id" groups="base.group_multi_currency"/>
                             <field name="is_shipped" invisible="1"/>
@@ -342,6 +342,8 @@
                             <field name="drawing_man"/>
                             <field name="order_man"/>
                             <field name="permit_man"/>
+			    <field name="request"/>
+			    <field name="charge"/>
                             <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
                             <field name="currency_id" groups="base.group_multi_currency"/>
                             <field name="is_shipped" invisible="1"/>

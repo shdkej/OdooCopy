@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#/ -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import smtplib
@@ -78,8 +78,8 @@ class GvmSignContent(models.Model):
     my_check_count = fields.Integer('my_check', compute='_compute_my_check_count')
     my_ref_count = fields.Integer('my_ref', compute='_compute_my_check_count')
     create_date = fields.Date('create_date',default=fields.Datetime.now)
-    date_from = fields.Date('start',required=True)
-    date_to = fields.Date('end')
+    date_from = fields.Date('start',required=True,default = datetime.today())
+    date_to = fields.Date('end',default = datetime.today())
     project = fields.Many2one('project.project',string='name')
     sign = fields.Many2one('gvm.sign', string='sign',required=True)
     cost = fields.One2many('gvm.signcontent.cost','sign', string='cost')
@@ -88,8 +88,8 @@ class GvmSignContent(models.Model):
     timesheet = fields.Many2many('account.analytic.line','sign','timesheet',domain="[('user_id','=',uid)]",store=True,compute='_onchange_timesheet')
     reason = fields.Text('reason')
     rest1 = fields.Selection([('day','연차'),
-      ('half','오전반차'),
-      ('half','오후반차'),
+      ('half_1','오전반차'),
+      ('half_2','오후반차'),
       ('quarter','반반차'),
       ('vacation','휴가'),
       ('refresh','리프레시 휴가'),
@@ -108,7 +108,7 @@ class GvmSignContent(models.Model):
     sign_line = fields.One2many('gvm.signcontent.line','sign','sign_line')
 
     check_all = fields.Boolean('전결')
-    next_check = fields.Char(string='next_check',compute='_compute_next_check',store=True)
+    next_check = fields.Char(string='next_check',compute='_compute_next_check')
     state = fields.Selection([
         ('temp', '임시저장'),
         ('write', '상신'),
@@ -119,11 +119,33 @@ class GvmSignContent(models.Model):
         ('check5', '결재'),
         ('done', '결재완료'),
         ('cancel', '반려'),
-        ('remove', '취소')
-	], string='Status', readonly=True, index=True, copy=False, default='temp', track_visibility='onchange')
+        ('remove', '취소')])
     holiday_count = fields.Char('holiday_count', compute='_compute_holiday_count')
     confirm_date = fields.Date('confirm_date')
-    
+
+    #sh
+    #외근계획서
+    #외근목적
+    out_of_work_purpose = fields.Selection([
+            ('meeting','미팅'),
+            ('education','교육'),
+            ('exposition', '박람회'),
+            ('etc','기타(주요업무란에 상세기재)')])
+    #외근장소
+    out_of_work_area = fields.Char(string='out_of_work_area')
+    #외근동행자
+    out_of_work_companion = fields.Char(string='out_of_work_companion')
+    #이동수단
+    out_of_work_transport = fields.Selection([
+    	('car','자가용'),
+	('publictransport','대중교통'),
+       	('taxi','택시'),
+	('companycar','법인차량')])
+    out_of_work_content = fields.Text(string='content',store=True)
+    out_of_work_content2 = fields.Text(string='content2',store=True)
+    out_of_work_date_to = fields.Datetime(default = datetime.today())
+    out_of_work_date_from = fields.Datetime(default = datetime.today())
+	
     @api.depends('date_from','date_to','job_ids')
     def _compute_basic_cost(self):
         for record in self:
@@ -206,8 +228,18 @@ class GvmSignContent(models.Model):
       index = ['request_check1','request_check2','request_check3','request_check4','request_check5','request_check6']
       for record in self:
         if record.state == 'cancel':
-          record.next_check = record.writer
-	  return False
+	   rest1 = record.rest1
+	   date_to = record.date_to
+	   date_from = record.date_from
+	   
+	   count = self.check_holiday_count(rest1,date_to,date_from)
+	   hr_name = self.env['hr.employee'].search([('name','=',record.user_id.name)])
+	   h_count = float(hr_name.holiday_count) +  float(count)
+	   record.holiday_count = float(h_count)
+	   _logger.warning(h_count)
+
+	   record.next_check = record.writer
+	   return False
         for i in index:
 	  if record[i]:
             record.next_check = record[i].name
@@ -370,7 +402,15 @@ class GvmSignContent(models.Model):
             'limit': 80,
             'context': "{}"
         }
-    
+    #sh
+    def button_consensus(self):
+        hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
+	#if hr_name == request_check4 || hr_name == request_check5:
+         #결제진행
+	#else
+        # raise UserError(_('결제 대상자가 아닙니다.'))
+
+
     #sh
     def button_remove(self):
     	if self.sign.num == 1:
@@ -380,6 +420,8 @@ class GvmSignContent(models.Model):
 	 _logger.warning(h_count)
          hr_name.holiday_count = float(h_count)
          self.write({'state':'remove'})
+	elif self.sign.num == 3:
+	 self.write({'state':'remove'})
 
     @api.multi
     def button_confirm(self):
@@ -420,19 +462,31 @@ class GvmSignContent(models.Model):
 	a.gvm_send_mail(self.env.user.name, receivers, '결재문서', postId, po_num, model_name, menu_id, action_id)
 
 
-    def check_holiday_count(self):
+    def check_holiday_count(self, rest1=None, date_to=None, date_from=None):
         count = 0
-	if self.rest1 in ['refresh','publicvacation','special']:
+	if rest1 != None:
+	  rest = rest1
+	  date_to = date_to
+	  date_from = date_from
+	else:
+	  rest = self.rest1
+	  date_to = self.date_to
+	  date_from = self.date_from
+
+	if rest1 in ['refresh','publicvacation','special']:
 	  return count
-	if self.rest1 == 'half':
+	if rest1 == 'half_1':
 	  count = 0.5
 	  return count
-	elif self.rest1 == 'quarter':
+	elif rest1 == 'half_2':
+	  count = 0.5
+	  return count
+	elif rest1 == 'quarter':
 	  count = 0.25
 	  return count
         fmt = '%Y-%m-%d'
-        d1 = datetime.strptime(self.date_to,fmt)
-        d2 = datetime.strptime(self.date_from,fmt)
+        d1 = datetime.strptime(date_to,fmt)
+        d2 = datetime.strptime(date_from,fmt)
         count = (d1-d2).days+1
 	return count
 

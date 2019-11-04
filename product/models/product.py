@@ -22,9 +22,12 @@ class ProductCategory(models.Model):
     parent_id = fields.Many2one('product.category', 'Parent Category', index=True, ondelete='cascade')
     child_id = fields.One2many('product.category', 'parent_id', 'Child Categories')
     type = fields.Selection([
-        ('view', 'View'),
-        ('normal', 'Normal')], 'Category Type', default='normal',
-        help="A category of the view type is a virtual category that can be used as the parent of another category to create a hierarchical structure.")
+	 ('consu' '소모품'),
+	 ('purchase','구매품'),
+	 ('process','가공품')])
+#        ('view', 'View'),
+#        ('normal', 'Normal')], 'Category Type', default='normal',
+#        help="A category of the view type is a virtual category that can be used as the parent of another category to create a hierarchical structure.")
     parent_left = fields.Integer('Left Parent', index=1)
     parent_right = fields.Integer('Right Parent', index=1)
     product_count = fields.Integer(
@@ -116,9 +119,25 @@ class ProductProduct(models.Model):
         digits=dp.get_precision('Product Price'),
         help="This is the sum of the extra price of all attributes")
     lst_price = fields.Float(
-        'Sale Price', compute='_compute_product_lst_price',
+        string = 'Price', compute='_compute_product_lst_price',
         digits=dp.get_precision('Product Price'), inverse='_set_product_lst_price',
         help="The sale price is managed from the product template. Click on the 'Variant Prices' button to set the extra attribute prices.")
+
+    #sh
+    etc = fields.Char(string = '비고', index=True)
+    model = fields.Char(string = '모델명', index=True)
+    maker = fields.Char(string = '제조사', index=True)
+    explain = fields.Char(string = '설명', index=True)
+    storage_location = fields.Char(string = '보관위치',index=True)
+    stock = fields.Float(string = '재고', index=True, default=1.0)
+    meterial = fields.Char(string = '재질', index=True)
+    reason = fields.Char(string = '재고 사유', index=True)
+#    edit_log = fields.One2many('product.log', 'productlog')
+    team = fields.Selection([('total','전체'),
+    ('control','제어'),
+    ('electric','전장'),
+    ('plan','설계')])
+
 
     default_code = fields.Char('Internal Reference', index=True)
     code = fields.Char('Internal Reference', compute='_compute_product_code')
@@ -569,6 +588,17 @@ class ProductProduct(models.Model):
         # When sale/product is installed alone, there is no need to create procurements. Only
         # sale_stock and sale_service need procurements
         return False
+
+#sh
+#class ProductLog(models.Model):
+#    _name = "product.log"
+#    _description = "product.log"
+#    _order = 'date'
+    
+#    productlog = fields.Many2one('product.product')
+#    log_date = fields.Datetime(string='수정날짜')
+#    log_user = fields.Char(string='수정자')
+#    log = fields.Char(string='수정내용')
 
 
 class ProductPackaging(models.Model):

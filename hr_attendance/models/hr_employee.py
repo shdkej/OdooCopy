@@ -3,7 +3,6 @@
 
 from random import choice
 from string import digits
-from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from odoo.exceptions import UserError
 from odoo import models, fields, api, exceptions, _, SUPERUSER_ID
@@ -86,6 +85,25 @@ class HrEmployee(models.Model):
                 return {'warning': _('Wrong PIN')}
 	
         return self.attendance_action(next_action, address)
+    
+    def _Check_check_out_time(self):
+        """ 퇴근을 하지 않았을경우, 다음날 00시 00분 00초에 자동으로  퇴근이 된다."""
+        date = datetime.now()
+        hour = date.hour
+        minute = date.minute
+ 	_logger.warning("test")
+
+        check_out_time = datetime.now()
+        check_out_time = check_out_time.replace(hour=15, minute=0,second=0)
+						    
+        hr_attendance = self.env['hr.attendance'].search([('check_out', '=', False)])
+  	_logger.warning("test1")					         
+        if hour == 15 and minute == 00:
+         for att in hr_attendance:
+	     _logger.warning("test2")
+	     att.write({
+		     'check_out':check_out_time
+	     })
 
     @api.multi
     def attendance_action(self, next_action, location):
@@ -105,6 +123,7 @@ class HrEmployee(models.Model):
             modified_attendance = self.sudo().attendance_action_change()
         action_message['attendance'] = modified_attendance.read()[0]
         return {'action': action_message}
+									          
 
     @api.multi
     def attendance_action_change(self, location):

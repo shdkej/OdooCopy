@@ -130,6 +130,10 @@ class GvmPurchaseProduct(models.Model):
     purchase_product = fields.Many2many('gvm.product',string='product')
     release_place = fields.Many2one('gvm.product.release',string='출고지')
 
+    #sh
+    request = fields.Char(string='재발주요청사유',index=True)
+    charge = fields.Char(string='출고 담당자',index=True)
+
     @api.depends('order_man')
     def _compute_department(self):
       for record in self:

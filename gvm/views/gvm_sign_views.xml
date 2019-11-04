@@ -160,11 +160,37 @@
 			<span attrs="{'invisible':[('sign_ids','!=',1)]}"> (남은 연차개수 : <span id="red_text"><field name="holiday_count"/></span> 일)</span>
 			</td>
 		</tr>
-		<tr>
+		<tr attrs="{'invisible':[('sign_ids','in', 9)]}">
 			<td class="tdcolor">직급</td>
 			<td width="40%"><field name="job_ids"/></td>
 			<td class="tdcolor">기간</td>
 			<td width="40%"><field name="date_from"/> 부터 <field name="date_to"/></td>
+		</tr>
+		<tr attrs="{'invisible':[('sign_ids','!=', 9)]}">
+		        <td class="tdcolor">직급</td>
+		        <td width="40%"><field name="job_ids"/></td>
+		        <td class="tdcolor">기간</td>
+		        <td width="40%"><field name="out_of_work_date_from"/> 부터 <field name="out_of_work_date_to"/></td>
+	        </tr>
+		<tr attrs="{'invisible':[('sign_ids','!=', 9)]}">
+		        <td class = "tdcolor">외근 동행자</td>
+			<td width="40%"><field name='out_of_work_companion'/></td>    
+			<td class = "tdcolor">이동 수단</td>
+			<td width="40%"><field name='out_of_work_transport'/></td>    
+		</tr>
+		<tr attrs="{'invisible':[('sign_ids','!=', 9)]}">
+		        <td class = "tdcolor" width="10%">외근 목적</td>
+		        <td width = "40%"><field name='out_of_work_purpose'/></td>    
+		        <td class = "tdcolor" width="10%">외근 지역</td>
+		        <td width = "40%"><field name='out_of_work_area'/></td>    
+		</tr>
+		<tr attrs="{'invisible':[('sign_ids','!=', 9)]}">
+		        <td class = "tdcolor">주요 업무<br/>(내용)</td>
+		        <td width="90%" height="400" colspan="6"><field name="out_of_work_content"/></td>
+		</tr>        
+		<tr attrs="{'invisible':[('sign_ids','!=', 9)]}">
+		        <td class = "tdcolor">기타</td>
+		        <td width="90%" height="400" colspan="6"><field name="out_of_work_content2"/></td>    
 		</tr>
 		<tr attrs="{'invisible':[('sign_ids','!=',3)]}">
 			<td class="tdcolor">지급 된 비용</td>
@@ -172,7 +198,7 @@
 			<td class="tdcolor">문서첨부</td>
 			<td width="40%"><field name="relate_sign" options="{'no_create_edit':True}" domain="[('user_id','=',user_id)]"/></td>
 		</tr>
-		<tr attrs="{'invisible':[('sign_ids','in',[1,2,5])]}">
+		<tr attrs="{'invisible':[('sign_ids','in',[1,2,5,9])]}">
 			<td class="tdcolor">프로젝트</td>
 			<td width="90%" colspan="3"><field name="project"/></td>
 		</tr>
@@ -194,9 +220,9 @@
 	                <td width="90%" height="150" colspan="6" class="tdleft">
 	                <field name="content"/></td>
 	        </tr>
-	        <tr attrs="{'invisible':[('sign_ids','in',6)]}">
+	        <tr attrs="{'invisible':[('sign_ids','in',[6,9])]}">
 			<td class="tdcolor">내용</td>
-			<td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','in',[2,3,5,6])]}" class="tdleft">
+			<td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','in',[2,3,5,6,9])]}" class="tdleft">
                         <field name="content"/></td>
                         <td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','!=',6)]}">
                         출장 목적 : <field name="content2"/>
