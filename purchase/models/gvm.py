@@ -260,7 +260,6 @@ class GvmProduct(models.Model):
         if record.receiving_date:
           record.state = 'done'
   	  record.receiving_man = self.env.user.name
-	  
 
     @api.multi
     def purchase_view(self):
@@ -270,6 +269,21 @@ class GvmProduct(models.Model):
             'res_model': 'gvm.purchase_product',
             'type': 'ir.actions.act_window',
             'view_id': False,
+            'view_mode': 'tree,form',
+            'view_type': 'form',
+            'limit': 80,
+            'context': "{}"
+        }
+
+    @api.multi
+    def purchase_project_view(self):
+        return {
+            'name': _('Project Manage'),
+            'domain': '[]',
+            'res_model': 'project.project',
+            'type': 'ir.actions.act_window',
+            'view_id': False,
+            'target': 'new',
             'view_mode': 'tree,form',
             'view_type': 'form',
             'limit': 80,
@@ -291,17 +305,27 @@ class GvmProduct(models.Model):
           product_name = val[3].encode('utf-8')
           product_material = val[4].encode('utf-8')
           product_original_count = val[5].encode('utf-8')
-          product_etc = val[6].encode('utf-8') if val[6].encode('utf-8') != 'false' else ''
+          product_etc = val[6].encode('utf-8')
           product_bad_state = val[7]
           product_project_id = val[9].encode('utf-8')
 
+          # 수정 시 표시 붙여주기
 	  if (product_bad_state == False or product_bad_state.upper().encode('utf-8') == 'FALSE'):
 	    product_bad_state = 'A'
 	  if str(product_checkbox) != 'None':
   	    Update = Product.search([('id','=',product_checkbox)])
+            product_seq_num = '' 
+            if Update.sequence_num:
+                if Update.sequence_num.find('-') != -1:
+                  seq = Update.sequence_num.split('-') # 1-1
+                  product_seq_num = seq[0] + '-' + str((int(seq[1]) + 1))
+                else:
+                  product_seq_num = Update.sequence_num + '-' + '1'
+
 	    Update.write({
 	    	'state' : 'bad',
 		'bad_state': product_bad_state.upper().encode('utf-8'), 
+                'sequence_num': product_seq_num,
 	    })
 
             # reorder text
@@ -339,6 +363,7 @@ class GvmProduct(models.Model):
 			'issue':part_id,
 			'request_date':datetime.today() + timedelta(days=7),
 			'order_man':request.env.user.name,
+                        'etc':product_etc,
 	    })
 	    PONum.write({
 			'project_set':[(4, project_id)],

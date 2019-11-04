@@ -265,13 +265,23 @@
             <field name="code">action = env["gvm.product"].purchase_view()</field>
             <field name="name">purchase</field>
         </record>
+        <record id="act_purchase_project" model="ir.actions.server">
+            <field name="sequence" eval="5"/>
+            <field name="state">code</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_gvm_product"/>
+            <field name="condition">True</field>
+            <field name="code">action = env["gvm.product"].purchase_project_view()</field>
+            <field name="name">purchase_project</field>
+        </record>
         <record model="ir.ui.view" id="purchase_search_table_view">
             <field name="name">gvm.product.graph</field>
             <field name="model">gvm.product</field>
             <field name="arch" type="xml">
                 <form>
 		  <header>
-                  <button type="action" string="purchase" name="%(act_purchase_product)d" class="oe_highlight"></button>
+                  <button type="action" string="발주요청서" name="%(act_purchase_product)d" class="oe_highlight"></button>
+                  <button type="action" string="프로젝트관리" name="%(act_purchase_project)d" class="oe_highlight"></button>
 		  </header>
 		  <sheet>
 		    <widget type="search_table"/>
@@ -305,7 +315,7 @@
         <field name="search_view_id" eval="False"/> <!-- Force empty -->
         <field name="view_id" ref="gvm_product_tree_receiving"/>
         <field name="context">{"search_default_filter_to_sell":1}</field>
-        <field name="domain">[('state','=',['destination','request_receiving','done'])]</field>
+        <field name="domain">[('state','in',['destination','request_receiving','done'])]</field>
     </record>
     <record id="action_gvm_product_ready" model="ir.actions.act_window">
         <field name="name">제품</field>
@@ -371,7 +381,7 @@
 	    </field>
 	</record>
     <record id="action_gvm_purchase_product" model="ir.actions.act_window">
-        <field name="name">발주요청목록</field>
+        <field name="name">발주 검토완료항목</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">gvm.purchase_product</field>
         <field name="view_type">form</field>

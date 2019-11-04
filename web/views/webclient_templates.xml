@@ -180,8 +180,7 @@
         <script type="text/javascript" src="/web/static/src/js/views/search_menus.js"></script>
         <script type="text/javascript" src="/web/static/src/js/views/tree_view.js"></script>
         <script type="text/javascript" src="/web/static/src/js/apps.js"></script>
-	<script type="text/javascript" src="/web/static/src/js/framework/jexcel-master/dist/js/jquery.jexcel.js"></script>
-	<script src="//cdn.rawgit.com/rainabba/jquery-table2excel/1.1.0/dist/jquery.table2excel.min.js"></script>
+        <script type="text/javascript" src="/web/static/src/js/framework/jexcel-master/dist/js/jquery.jexcel.js"></script>
     </template>
 
     <template id="web.assets_frontend">

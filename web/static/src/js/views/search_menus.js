@@ -299,56 +299,57 @@ return Widget.extend({
                 this.commit_search();
             }
         },
-	'change #gvm_search': function(){
-	    for (var i=0; i<2; i++){
-	       $('.o_facet_remove').trigger('click');
-	       if (this.searchview.model == 'gvm.product'){
-	         this.gvm_commit_search('product');
-	       }
-	       else{this.gvm_commit_search();}
-	    }
-	    this.gvm_search_part();
-	    $('#gvm_search_export').show();
-	},
-	'change #gvm_search_part': function(){
-	    var part = $('#gvm_search_part option:selected').text();
-	    if (this.tmp_part_name != false){
-	      var remove_facet = $('.o_facet_values span:contains("'+this.tmp_part_name+'")');
-	      $(remove_facet).parent().siblings('.o_facet_remove').trigger('click');
-	    }
+        'change #gvm_search': 'change_project',
+        'change #gvm_search_part': function(){
+            var part = $('#gvm_search_part option:selected').text();
+            if (this.tmp_part_name != false){
+              var remove_facet = $('.o_facet_values span:contains("'+this.tmp_part_name+'")');
+              $(remove_facet).parent().siblings('.o_facet_remove').trigger('click');
+            }
 
-	    this.gvm_commit_search('1');
-	    this.tmp_part_name = part;
-	},
-	'click #gvm_search_export': function(){
-	    var project_id = $('#gvm_search option:selected').val();
-	    var url = window.location.origin;
-	    location.href = url + '/web/export/gvm_xls?project_id=' + project_id;
-	},
-    },
+            this.gvm_commit_search('1');
+            this.tmp_part_name = part;
+        },
+        'click #gvm_search_export': function(){
+            var project_id = $('#gvm_search option:selected').val();
+            var url = window.location.origin;
+            location.href = url + '/web/export/gvm_xls?project_id=' + project_id;
+        },
+   },
     init: function (parent, filters) {
         this._super(parent);
         this.filters = filters || [];
         this.searchview = parent;
         this.propositions = [];
         this.custom_filters_open = false;
-	this.tmp_part_name = '';
+        this.tmp_part_name = '';
+    },
+    change_project: function(){
+        for (var i=0; i<2; i++){
+           $('.o_facet_remove').trigger('click');
+           if (this.searchview.model == 'gvm.product'){
+             this.gvm_commit_search('product');
+           }
+           else{this.gvm_commit_search();}
+        }
+        this.gvm_search_part();
+        $('#gvm_search_export').show();
     },
     gvm_search_part: function(){
         var Part = new Model('project.issue');
-	var search_part = $('#gvm_search_part')
-	$('#gvm_search_part option').remove();
+        var search_part = $('#gvm_search_part')
+        $('#gvm_search_part option').remove();
         search_part.append('<option id="0" value="0"></option>');
-	if ($('#gvm_search option:eq(1)') !== 'undefined'){
-	  search_part.show();
-	  Part.query(['name']).filter([['project_id','=',$('#gvm_search option:selected').text()]]).all().then(function(id){
-	    $.each(id, function(index, item){
-              search_part.append('<option id="'+index+'" value="'+index+'">'+item.name+'</option>');
-	    });
-	  });
-	}else{
-	  search_part.hide();
-	}
+        if ($('#gvm_search option:eq(1)') !== 'undefined'){
+          search_part.show();
+          Part.query(['name']).filter([['project_id','=',$('#gvm_search option:selected').text()]]).all().then(function(id){
+            $.each(id, function(index, item){
+                  search_part.append('<option id="'+index+'" value="'+index+'">'+item.name+'</option>');
+            });
+          });
+        }else{
+          search_part.hide();
+        }
     },
     gvm_commit_search: function (state) {
         var search = $('#gvm_search option:selected').text()
@@ -358,32 +359,32 @@ return Widget.extend({
                filters_widgets = _.map(filters, function (filter) {
                return new search_inputs.Filter(filter, this);
                }),
-               filter_group = new search_inputs.FilterGroup(filters_widgets, this.searchview),
-               facets = filters_widgets.map(function (filter) {
-	           if (state == 1){
-                     filter.attrs.domain[0] = ['issue','ilike', search_part];
-                     filter.attrs.string = search_part;
-		   }else if(state == 'product'){
-                     filter.attrs.domain[0] = ['project_set','ilike', search];
-                     filter.attrs.string = search;
-		   }else{
-                     filter.attrs.domain[0] = ['project_id','ilike', search];
-                     filter.attrs.string = search;
-		   }
-                   return filter_group.make_facet([filter_group.make_value(filter)]);
-               });
-        filter_group.insertBefore(this.$add_filter);
-        $('<li class="divider">').insertBefore(this.$add_filter);
-        this.searchview.query.add(facets, {silent: true});
-        this.searchview.query.trigger('reset');
+            filter_group = new search_inputs.FilterGroup(filters_widgets, this.searchview),
+            facets = filters_widgets.map(function (filter) {
+             if (state == 1){
+                         filter.attrs.domain[0] = ['issue','ilike', search_part];
+                         filter.attrs.string = search_part;
+             }else if(state == 'product'){
+                         filter.attrs.domain[0] = ['project_set','ilike', search];
+                         filter.attrs.string = search;
+             }else{
+                         filter.attrs.domain[0] = ['project_id','ilike', search];
+                         filter.attrs.string = search;
+             }
+             return filter_group.make_facet([filter_group.make_value(filter)]);
+            });
+         filter_group.insertBefore(this.$add_filter);
+         $('<li class="divider">').insertBefore(this.$add_filter);
+         this.searchview.query.add(facets, {silent: true});
+         this.searchview.query.trigger('reset');
 
-        _.invoke(this.propositions, 'destroy');
-        this.propositions = [];
-        this.append_proposition();
-        this.toggle_custom_filter_menu(false);
-        this.remove_proposition(this.$add_filter);
+         _.invoke(this.propositions, 'destroy');
+         this.propositions = [];
+         this.append_proposition();
+         this.toggle_custom_filter_menu(false);
+         this.remove_proposition(this.$add_filter);
+
     },
-
     start: function () {
         var self = this;
         this.$menu = this.$('.o_filters_menu');

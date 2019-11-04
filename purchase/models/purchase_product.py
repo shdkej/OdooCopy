@@ -233,9 +233,13 @@ class GvmPurchaseProduct(models.Model):
 	  issue = last_id.issue
           if last_id.project_id and issue:
 	    issue.project_id = last_id.project_id.id
+          issue_id = ''
+          if issue:
+            issue_id = issue.id
 	  for pd in last_id.product:
 	    pd.write({
 	      'drawing_man':last_id.drawing_man.name,
+              'issue': issue_id
 	    })
 	return res
 

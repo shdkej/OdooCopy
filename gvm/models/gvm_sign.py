@@ -270,8 +270,7 @@ class GvmSignContent(models.Model):
             record.request_check5 = manager[0].id
           elif record.sign_ids == 5:
             record.request_check3 = boss
-            record.request_check4 = manager[2].id
-            record.request_check5 = manager[0].id
+            record.request_check5 = manager[2].id
 	  elif record.sign_ids == 6:
 	    record.request_check2 = boss
 	    record.request_check3 = ceo
@@ -365,7 +364,7 @@ class GvmSignContent(models.Model):
     def sign_view(self):
         uname = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).id
         username = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).name
-        domain = ['|','&','|',('request_check1','=',uname),('request_check2','=',uname),('request_check3','=',uname),('next_check','=',username)]
+        domain = ['&','|','&','|',('request_check1','=',uname),('request_check2','=',uname),('request_check3','=',uname),('next_check','=',username),('state','!=','temp')]
         return {
             'name': _('Sign'),
             'domain': domain,

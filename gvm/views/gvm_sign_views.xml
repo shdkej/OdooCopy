@@ -71,8 +71,8 @@
                 <form string="Sign">
                   <header>
                      <button name="button_remove" string="취소" type="object" states="write" groups="hr.group_hr_manager"  confirm="취소하시겠습니까?" attrs="{'invisible':[('sign_ids','in',[2,4,5,6])]}"/>
-                     <input type="button" class="print" name="print" id="print" value="프린트"/>
-                     <input type="button" class="toexcel" name="toexcel" id="toexcel" value="엑셀"/>
+                     <input style="position:fixed;left:620px" type="button" class="print" name="print" id="print" value="프린트"/>
+                     <input style="position:fixed;left:580px" type="button" class="toexcel" name="toexcel" id="toexcel" value="엑셀"/>
 		     <span attrs="{'invisible':[('check','=',False)]}"><input type="button" class="sign_button" id="sign_button" value="결재"/></span>
 		     <span attrs="{'invisible':[('check','=',False)]}"><input type="button" class="sign_button" id="deny_button" value="반려"/></span>
 		     <button name="button_confirm" string="상신" type="object" states="temp" confirm="상신하시겠습니까?"/>
@@ -132,17 +132,17 @@
 				<td class="td_check check_hidden" attrs="{'invisible':[('request_check2','=',False),('check2','=',False)]}"></td>
 				<td attrs="{'invisible':[('sign_ids','=',1)]}">
                                       <field name="check4" readonly="1"/>
-				      <field name="check4_date" readonly="1"/>
+				                    <span style="font-size:5px"><field name="check4_date" readonly="1"/></span>
                                       <span attrs="{'invisible':[('request_check4','=',False)]}"> 결재예정 : </span>
                                       <field name="request_check4" domain="[('job_id.no_of_hired_employee','>',3)]" attrs="{'invisible':[('check4','!=',False)]}" options="{'no_create_edit':True,'no_create':True}"/></td>
 				<td attrs="{'invisible':[('sign_ids','=',1)]}">
                                       <field name="check5" readonly="1"/>
-                                      <field name="check5_date" readonly="1"/>
+                                      <span style="font-size:5px"><field name="check5_date" readonly="1"/></span>
                                       <span attrs="{'invisible':[('request_check5','=',False)]}"> 결재예정 : </span>
                                       <field name="request_check5" domain="['|',('job_id.no_of_hired_employee','>',3),('department_id','=',10)]" attrs="{'invisible':[('check5','!=',False)]}" options="{'no_create_edit':True,'no_create':True}"/></td>
 				<td class="td_check check_hidden" attrs="{'invisible':[('request_check6','=',False),('check6','=',False)]}">
 				<field name="check6" readonly="1"/>
-				<field name="check6_date" readonly="1"/>
+                                      <span style="font-size:5px"><field name="check6_date" readonly="1"/></span>
                                       <span attrs="{'invisible':[('request_check6','=',False)]}"> 결재예정 : </span>
                                       <field name="request_check6" domain="[('job_id.no_of_hired_employee','>',3)]" attrs="{'invisible':[('check6','!=',False)]}" options="{'no_create_edit':True,'no_create':True}"/></td>
 			</tr>
