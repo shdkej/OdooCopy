@@ -10,11 +10,21 @@ from odoo import api, fields, models, tools, _
 from odoo.exceptions import ValidationError, except_orm
 
 
+from datetime import datetime
+import datetime as dt
+
+import logging
+_logger = logging.getLogger(__name__)
+
 class ProductTemplate(models.Model):
     _name = "product.template"
     _inherit = ['mail.thread']
     _description = "Product Template"
     _order = "name"
+
+    #sh
+    edit_log = fields.One2many('product.log', 'productlog')
+
 
     def _get_default_category_id(self):
         if self._context.get('categ_id') or self._context.get('default_categ_id'):
@@ -39,8 +49,9 @@ class ProductTemplate(models.Model):
         help="A description of the Product that you want to communicate to your customers. "
              "This description will be copied to every Sale Order, Delivery Order and Customer Invoice/Refund")
     type = fields.Selection([
-        ('consu', _('Consumable')),
-        ('service', _('Service'))], string='Product Type', default='consu', required=True,
+        ('consu', '소모품'),
+        ('purchase', '구매품'),
+	('process','가공품')], string='Product Type', default='consu', required=True,
         help='A stockable product is a product for which you manage stock. The "Inventory" app has to be installed.\n'
              'A consumable product, on the other hand, is a product for which stock is not managed.\n'
              'A service is a non-material product you provide.\n'
@@ -48,7 +59,7 @@ class ProductTemplate(models.Model):
              'the e-commerce such as e-books, music, pictures,... The "Digital Product" module has to be installed.')
     rental = fields.Boolean('Can be Rent')
     categ_id = fields.Many2one(
-        'product.category', 'Internal Category',
+        'product.category',# 'Internal Category',
         change_default=True, default=_get_default_category_id, domain="[('type','=','normal')]",
         required=True, help="Select category for the current product")
 
@@ -57,7 +68,7 @@ class ProductTemplate(models.Model):
 
     # price fields
     price = fields.Float(
-        'Price', compute='_compute_template_price', inverse='_set_template_price',
+       string = '가격', compute='_compute_template_price', inverse='_set_template_price',
         digits=dp.get_precision('Product Price'))
     list_price = fields.Float(
         'Sale Price', default=1.0,
@@ -260,7 +271,7 @@ class ProductTemplate(models.Model):
             self.uom_po_id = self.uom_id.id
 
     @api.model
-    def create(self, vals):
+    def create(self, vals): 
         ''' Store the initial standard price in order to be able to retrieve the cost of a product template for a given date'''
         # TDE FIXME: context brol
         tools.image_resize_images(vals)
@@ -286,6 +297,7 @@ class ProductTemplate(models.Model):
 
     @api.multi
     def write(self, vals):
+    	self.write_log()
         tools.image_resize_images(vals)
         res = super(ProductTemplate, self).write(vals)
         if 'attribute_line_ids' in vals or vals.get('active'):
@@ -293,7 +305,18 @@ class ProductTemplate(models.Model):
         if 'active' in vals and not vals.get('active'):
             self.with_context(active_test=False).mapped('product_variant_ids').write({'active': vals.get('active')})
         return res
+    #sh
+    def write_log(self):
+        _logger.warning('test')
 
+	product = self.env['product.product'].search()
+	_logger.warning(product.etc)
+	_logger.warning(self.etc)
+	for record in self:
+	 _logger.warning(record.etc)
+	 for log in record.edit_log:
+	   log.log_user = hr.name 
+	   
     @api.multi
     def copy(self, default=None):
         # TDE FIXME: should probably be copy_data
@@ -412,3 +435,15 @@ class ProductTemplate(models.Model):
                     variant.write({'active': False})
                     pass
         return True
+
+ #sh
+class ProductLog(models.Model):
+   _name = "product.log"
+   _description = "product.log"
+   _order = ''
+	
+   productlog = fields.Many2one('product.template')
+   log_date = fields.Datetime(string='수정날짜',required=True, default= datetime.today())
+   log_user = fields.Char(string='수정자')
+   log = fields.Char(string='수정내용')
+

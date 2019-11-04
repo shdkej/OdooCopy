@@ -64,9 +64,9 @@ var ListView = View.extend({
                 this.$buttons.width(this.$buttons.width() + 1).openerpBounce();
             }
         },
-	'change #radiogroup': 'on_change_check',
-	'change .o_checkbox': 'on_change_check',
-	'paste input': 'paste_test',
+        'change #radiogroup': 'on_change_check',
+        'change .o_checkbox': 'on_change_check',
+        'paste input': 'paste_test',
     },
     icon: 'fa-list-ul',
 
@@ -294,7 +294,7 @@ var ListView = View.extend({
      */
     render_buttons: function($node) {
         if (!this.$buttons) {
-	    this.gvm_search();
+            this.gvm_search();
             this.$buttons = $(QWeb.render("ListView.buttons", {'widget': this}));
             this.$buttons.on('click', '.o_list_button_add', this.proxy('do_add_record'));
             this.$buttons.appendTo($node);
@@ -302,16 +302,18 @@ var ListView = View.extend({
     },
     gvm_search: function(){
         var self = this;
-	$('#gvm_search option').remove();
-	$('#gvm_search').append('<option id="0" value="0"></option>');
-        var Project = new Model('project.project');
-        Project.query(['name'],['id']).all().then(function(id){
-          $.each(id, function(index, item){
-            $('#gvm_search').append('<option id="'+index+'" value="'+item.id+'">'+item.name+'</option>');
-          });
-       });
+        var tree_data_array = [];
+        $('#gvm_search option').remove();
+        $('#gvm_search').append('<option id="0" value="0"></option>');
+            var Project = new Model('project.project');
+            Project.query(['name'],['id']).all().then(function(id){
+              $.each(id, function(index, item){
+                $('#gvm_search').append('<option id="'+index+'" value="'+item.id+'">'+item.name+'</option>');
+              });
+           });
     },
-    on_change_check: function(){
+ 
+   on_change_check: function(){
 	    if ($('#radiogroup:checked').length >0){
 	      $('#order_button').show();
 	      $('#quotation_change_button').show();
@@ -330,7 +332,7 @@ var ListView = View.extend({
 	      $('#receive_button').hide();
 	    }
     },
-    paste_test: function(e){
+   paste_test: function(e){
       var COLUMN_COUNT = 15;
       setTimeout(function(){
         var text = $(e.target).val();

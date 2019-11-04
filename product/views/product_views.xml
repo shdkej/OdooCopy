@@ -30,26 +30,28 @@
                         <h1><field name="name" placeholder="Product Name"/></h1>
                         <div name="options" groups="base.group_user">
                             <div>
-                                <field name="sale_ok"/>
-                                <label for="sale_ok"/>
+                                <field name="sale_ok" style="display:none" />
+                                <label for="sale_ok" style="display:none"/>
                             </div>
                             <div>
-                                <field name="purchase_ok"/>
-                                <label for="purchase_ok"/>
+                                <field name="purchase_ok" style="display:none" />
+                                <label for="purchase_ok" style="display:none" />
                             </div>
                         </div>
                     </div>
                     <notebook>
                         <page string="General Information" name="general_information">
                             <group>
+			        
                                 <group name="group_general">
-                                    <field name="type"/>
-                                    <field name="categ_id" string="Internal Category"/>
+                                    <field name="type"  />
+                                    <field name="categ_id"  />
                                 </group>
+				
                                 <group name="group_standard_price">
-                                    <field name="list_price" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-                                    <label for="standard_price" groups="base.group_user"/>
-                                    <div name="standard_price_uom" groups="base.group_user">
+                                    <field name="list_price" widget='monetary' options="{'currency_field': 'currency_id'}" />
+                                    <label for="standard_price" groups="base.group_user" style="display:none" />
+                                    <div name="standard_price_uom" groups="base.group_user" style="display:none">
                                         <field name="standard_price" widget='monetary' options="{'currency_field': 'currency_id'}" class="oe_inline"/>
                                     </div>
                                     <field name="company_id" groups="base.group_multi_company"
@@ -60,10 +62,21 @@
                                 </group>
                             </group>
                         </page>
-                        <page string="Sales" attrs="{'invisible':[('sale_ok','=',False)]}" name="sales">
+		 	<page string="로그">
+				<group>
+			            <field name="edit_log">
+			                   <tree>
+			                       <field name="log_date"/> 
+				               <field name="log_user"/> 
+					       <field name="log"/> 
+					   </tree>
+				    </field>
+				</group>
+			</page>
+                        <page string="Sales" attrs="{'invisible':[('sale_ok','=',False)]}" name="sales" style="display:none" >
                             <div name="pricelist_item" groups="product.group_product_pricelist">
                                 <separator string="Pricing"/>
-                                <field name="item_ids" nolabel="1" context="{'default_base':'list_price', 'default_applied_on' :'1_product'}">
+                                <field name="item_ids" nolabel="1" context="{'default_base':'list_price', 'default_applied_on' :'1_product'}"  >
                                     <tree string="Pricelist Items" editable="bottom">
                                         <field name="pricelist_id" string="Pricelist" required='1'/>
                                         <field name="fixed_price" string="Price" required='1'/>
@@ -74,13 +87,13 @@
                                     </tree>
                                 </field>
                             </div>
-                            <group name="sale">
+                            <group name="sale" style="display:none" >
                                 <group name="email_template_and_project"
                                     attrs="{'invisible':[('type', '!=', 'service')]}"/>
                             </group>
                         </page>
-                        <page string="Notes" name="notes">
-                            <group name="description">
+                        <page string="Notes" name="notes" style="display:none" >
+                            <group name="description" style="display:none" >
                                 <separator string="Description for Quotations" colspan="4"/>
                                 <field name="description_sale" colspan="4" nolabel="1"
                                     placeholder="This note will be displayed on the quotations."/>
@@ -102,16 +115,16 @@
         <field name="arch" type="xml">
             <search string="Product">
                 <field name="name" string="Product" filter_domain="['|','|',('default_code','ilike',self),('name','ilike',self),('barcode','ilike',self)]"/>
-                <field name="categ_id" filter_domain="[('categ_id', 'child_of', self)]"/>
+                <field name="categ_id" filter_domain="[('categ_id', 'child_of', self)]" />
                 <separator/>
-                <filter string="Services" name="services" domain="[('type','=','service')]"/>
-                <filter string="Products" name="consumable" domain="[('type', 'in', ['consu', 'product'])]" help="Products your store in the inventory"/>
+                <filter string="Services" name="services" domain="[('type','=','service')]" />
+                <filter string="Products" name="consumable" domain="[('type', 'in', ['consu', 'product'])]" help="Products your store in the inventory" />
                 <separator/>
-                <filter string="Can be Sold" name="filter_to_sell" domain="[('sale_ok','=',1)]"/>
-                <filter string="Can be Purchased" name="filter_to_purchase" domain="[('purchase_ok', '=', 1)]"/>
+                <filter string="Can be Sold" name="filter_to_sell" domain="[('sale_ok','=',1)]" style="display:none"/>
+                <filter string="Can be Purchased" name="filter_to_purchase" domain="[('purchase_ok', '=', 1)]" style="display:none"/>
                 <separator/>
                 <filter string="Archived" name="inactive" domain="[('active','=',False)]"/>
-                <field string="Attributes" name="attribute_line_ids" groups="product.group_product_variant"/>
+                <field string="Attributes" name="attribute_line_ids" groups="product.group_product_variant"/>/
                 <field name="pricelist_id" widget="selection" context="{'pricelist': self}" filter_domain="[]" groups="product.group_sale_pricelist"/> <!-- Keep widget=selection on this field to pass numeric `self` value, which is not the case for regular m2o widgets! -->
             </search>
         </field>
@@ -186,22 +199,26 @@
                             <field name="attribute_value_ids" widget="many2many_tags"/>
                         </group>
                         <group>
+						
                             <group name="codes" string="Codes">
                                 <field name="barcode"/>
                                 <field name="default_code"/>
                             </group>
+			
                             <group>
                                 <field name="active"/>
                                 <field name="type" invisible="1"/>
                             </group>
                         </group>
                         <group>
+			
                             <group name="pricing" string="Pricing">
-                                <field name="product_variant_count" invisible="1"/>
+                                <field name="product_variant_count" invisible="1"/>	
                                 <field name="lst_price" widget='monetary' options="{'currency_field': 'currency_id'}" attrs="{'readonly': [('product_variant_count', '&gt;', 1)]}"/>
-                                <field name="standard_price" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-                                <field name="currency_id" invisible='1'/>
+				<field name="standard_price" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+			        <field name="currency_id" invisible='1'/>
                             </group>
+			   
                             <group name="weight">
                                 <group name="weight" string="Weights" attrs="{'invisible':[('type', 'not in', ['product', 'consu'])]}">
                                     <label for="volume"/>
@@ -216,6 +233,7 @@
                                     </div>
                                 </group>
                             </group>
+			    
                         </group>
                     </sheet>
                 </form>
@@ -249,21 +267,23 @@
         </record>
 
         <record id="product_product_tree_view" model="ir.ui.view">
-            <field name="name">product.product.tree</field>
+	    <!--
+            <field name="name">product.product.tree</field> 
+	    -->
             <field name="model">product.product</field>
             <field eval="7" name="priority"/>
             <field name="arch" type="xml">
-
                 <tree string="Product Variants">
-                    <field name="default_code"/>
-                    <field name="name"/>
-                    <field name="attribute_value_ids" widget="many2many_tags" groups="product.group_product_variant"/>
-                    <field name="lst_price"/>
-                    <field name="price" invisible="not context.get('pricelist',False)"/>
-                    <field name="uom_id" options="{'no_open': True, 'no_create': True}" groups="product.group_uom"/>
-                    <field name="barcode"/>
-                    <field name="product_tmpl_id" invisible="1"/>
-                    <field name="active" invisible="1"/>
+		    <field name="team"/>
+		    <field name="meterial"/>
+		    <field name="name"/>
+		    <field name="model"/>
+		    <field name="maker"/>
+		    <field name="explain"/>
+		    <field name="stock"/>
+		    <field name="storage_location"/>
+		    <field name="etc"/>
+                    <field name="price" invisible="not context.get('pricelist',False)"/> 
                 </tree>
             </field>
         </record>
@@ -279,11 +299,19 @@
                     <attribute name="string">Product Variant</attribute>
                 </form>
                 <field name="type" position="after">
-                    <field name="default_code"/>
-                    <field name="barcode"/>
-                </field>
-                <field name="list_price" position="attributes">
-                   <attribute name="name">lst_price</attribute>
+		    <!-- sh -->
+		    <field name="team"/>
+                    <field name="model"/>
+		    <field name="maker"/>
+	            <field name="stock"/>	
+	            <field name="meterial"/>
+		    <field name="storage_location"/>
+		    <field name="explain"/>
+		    <field name="etc"/>
+		    <field name="reason"/>
+		</field>
+                   <field name="list_price" position="attributes">            
+		   <attribute name="name">list_price</attribute>
                    <attribute name="attrs">{'readonly': [('product_variant_count', '&gt;', 1)]}</attribute>
                 </field>
                 <field name="name" position="after">
@@ -293,10 +321,10 @@
                     <field name="pricelist_item_ids" widget="many2many">
                         <tree string="Pricelist Items">
                             <field name="pricelist_id"/>
-                            <field name="name" string="Applicable On"/>
+                            <field name="name"/>
                             <field name="min_quantity"/>
-                            <field name="date_start"/>
-                            <field name="date_end"/>
+                            <field name="date_start" />
+                            <field name="date_end" />
                             <field name="price" string="Price"/>
                             <field name="base" invisible="1"/>
                             <field name="sequence" invisible="1"/>
@@ -400,7 +428,7 @@
                         </div>
                         <group name="first" col="4" string="Category Type">
                             <field name="parent_id"/>
-                            <field name="type"/>
+                            <field name="type" style="display:none"/>
                         </group>
                     </sheet>
                 </form>

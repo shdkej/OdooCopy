@@ -182,28 +182,30 @@ class Employee(models.Model):
        fmt = '%Y-%m-%d'
        if record.join_date:
         companyDate = datetime.datetime.strptime(record.join_date,fmt).date()
-      
-      companyYear = companyDate.year
-      companyMonth = companyDate.month
-      companyDay = companyDate.day
+        companyYear = companyDate.year
+        companyMonth = companyDate.month
+        companyDay = companyDate.day
 
-      #현재시간
-      now = datetime.datetime.now()
-      presentYear = now.year
-      presentMonth = now.month
-      presentDay = now.day
+        #현재시간
+        now = datetime.datetime.now()
+        presentYear = now.year
+        presentMonth = now.month
+        presentDay = now.day
 
-      #3년이상 종사자
-      year_entering = presentYear - companyYear
-      year_check = year_entering % 2.0
+        #3년이상 종사자
+        year_entering = presentYear - companyYear
+        year_check = year_entering % 2.0
 
-      for record in employees:
        #1년미만 입사자
-       if companyYear == presentYear and companyMonth != presentMonth and companyDay == presentDay:
+       if year_entering == 0 and companyMonth != presentMonth and companyDay == presentDay:
         #연차 1개를 증가시킨다.
         record.holiday_count += 1.0
+       #1년미만 입사자
+       elif year_entering == 1 and companyMonth != presentMonth and companyDay == presentDay:
+         #연차 1개를 증가시킨다.
+	 record.holiday_count += 1.0
        #1년
-       elif companyYear != presentYear and companyMonth == presentMonth and companyDay == presentDay:
+       elif year_entering == 1 and companyMonth == presentMonth and companyDay == presentDay:
         #2년이상 입사자 해당
         if (presentYear - companyYear) >= 2.0:
          #남은 연차의 갯수가 + 일경우 연차 초기화
@@ -225,7 +227,7 @@ class Employee(models.Model):
 	 record.holiday_count += year_2count
 	
        #1년미만 입사자는 max_count = 0 
-       if companyYear == presentYear and companyMonth != presentMonth and companyDay == presentDay:
+       if year_entering == 0 and companyMonth != presentMonth and companyDay == presentDay:
         record.holiday_max_count = 0
        else:
         record.holiday_max_count = record.holiday_count

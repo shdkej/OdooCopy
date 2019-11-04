@@ -4308,7 +4308,7 @@ var methods = {
         }
 
         // Find rows
-        var rows = $(this).find('tbody > tr');
+        var rows = $(this).find('tbody > tr').not('.detail_cell');
 
         // Update all rows
         $.each(rows, function(k, v) {

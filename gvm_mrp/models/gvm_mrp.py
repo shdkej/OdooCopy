@@ -23,10 +23,11 @@ _logger = logging.getLogger(__name__)
 class GvmMrp(models.Model):
     _name = "gvm.mrp"
     _description = "Product Management"
-    _order = 'num'
+    _order = 'priority, sequence, num'
     _inherit = ['mail.thread', 'ir.needaction_mixin']
 
     name = fields.Char(string='sign',required=True)
+    sequence = fields.Integer(default=1)
     date = fields.Date(string='date')
     num = fields.Integer(string='number')
     color = fields.Integer('Color')
@@ -40,10 +41,11 @@ class GvmMrp(models.Model):
 class GvmMrpSub(models.Model):
     _name = "gvm.mrp.sub"
     _description = "PM projetc sub"
-    _order = 'create_date, date'
+    _order = 'priority, sequence, create_date, date'
     _inherit = ['mail.thread', 'ir.needaction_mixin']
 
     name = fields.Char(string='name',required=True)
+    sequence = fields.Integer(default=1)
     date = fields.Date(string='date')
     cost = fields.Integer('cost')
     description = fields.Char(string='description')
@@ -77,8 +79,8 @@ class GvmMrpContent(models.Model):
 
     name = fields.Char(string='제목',required=True)
     date = fields.Date(string='date')
-    date_from = fields.Datetime(string='시작일')
-    date_to = fields.Datetime(string='종료일')
+    date_from = fields.Datetime(string='시작시점')
+    date_to = fields.Datetime(string='종료시점')
     content = fields.Char(string='내용')
     description = fields.Char(string='특이사항')
     worker = fields.Many2many('hr.employee',string='작업자')

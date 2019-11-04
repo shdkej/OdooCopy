@@ -124,6 +124,8 @@ class AccountAnalyticLine(models.Model):
     lunch = fields.Selection([('0','0'),('1','1'),('2','2'),('3','3')],string='식사횟수', default='2')
     holiday = fields.Boolean('공휴일')
 
+
+
     @api.depends('date_from','date_to','lunch','holiday')
     def _compute_basic_cost(self):
         for record in self:

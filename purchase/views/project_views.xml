@@ -39,7 +39,7 @@
             <field name="model">project.project</field>
             <field name="inherit_id" ref="project.edit_project"/>
             <field name="arch" type="xml">
-                 <xpath expr="//page[@name='settings']" position="inside">
+                 <xpath expr="//page[@name='manage']" position="inside">
 		      <group string='product'>
                       <field name="product">
 		        <tree>

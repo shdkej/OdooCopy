@@ -130,6 +130,10 @@ class GvmPurchaseProduct(models.Model):
     purchase_product = fields.Many2many('gvm.product',string='product')
     release_place = fields.Many2one('gvm.product.release',string='출고지')
 
+    #sh
+    request = fields.Char(string='재발주 요청 사유', index=True)
+    charge = fields.Char(string='출고 담당자', index=True)
+
     @api.depends('order_man')
     def _compute_department(self):
       for record in self:
@@ -204,6 +208,8 @@ class GvmPurchaseProduct(models.Model):
         res = super(GvmPurchaseProduct, self).create(vals)
         last_id = self.env['gvm.purchase_product'].search([('id','=',res.id)])
         issue = last_id.issue
+        if not last_id.project_id:
+          raise UserError(_('프로젝트를 입력해주세요'))
 	
         if last_id.project_id and issue:
           issue.write({'project_id':last_id.project_id.id})
@@ -212,7 +218,7 @@ class GvmPurchaseProduct(models.Model):
         for np in newProduct:
           #issue.write({'product':[(4,np.id)]})
 	  np.write({
-	    'project_id':last_id.project_id.id,
+	    'project_id':last_id.project_id.name,
 	    'project_set':[(4,last_id.project_id.id)],
 	    'issue':issue.id,
 	  })
@@ -227,9 +233,13 @@ class GvmPurchaseProduct(models.Model):
 	  issue = last_id.issue
           if last_id.project_id and issue:
 	    issue.project_id = last_id.project_id.id
+          issue_id = ''
+          if issue:
+            issue_id = issue.id
 	  for pd in last_id.product:
 	    pd.write({
 	      'drawing_man':last_id.drawing_man.name,
+              'issue': issue_id
 	    })
 	return res
 
@@ -368,7 +378,48 @@ class GvmPurchaseProduct(models.Model):
 	  record.write({'state':'purchase',
 	  		'request_date':datetime.today()
 	  })
-        sender = self.env.user.name
+
+        # Find Stock
+        if self.product:
+          for product in self.product:
+            stock = self.env['product.product'].search([('specification','=',product.name),
+                                                        ('stock','>=',1)],limit=1)
+            if not stock:
+              stock = self.env['product.product'].search([('specification','=',product.specification),
+                                                          ('stock','>=',1)],limit=1)
+              
+            if stock:
+              product.stock_item = True            
+              # 개수가 모자라면 분할해야 함
+              stock_log = stock.stock
+              stock_count = stock.stock - product.total_count
+              stock.stock = stock_count
+              if stock_count < 0:
+                stock.stock = 0
+                remain_count = - (stock_count / self.line_count)
+                remain_product = self.env['gvm.product'].create({
+	          'sequence_num': product.sequence_num, 
+		  'name': product.name, 
+		  'product_name': product.product_name, 
+		  'material': product.material, 
+		  'original_count': remain_count,
+		  'etc': product.etc, 
+		  'bad_state': product.bad_state, 
+		  'purchase_by_maker': product.purchase_by_maker.id,
+                  'state': 'purchase',
+                  'request_date': product.request_date,
+                  'project_id': product.project_id,
+                })
+	        etc_text = str('발주 %d 개 중 %d 개 재고 사용' 
+                 % (product.total_count, (product.total_count + stock_count))).decode('utf-8').encode('utf-8')
+                if product.etc and product.etc != 'false':
+                  etc_text += product.etc.encode('utf-8')
+                product.etc = etc_text
+                product.original_count = stock_log
+                self.write({'product':[(4,remain_product.id)]})
+
+        # Send Mail
+        sender = self.order_man.name
 	postId = self.id
         marketing = self.env['hr.employee'].search([('department_id','=',6)])
         post = '견적요청서'
@@ -415,6 +466,15 @@ class GvmPurchaseProduct(models.Model):
 	    if order.product:
 	      for pd in order.product:
 	        pd.state = 'cancel'
+                # Stock
+                if pd.stock_item:
+                  stock = self.env['product.product'].search([('specification','=',pd.name)
+                                                             ],limit=1)
+                  if not stock:
+                     stock = self.env['product.product'].search([('specification','=',product.specification),
+                                                                 ('stock','>=',1)],limit=1)
+                  if stock:
+                    stock.stock = stock.stock + (pd.total_count)
             for pick in order.picking_ids:
                 if pick.state == 'done':
                     raise UserError(_('Unable to cancel purchase order %s as some receptions have already been done.') % (order.name))
