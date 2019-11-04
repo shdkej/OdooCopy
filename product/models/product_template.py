@@ -13,6 +13,9 @@ from odoo.exceptions import ValidationError, except_orm
 from datetime import datetime
 import datetime as dt
 
+import logging
+_logger = logging.getLogger(__name__)
+
 class ProductTemplate(models.Model):
     _name = "product.template"
     _inherit = ['mail.thread']
@@ -268,8 +271,7 @@ class ProductTemplate(models.Model):
             self.uom_po_id = self.uom_id.id
 
     @api.model
-    def create(self, vals):
-        self.write_log()
+    def create(self, vals): 
         ''' Store the initial standard price in order to be able to retrieve the cost of a product template for a given date'''
         # TDE FIXME: context brol
         tools.image_resize_images(vals)
@@ -295,6 +297,7 @@ class ProductTemplate(models.Model):
 
     @api.multi
     def write(self, vals):
+    	self.write_log()
         tools.image_resize_images(vals)
         res = super(ProductTemplate, self).write(vals)
         if 'attribute_line_ids' in vals or vals.get('active'):
@@ -305,7 +308,7 @@ class ProductTemplate(models.Model):
     #sh
     def write_log(self):
         _logger.warning('test')
-        hr_name = self.env['hr.employee'].search([('name','=',record.user_id.name)])
+
 	product = self.env['product.product'].search()
 	_logger.warning(product.etc)
 	_logger.warning(self.etc)

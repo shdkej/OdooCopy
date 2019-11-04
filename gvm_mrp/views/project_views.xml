@@ -5,7 +5,8 @@
             <field name="model">project.project</field>
             <field name="inherit_id" ref="project.edit_project"/>
             <field name="arch" type="xml">
-                 <xpath expr="//page[@name='manage']" position="inside">
+                 <xpath expr="//page[@name='settings']" position="after">
+		    <page string="manage" groups="project.group_project_manager">
 		      <group string='sign' name='sign'>
                       <field name="sign" domain="[('sign_ids','=',3)]">
 		        <tree>
@@ -17,6 +18,7 @@
 			</tree>
 		      </field>
 		      </group>
+		    </page>
                 </xpath>
             </field>
         </record>

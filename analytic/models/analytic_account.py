@@ -258,6 +258,6 @@ class AccountAnalyticLine(models.Model):
 	if d1.day != d2.day:
           same_day = (datetime.strptime(self.date_from,fmt)+td).replace(hour=10, minute=00)
           self.date_to = same_day
-	#세콤기록시간을 입력하지 않을경우, 현재 입력한 날짜로 변환
-        self.date = self.date_to
-
+	#sh
+	#세콤기록시간을 입력하지 않을경우, 현재 입력날짜로 변환
+	self.date = self.date_to

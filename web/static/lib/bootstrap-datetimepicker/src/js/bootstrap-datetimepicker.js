@@ -388,14 +388,22 @@ THE SOFTWARE.
         fillDow = function () {
             moment.locale(picker.options.language);
             var html = $('<tr>'), weekdaysMin = moment.weekdaysMin(), i;
-            if (picker.options.calendarWeeks === true) {
-                html.append('<th class="cw">#</th>');
-            }
+	    //sh
+	    //달력만 표기를 하기위해 삭제
+//            if (picker.options.calendarWeeks === true) {
+//                html.append('<th class="cw">#</th>');
+//            }
             if (moment().localeData()._week.dow === 0) { // starts on Sunday
                 for (i = 0; i < 7; i++) {
-                    html.append('<th class="dow">' + weekdaysMin[i] + '</th>');
+	          //sh
+		  //토요일과 일요일 빨간색으로 표시
+		  if (i == 0 || i == 6){
+                     html.append('<th class="dow", style="color:red">' + weekdaysMin[i] + '</th>');
+		  } else {
+  		     html.append('<th class="dow">' + weekdaysMin[i] + '</th>');
+		  }
                 }
-            } else {
+            }else {
                 for (i = 1; i < 8; i++) {
                     if (i === 7) {
                         html.append('<th class="dow">' + weekdaysMin[0] + '</th>');
@@ -446,15 +454,19 @@ THE SOFTWARE.
             if ((year === endYear && month >= endMonth) || year > endYear) {
                 picker.widget.find('.datepicker-days th:eq(2)').addClass('disabled');
             }
-
+	   
             nextMonth = moment(prevMonth).add(42, 'd');
             while (prevMonth.isBefore(nextMonth)) {
+	          //sh
+		  //달력만 표기 위해 삭제	 
                 if (prevMonth.weekday() === moment().startOf('week').weekday()) {
                     row = $('<tr>');
                     html.push(row);
-                    if (picker.options.calendarWeeks === true) {
-                        row.append('<td class="cw">' + prevMonth.week() + '</td>');
-                    }
+		      //sh
+		      //달력만 표기를 위해 삭제
+//                    if (picker.options.calendarWeeks === true) {
+//                        row.append('<td class="cw">' + prevMonth.week() + '</td>');
+//                    }
                 }
                 clsName = '';
                 if (prevMonth.year() < year || (prevMonth.year() === year && prevMonth.month() < month)) {
@@ -480,9 +492,8 @@ THE SOFTWARE.
                             break;
                         }
                     }
-                }
+                }	
                 row.append('<td class="day' + clsName + '">' + prevMonth.date() + '</td>');
-
                 currentDate = prevMonth.date();
                 prevMonth.add(1, 'd');
 
@@ -1094,7 +1105,10 @@ THE SOFTWARE.
             headTemplate:
                     '<thead>' +
                         '<tr>' +
-                            '<th class="prev">&lsaquo;</th><th colspan="' + (options.calendarWeeks ? '6' : '5') + '" class="picker-switch"></th><th class="next">&rsaquo;</th>' +
+			    //sh
+			    //달력 크기 조정을 위해 colspan = 5로 변경
+			    //'<th class="prev">&lsaquo;</th><th colspan="' + (options.calendarWeeks ? '6' : '5') + '" class="picker-switch"></th><th class="next">&rsaquo;</th>' +
+                            '<th class="prev">&lsaquo;</th><th colspan="' + '5' + '" class="picker-switch"></th><th class="next">&rsaquo;</th>' +
                         '</tr>' +
                     '</thead>',
             contTemplate:
@@ -1364,7 +1378,8 @@ THE SOFTWARE.
         useStrict: false,
         direction: 'auto',
         sideBySide: false,
-        daysOfWeekDisabled: [],
-        widgetParent: false
+	daysOfWeekDisabled: [],
+	widgetParent: false
     };
 }));
+

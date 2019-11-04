@@ -351,7 +351,7 @@
                         <group>
                             <field name="origin" attrs="{'invisible': [('origin','=',False)]}"/>
 
-			    <field name="project_id" string="프로젝트"/>
+			    <field name="project_id" string="프로젝트" required="True"/>
 			    <field name="project_name" invisible="1"/>
 			    <field name="project_code" invisible="1"/>
 			    <field name="issue_maker" invisible="1"/>
@@ -372,7 +372,7 @@
                     <notebook>
 		    <page string="Products">
 		    <field name="product">
-		     <tree editable="bottom" decoration-danger="emergency==True" decoration-bf="emergency==True" decoration-info="destination_date!=False" decoration-muted="state in ('cancel','bad')">
+		     <tree editable="bottom" decoration-danger="emergency==True or stock_item==True" decoration-bf="emergency==True" decoration-info="destination_date!=False" decoration-muted="state in ('cancel','bad')">
 		      <field name="sequence_num" widget="handle"/>
 		      <field name="product_ids" string="기존자재" options="{'no_create':True}"/>
 		      <field name="name" string="도면번호"/>
@@ -579,7 +579,7 @@
         <menuitem action="purchase_form_action_finish" id="menu_purchase_form_action_finish" parent="menu_purchase_control" sequence="6"/>
 
         <record id="purchase_form_action_write" model="ir.actions.act_window">
-            <field name="name">견적서 작성</field>
+            <field name="name">발주요청서</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">gvm.purchase_product</field>
             <field name="view_mode">tree,form,pivot</field>

@@ -315,7 +315,7 @@
                 <t t-foreach="columns" t-as="column">
                     <th t-if="!column.meta and column.invisible !== '1'" t-att-data-id="column.id"
                         t-attf-class="#{((options.sortable and column.sortable and column.tag !== 'button') ? 'o_column_sortable' : '')}"
-                            t-att-width="column.width()">
+                            t-att-width="150">
                         <t t-if="column.tag !== 'button'"><t t-raw="column.heading()"/></t>
                     </th>
                 </t>
@@ -963,11 +963,9 @@
 </t>
 
 <div t-name="SearchView.FilterMenu" class="btn-group o_dropdown">
-    <select class="gvm_search" id="gvm_search" name="gvm_search">
-      <option></option>
-    </select>
-    <select class="gvm_search_part" id="gvm_search_part" name="gvm_search" style="display:none"></select>
-    <button class="gvm_search_export" id="gvm_search_export" name="gvm_search_export" style="display:none">엑셀로 출력</button>
+            <select id="gvm_search" class="gvm_search" name="gvm_search" style="width:300px" autocomplete="off"/>
+            <select class="gvm_search_part" id="gvm_search_part" name="gvm_search" style="display:none"></select>
+            <button class="gvm_search_export" id="gvm_search_export" name="gvm_search_export" style="display:none">엑셀로 출력</button>
     <button class="o_dropdown_toggler_btn btn btn-sm dropdown-toggle" data-toggle="dropdown">
         <span class="fa fa-filter"/> Filters <span class="caret"/>
     </button>

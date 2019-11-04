@@ -123,7 +123,34 @@ class HrEmployee(models.Model):
             modified_attendance = self.sudo().attendance_action_change()
         action_message['attendance'] = modified_attendance.read()[0]
         return {'action': action_message}
-									          
+   
+   #sh
+    def _Check_check_out_time(self):
+       """ 퇴근을 하지 않았을경우, 다음날 00시 00분 00초에 자동으로  퇴근이 된다."""
+       #현재시간	
+       date = datetime.now()
+       #현재 시
+       hour = date.hour
+       #현재 분
+       minute = date.minute
+       
+       #현재시간
+       check_out_time = datetime.now()
+       #00시 00분 00초 
+       #한국과의 시차는9 시간
+       check_out_time = check_out_time.replace(hour=15, minute=0,second=0)
+       
+       #체크아웃 정보 가져오기
+       hr_attendance = self.env['hr.attendance'].search([('check_out', '=', False)])
+      
+       #체크아웃 시간이 00시 00분일때
+       if hour == 15 and minute == 00:
+        #체크아웃을 작성
+	for att in hr_attendance:
+           att.write({
+	     'check_out':check_out_time
+	   })
+#        return self.env['hr.attendance'].write(check_out_date)
 
     @api.multi
     def attendance_action_change(self, location):
@@ -131,48 +158,68 @@ class HrEmployee(models.Model):
             Check In: create a new attendance record
             Check Out: modify check_out field of appropriate attendance record
         """
-        #location = self.geolocation()
-        #address = self.geocode(location[0], location[1])
-
         if len(self) > 1:
             raise exceptions.UserError(_('Cannot perform check in or check out on multiple employees.'))
 	#sh
-#        action_date = fields.Datetime.now()
-	action_date = datetime.now()
+	#현재시간
+	present_date = datetime.now()
+	#해당 유저의 처음 출근 시간 파악
 	hr_attendance = self.env['hr.attendance'].search([('employee_id', '=', self.id)], limit=1)
-	date = hr_attendance.check_in
-	cut_line = ""
-	if date != False :
-	 check_in_last_time = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-	 cut_line = check_in_last_time + relativedelta(days=1)
-	 cut_line = cut_line.replace(hour=0, minute=0,second=0)
-	 _logger.warning(check_in_last_time)
+	check_in_date = hr_attendance.check_in
+	#출퇴근 기준 시간의 초기화
+	check_in_cut_line = ""
+	check_out_cut_line = ""
+	
+	#해당 유저의 처음 출근시간이 존재할 경우
+	if check_in_date != False :
+	 #해당 유저의 첫 체크인시간을 년,월,일,시간,분,초로 변경
+	 check_in_last_time = datetime.strptime(check_in_date, '%Y-%m-%d %H:%M:%S')
+	 #체크인 기준시간(다음날 00시 00분 00초)
+	 #15시간을 더해준 이유: 서버의 시간은 미국시간이므로 한국과 9시간의 차이가 발생함
+	 check_in_cut_line = check_in_last_time
+	 check_in_cut_line = check_in_cut_line.replace(hour=15, minute=0,second=0)
+	 #체크아웃 기준시간(1시간뒤)
+	 check_out_cut_line = check_in_last_time + relativedelta(hours=1)
 
+	#체크인상태일 경우
 	if self.attendance_state != 'checked_in':
-	     if date != False:
-	       if action_date > cut_line:
+	     #해당 유저의 출근시간이 존재할경우
+	     if check_in_date != False:
+	       #출퇴근 기준시간보다 현재의 시간이 클 경우
+	       if present_date > check_in_cut_line:
+	         #서버에 입력
 	         vals = {
                     'employee_id': self.id,
-                    'check_in': action_date,
+                    'check_in': present_date,
+                    'check_in_place': location,
                  }
 	         return self.env['hr.attendance'].create(vals)
+	       #출퇴근 기준시간보다 현재의 시간이 작을 경우 
 	       else:
 	         raise UserError(_('출근시간이 아닙니다.'))
+	     #해당 유저의 출퇴근시간이 존재하지 않을경우 
 	     else:
+	       #서버에 생성
 	       vals = {
 	         'employee_id': self.id,
-	         'check_in': action_date,
+	         'check_in': present_date,
+                 'check_in_place': location,
 	       }
-	       return self.env['hr.attendance'].create(vals)
+               return self.env['hr.attendance'].create(vals)
+	#체크아웃상태일 경우       
         else:
-            attendance = self.env['hr.attendance'].search([('employee_id', '=', self.id), ('check_out', '=', False)], limit=1)
-            if attendance:
-                attendance.check_out = action_date
-		attendance.check_out_place = location
-            else:
-                raise exceptions.UserError(_('Cannot perform check out on %(empl_name)s, could not find corresponding check in. '
-                    'Your attendances have probably been modified manually by human resources.') % {'empl_name': self.name, })
-            return attendance
+	   #해당 유저의 체크아웃 파악
+           attendance = self.env['hr.attendance'].search([('employee_id', '=', self.id), ('check_out', '=', False)], limit=1)       
+	   if attendance:
+	    #출퇴근 기준시간 보다 현재의 시간이 클경우
+     	    if present_date > check_out_cut_line:
+	      #서버에 생성
+              attendance.check_out = present_date
+	      attendance.check_out_place = location
+	    #출퇴근 기준시간 보다 현쟈시간이 작을경우
+	    else:
+	      raise UserError(_('퇴근시간이 아닙니다.'))
+           return attendance
 
     @api.model_cr_context
     def _init_column(self, column_name):
@@ -208,7 +255,6 @@ class HrEmployee(models.Model):
         reload(sys)
         sys.setdefaultencoding('utf-8')
 	url = 'https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?coords=' + str(location[1]) + ',' + str(location[0]) + '&output=json&orders=legalcode,roadaddr'
-        url = 'https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?coords=127.1580072,36.88948390000001&output=json&orders=legalcode,roadaddr'
 	headers = {
 	  'X-NCP-APIGW-API-KEY-ID':'39295gvivi',
 	  'X-NCP-APIGW-API-KEY':'vmc51DB35kxwYIW8BivXpZwMhJTKMKzYm9VUcHoP'
@@ -218,12 +264,14 @@ class HrEmployee(models.Model):
         full_address = ''
         address = r
         status = address['status']['name']
+	_logger.warning(status)
         if status == 'ok':
           name4 = str(address['results'][0]['region']['area4']['name'])
           name3 = str(address['results'][0]['region']['area3']['name'])
           name2 = str(address['results'][0]['region']['area2']['name'])
           name1 = str(address['results'][0]['region']['area1']['name'])
           name0 = str(address['results'][0]['region']['area0']['name'])
+	  _logger.warning(name0)
 
           roadaddr0, roadaddr1 = '',''
 	  if len(address['results']) > 1:
@@ -231,6 +279,9 @@ class HrEmployee(models.Model):
             roadaddr1 = str(address['results'][1]['land']['number1'])
 
           full_address = name1 + name2 + name3 + name4 + roadaddr0 + roadaddr1
+	else:
+	  full_address = self.google_geocode(location)
+
 
         return full_address
 
@@ -243,4 +294,48 @@ class HrEmployee(models.Model):
         latlng = [lat,lng]
 
         return latlng
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

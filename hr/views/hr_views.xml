@@ -69,9 +69,9 @@
                                         <field name="job_id"/>
                                         <field name="parent_id"/>
                                         <field name="coach_id"/>
-                                        <field name="join_date" readonly="1"/>
-                                        <field name="holiday_count" readonly="1"/>
-                                        <field name="holiday_max_count" readonly="1"/>
+                                        <field name="join_date"/>
+                                        <field name="holiday_count"/>
+                                        <field name="holiday_max_count"/>
                                     </group>
                                 </group>
                                 <field name="notes" placeholder="Other Information ..." colspan="4"/>
