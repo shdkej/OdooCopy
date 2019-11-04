@@ -141,12 +141,13 @@
 		      <page name="Content" string="Content">
 		        <group>
                         <field name="date" string="일자"/>
+                        <field name="date_from"/>
                         <field name="date_to"/>
                         <field name="main_mrp" string="프로젝트" invisible="0"/>
-                        <field name="content" string="내용"/>
                         <field name="client" string="고객사"/>
 			<field name="worker" widget="many2many_tags" option="{'no_create_edit':True}"/>
-                        <field name="description" string="특이사항"/>
+                        <field name="content" widget="html" string="내용"/>
+                        <field name="description" widget="html" string="특이사항"/>
 			<field name="sub_mrp" invisible="1"/>
 		        <field name="sub_attachment" widget="many2many_binary"/>
 			</group>
@@ -187,6 +188,7 @@
                     <field name="date"/>
                     <field name="color"/>
                     <field name="priority"/>
+                    <field name="sequence"/>
                     <templates>
                     <t t-name="kanban-box">
                         <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)} oe_kanban_card oe_kanban_global_click">
@@ -234,6 +236,7 @@
                     <field name="date"/>
                     <field name="color"/>
                     <field name="priority"/>
+                    <field name="sequence"/>
                     <templates>
                     <t t-name="kanban-box">
                         <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)} oe_kanban_card oe_kanban_global_click">

@@ -210,7 +210,20 @@ class GvmSignContent(models.Model):
       index = ['request_check1','request_check2','request_check3','request_check4','request_check5','request_check6']
       for record in self:
         if record.state == 'cancel':
-          record.next_check = record.writer
+	  #sh
+	  #현재 서버 페이지의 정보를 가져온다.
+	  rest1 = record.rest1
+	  date_to = record.date_to
+	  date_from = record.date_from
+	  #연차의 갯수를 상신 전상태로 돌린다.
+	  count = self.check_holiday_count(rest1,date_to,date_from)
+	  hr_name = self.env['hr.employee'].search([('name','=',record.user_id.name)])
+	  h_count = float(hr_name.holiday_count) +  float(count)
+	  hr_name.write({
+	            'holiday_count': h_count
+	  })
+	  #다음 결제권한을  작성자에게 넘긴다. 
+	  record.next_check = record.writer
 	  return False
         for i in index:
 	  if record[i]:
@@ -418,8 +431,8 @@ class GvmSignContent(models.Model):
 	  h_count = float(hr_name.holiday_count) - float(count)
 	  _logger.warning(h_count)
 
-	  if h_count < -7:
-           raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
+	  #if h_count < -7:
+          # raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
 	  hr_name.holiday_count = float(h_count)
 	  _logger.warning(hr_name.holiday_count)
 
@@ -440,24 +453,36 @@ class GvmSignContent(models.Model):
 	a.gvm_send_mail(self.env.user.name, receivers, '결재문서', postId, po_num, model_name, menu_id, action_id)
 
 
-    def check_holiday_count(self):
+    def check_holiday_count(self, rest1=None, date_to=None, date_from=None):
         count = 0
-	if self.rest1 in ['refresh','publicvacation','special']:
+	#반려를 클릭한 경우
+	if rest1 != None:
+	   rest = rest1
+	   date_to = date_to
+	   date_from = date_from
+	#반려를 클릭하지 않은경우
+	else:
+	   rest = self.rest1
+	   date_to = self.date_to
+	   date_from = self.date_from
+
+	if rest in ['refresh','publicvacation','special']:
 	  return count
 	#sh 
 	#오전반차 오후반차 구분  
-	if self.rest1 == 'half':
+	if rest == 'half':
 	  count = 0.5
 	  return count
-	elif self.rest1 == 'half_2':
+	elif rest == 'half_2':
 	  count = 0.5
 	  return count
-	elif self.rest1 == 'quarter':
+	elif rest == 'quarter':
 	  count = 0.25
 	  return count
+	#연차일경우 갯수 파악  
         fmt = '%Y-%m-%d'
-        d1 = datetime.strptime(self.date_to,fmt)
-        d2 = datetime.strptime(self.date_from,fmt)
+        d1 = datetime.strptime(date_to,fmt)
+        d2 = datetime.strptime(date_from,fmt)
         count = (d1-d2).days+1
 	return count
 

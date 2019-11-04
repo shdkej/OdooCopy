@@ -233,12 +233,21 @@ class AccountAnalyticLine(models.Model):
       fmt = '%Y-%m-%d %H:%M'
       m_date_from = ''
       m_date_to = ''
+      search = '.'
       td = timedelta(hours=9)
       if self.mobile_date_from:
        date_from = self.mobile_date_from.replace('T',' ')
-       m_date_from = datetime.strptime(date_from,fmt) - td
-      if self.mobile_date_to: 
+       #sh 
+       #데이터형식에 맞게 변환
+       split = date_from.split(':')
+       date_from = split[0]+':'+split[1]
+       m_date_from = datetime.strptime(date_from,fmt)- td
+      if self.mobile_date_to:
        date_to = self.mobile_date_to.replace('T',' ')
+       #sh
+       #데이터형식에 맞게 변환
+       split = date_to.split(':')
+       date_to = split[0]+':'+split[1]
        m_date_to = datetime.strptime(date_to,fmt) - td
       if m_date_from:
         self.test_date_from = m_date_from

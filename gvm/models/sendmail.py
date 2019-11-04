@@ -34,6 +34,6 @@ class gvm_mail():
      msg['from'] = 'GVM_ERP'
 
      s = smtplib.SMTP_SSL(host='smtp.mailplug.co.kr', port=465)
-     s.login(user='nohsh@gvmltd.com', password='@shtjdgh412')
+     s.login(user='nohsh@gvmltd.com', password='@shtjdgh312')
      s.sendmail(sender, receivers, msg.as_string())
      s.quit()
