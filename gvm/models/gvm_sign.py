@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#/ -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import smtplib
@@ -112,7 +112,7 @@ class GvmSignContent(models.Model):
     sign_line = fields.One2many('gvm.signcontent.line','sign','sign_line')
 
     check_all = fields.Boolean('전결')
-    next_check = fields.Char(string='next_check',compute='_compute_next_check',store=True)
+    next_check = fields.Char(string='next_check',compute='_compute_next_check')
     state = fields.Selection([
         ('temp', '임시저장'),
         ('write', '상신'),
@@ -123,11 +123,33 @@ class GvmSignContent(models.Model):
         ('check5', '결재'),
         ('done', '결재완료'),
         ('cancel', '반려'),
-        ('remove', '취소')
-	], string='Status', readonly=True, index=True, copy=False, default='temp', track_visibility='onchange')
+        ('remove', '취소')])
     holiday_count = fields.Char('holiday_count', compute='_compute_holiday_count')
     confirm_date = fields.Date('confirm_date')
-    
+
+    #sh
+    #외근계획서
+    #외근목적
+    out_of_work_purpose = fields.Selection([
+            ('meeting','미팅'),
+            ('education','교육'),
+            ('exposition', '박람회'),
+            ('etc','기타(주요업무란에 상세기재)')])
+    #외근장소
+    out_of_work_area = fields.Char(string='out_of_work_area')
+    #외근동행자
+    out_of_work_companion = fields.Char(string='out_of_work_companion')
+    #이동수단
+    out_of_work_transport = fields.Selection([
+    	('car','자가용'),
+	('publictransport','대중교통'),
+       	('taxi','택시'),
+	('companycar','법인차량')])
+    out_of_work_content = fields.Text(string='content',store=True)
+    out_of_work_content2 = fields.Text(string='content2',store=True)
+    out_of_work_date_to = fields.Datetime(default = datetime.today())
+    out_of_work_date_from = fields.Datetime(default = datetime.today())
+	
     @api.depends('date_from','date_to','job_ids')
     def _compute_basic_cost(self):
         for record in self:
