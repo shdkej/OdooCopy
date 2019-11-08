@@ -26,10 +26,13 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         'click #detail_product_get': 'get_all_detail_product',
         'click #gvm_excel_add': 'get_detail_product',
         'click #add_product': 'add_excel',
+        'click #edit_button': function(){this.editable = true; this.loading();},
+        'click #gvm_quick_create': 'gvm_quick_create',
     },
     init: function() {
         this._super.apply(this, arguments);
         var self = this;
+        this.editable = true;
         this.tree_data = [];
         var tree_data_array = [];
         this.data = [];
@@ -46,68 +49,62 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
 
         var Project = new Model('project.project');
         Project.query(['name','project_rate']).filter([['is_finish','=',false]]).all().then(function(id){
+            var tree_test = [];
             $.each(id, function(index, item){
-                tree_data_array.push({'id':item.id,'title':item.name, 'subs':[], 'rate':1});
+                tree_test[index] = ({'id':item.id,'title':item.name, 'subs':[], 'rate':1});
             })
-        });
-
-        this.tree_data = tree_data_array;
-
-        //var sort_array = this.sort_tree(tree_data_array);
-        tree_data_array.forEach(function (item, index, array){
-            console.log(index);
-        });
-        var sort_array = tree_data_array;
-        //button create
-        //button hide
-        setTimeout(function(){
-            $('.o_form_button_save').hide();
-            $('.o_form_button_cancel').hide();
+            return tree_test;
+        }).then(function(ar){
+            var sort_array = self.sort_tree(ar);
             var combotree = $('#gvm_search_product').comboTree({
                 source: sort_array
             });
-        },300);
+        });
+
+        //hide create,close button
+        setTimeout(function(){
+            var test = $('.modal-title:contains(BOM)')[0].parentElement.nextElementSibling.nextElementSibling.lastElementChild;
+            $(test).hide();
+        },100);
 
     },
+    // 이름을 기준으로 tree 정렬(ex. ssm ak > ssm ak #1)
     sort_tree: function(project_dic) {
-        var flag = true;
         var second_array = [];
-        // id, title, subs, start, seq, rate
-        var i;
-        console.log(project_dic);
+        // id, title, subs, rate
         $.each(project_dic, function(index, item){
-            console.log(index);
-            $.each(project_dic, function(index, item){
-                console.log(index);
-                if (project_dic[item.title].rate != 1){return true};
-                var child_project = project_dic.filter(c => c.title.indexOf(item.title) != -1);
-                console.log(child_project);
-                //4
-                if (child_project.length != 0){
-                    project_dic.map(function(ar){
-                        if (child_project.indexOf(ar.title)){
-                            ar.rate+=item.id+0.1;
-                            console.log(item.id);
-                        }
-                    });
+            // 자신과 이름이 같은게 있으면 리스트 따로 저장
+            var child_project = project_dic.filter(function(c){
+                if (c.title != item.title && c.title.indexOf(item.title) != -1){
+                    return true;
                 }
-                //3
-                if (index == project_dic.length)
-                {
-                    project_dic.push(project_dic[0]);
-                    project_dic.shift();
-                }
-            });
-        })
-        return project_dic;
+            })
+            //4
+            if (child_project.length != 0){
+                //child_project.map(c=>c.rate = item.id+0.1);
+                child_project.map(function(c){
+                    c.rate = item.id+0.1;
+                })
+                item.subs = child_project;
+            }
+        });
+
+        // rate가 높은것은 project_dic에서 제거
+        var tree_array = project_dic.filter(function(c){
+            return c.rate == 1;
+        });
+
+        return tree_array;
     },
-    update_project: function(){
+    update_project: function(){ 
         var self = this;
         var project_selected = $('#gvm_search_product.comboTreeInputBox').val();
         this.search_filter = [['project_id','=',project_selected],['state','!=','cancel']];
-        
+
+        // project 변경 시 part 검색 초기화        
         $('#gvm_search_product_part option').remove();
         $('#gvm_search_product_part').append('<option id="0" value="0"></option>');
+
         var Part = new Model('project.issue');
         Part.query(['name']).filter([['project_id','=',project_selected]]).all().then(function(id){
             $.each(id, function(index, item){
@@ -138,35 +135,37 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         self.detail_product = [];
         var project_selected = $('#gvm_search_product.comboTreeInputBox').val();
         Product.query(
-            ['id','sequence_num','name','product_name','material','original_count','bad_state','purchase_by_maker','etc']
+            ['id','sequence_num','name','product_name','material','original_count','bad_state','purchase_by_maker','etc','create_date','state']
             ).filter(self.search_filter).limit(500).all().then(function(id){
             $.each(id, function(index, item){
                 //-1표시는 따로 저장
-                if (item.sequence_num.toString().indexOf('-') != -1) {
+                if (item.sequence_num.toString().indexOf('-') != -1 || item.state == 'bad') {
                     self.sub_data.push([0, //체크박스
-                        item.sequence_num, 
-                        item.name, 
-                        item.product_name, 
-                        item.material, 
-                        item.original_count, 
-                        item.etc, 
-                        item.bad_state, 
-                        item.purchase_by_maker[1]]);
+                        item.sequence_num,          //1
+                        item.name,                  //2
+                        item.product_name,          //3
+                        item.material,              //4
+                        item.original_count,        //5
+                        item.etc,                   //6
+                        item.bad_state,             //7
+                        item.purchase_by_maker[1],  //8
+                        item.create_date,           //9
+                        ]);
                     self.sub_data_id.push(item.id);
                 }else{
                     self.data.push([0, //체크박스
-                        item.sequence_num, 
-                        item.name, 
-                        item.product_name, 
-                        item.material, 
-                        item.original_count, 
-                        item.etc, 
-                        item.bad_state, 
-                        item.purchase_by_maker[1]]);
+                        item.sequence_num,          //1
+                        item.name,                  //2
+                        item.product_name,          //3
+                        item.material,              //4
+                        item.original_count,        //5
+                        item.etc,                   //6
+                        item.bad_state,             //7
+                        item.purchase_by_maker[1]]);//8
                     self.data_id.push(item.id);
                 }
             })
-        });
+        }).then(function(){self.loading();});
     },
     loading: function(){
         var self = this;
@@ -183,10 +182,6 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
                 self.Numtmp_col.push(cellNum_col);
             }
         }
-        var on_load = function(instance, cell, value){
-            var child_product = $('<span>123456</span>');
-            var parent_product = $('#mytable tbody .jexcel_label');
-        };
 
         if (self.data.length == 0){
             self.data.push(['0','0']);
@@ -197,6 +192,7 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
             colHeaders: self.colHeaders,
             colWidths: td_size,
             onchange: change,
+            editable: this.editable,
             columns: [
             {type: 'checkbox'},
             ]
@@ -205,8 +201,20 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         var selected_cel = '';
         var last_element = '';
         var parent_product = '';
+        // 수정되었던 자재를 이름순이 아닌  작성시간 순으로 정렬
+        self.sub_data.sort(function(a,b){
+            if (a[9]>b[9]){ //9 = create_date
+                return 1;
+            }else{
+                return -1;
+            }
+        });
+
         $.each(self.sub_data, function(index, value){
             //detail content
+            if (value[1] == false){
+               return true; 
+            };
             seq_name = value[1].split('-')[0]
             selected_cel = $('#mytable tbody td:nth-child(3):contains(' + seq_name + ')')[0];
             if (!selected_cel){return true;}
@@ -214,12 +222,12 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
             last_element = $(parent_product.lastElementChild);
             var td_element = '';
             $.each(value, function(i,item){
-                if (i == 0){return true;}
+                if (i == 0 || i == 9){return true;} //0 = excel cell num, 9 = create_date
                 td_element += '<td width="' + td_size[i] + 'px" align="center" style="background-color:#f3f3f3">' + item + '</td>';
             });
-            var test = '<tr id="row-1000" class="detail_cell" style="display:none; margin:3px">'
+            var child_td = '<tr id="row-1000" class="detail_cell" style="display:none; margin:3px">'
                       + '<td style="visibility:hidden;width:34px"></td><td>---</td>'+ td_element + '</tr>';
-            $(parent_product).after(test);
+            $(parent_product).after(child_td);
 
             //+ button
             if (last_element.hasClass('detail_button') || $(parent_product).hasClass('detail_cell')){
@@ -228,31 +236,40 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
             }
             last_element.after('<input type="button" class="detail_button" value="+" id="gvm_excel_add"/>');
         });
+        self.detail_toggle = true;
+        $('#detail_product_get').html('수정이력보기');
     },
     save: function(){
         var self = this;
         var project_selected = $('#gvm_search_product.comboTreeInputBox').val();
         var selected_part = $('#gvm_search_product_part option:selected');
         var reorder_text = '';
+        var save_complete = true;
         if (project_selected != false){
-            $.each(self.update_content, function(id,row){
-                reorder_text = '';
-                row[0] = self.data_id[self.Numtmp_row[id]]; 
-                if (row[7] == false){
-                    row[7] = 'A';
+            var check_confirm = confirm('저장하시겠습니까');
+            if (check_confirm)
+            {
+                $.each(self.update_content, function(id,row){
+                    if (row[1] == false){
+                        alert('번호를 꼭 입력해 주세요');
+                        save_complete = false;
+                        return false;
+                    }
+                    reorder_text = '';
+                    row[0] = self.data_id[self.Numtmp_row[id]]; 
+                    if (row[7] == false){
+                        row[7] = 'A';
+                    }
+                    row[9] = project_selected;
+                    row[10] = selected_part.text();
+                });
+                if (save_complete){
+                    Product.call('gvm_bom_save', ['save',self.update_content]).then(function(){
+                        self.search()
+                    });
+                    console.log(self.update_content);
                 }
-                row[9] = project_selected;
-                row[10] = selected_part.text();
-                //$.each(self.Numtmp_col, function(id,col){
-                //  reorder_text += (self.colHeaders[col] + ' : ' + self.original_data[self.Numtmp_row[id]][col] + '->' + row[col] + '\n');
-                //});
-                //row[11] = reorder_text;
-                console.log('update = '+ self.update_content);
-            });
-            Product.call('gvm_bom_save', ['save',self.update_content]);
-            console.log(self.update_content);
-            alert('save');
-            this.search();
+            }
         }else{
             alert('Please Check Project');
         }
@@ -273,28 +290,30 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
             })
         }
 
-        Product.call('gvm_purchase_create',['purchase', purchase_list]);
+        Product.call('gvm_purchase_create',['purchase', purchase_list]).then(function(){
+            self.search();
+        });
     },
     get_all_detail_product: function(){
         var self = this;
         if (self.detail_toggle){
+            $('#detail_product_get').html('수정이력숨기기');
             $('.detail_cell').show();
             self.detail_toggle = false;
         }else
         {
+            $('#detail_product_get').html('수정이력보기');
             $('.detail_cell').hide();
             self.detail_toggle = true;
         }
     },
     get_detail_product: function(event) {
         var self = this;
-        var parent_product = event.currentTarget.parentElement
-        var seq_name = parent_product.childNodes[2].textContent;
-        console.log(seq_name);
-        var selected_cel = $('#mytable tbody td:nth-child(3):contains(' + seq_name + ')');
-        var sub_filter = self.sub_data.filter(c => c.indexOf(seq_name) != -1);
-        console.log(sub_filter);
-        var detail_cell = $(parent_product);
+        //var parent_product = event.currentTarget.parentElement
+        //var seq_name = parent_product.childNodes[2].textContent;
+        //var selected_cel = $('#mytable tbody td:nth-child(3):contains(' + seq_name + ')');
+        //var sub_filter = self.sub_data.filter(c => c.indexOf(seq_name) != -1);
+        //var detail_cell = $(parent_product);
         //if (detail_cell.css('display') == 'none'){
         //    detail_cell.show();
         //}else{
@@ -303,6 +322,14 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
     },
     add_excel: function(){
         self.$('#mytable').jexcel('insertRow',1);
+    },
+    gvm_quick_create: function(event){
+        var project_id = '';
+        var name = '';
+        var model = '';
+        //console.log(event.currentTarget);
+        //new data.DataSet(this, model, undefined)
+        //        .create({'name':name,'project_id':project_id,'user_id':1,'stage_id':18}, undefined);
     },
 });
 

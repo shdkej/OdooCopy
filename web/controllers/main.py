@@ -912,6 +912,7 @@ class DataSet(http.Controller):
       for i in index:
 	if sign_id[i]:
 	  index_list.append(i)
+      _logger.warning(index_list)
       state_id = index.index(index_list[0]) + 1
       name = request.env.user.name
       uid = request.env['res.users'].search([('name','=',name)]).id
@@ -919,8 +920,10 @@ class DataSet(http.Controller):
       check = 'check'+str(state_id)
       check_date = 'check'+str(state_id)+'_date'
       request_check = 'request_check'+str(state_id)
+      # state 입력을 안받으면
       if not state:
         state = check
+        # 
         if len(index_list) < 2:
           state = 'done'
       if sign_id.reason and comment:
