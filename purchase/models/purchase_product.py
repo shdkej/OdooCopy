@@ -375,6 +375,7 @@ class GvmPurchaseProduct(models.Model):
     @api.multi
     def button_send_quotation(self):
         self.write({'state': "draft", 'permit_man': self.env.uid})
+
         if self.product:
 	  for product in self.product:
 	    product.write({'state':'purchase'
@@ -386,8 +387,17 @@ class GvmPurchaseProduct(models.Model):
             if not stock:
               stock = self.env['product.product'].search([('model','ilike',product.specification),
                                                           ('stock','>=',1)],limit=1)
-              
+
             if stock:
+              #sh
+              #공용자재에 발주번호 작성
+              po = self.name
+              if stock.ponum == False:
+               value = po
+              else:
+               value = stock.ponum + ',' + po
+              stock.write({'ponum':value})
+
               product.stock_item = True            
               # 개수가 모자라면 분할해야 함
               stock_log = stock.stock
