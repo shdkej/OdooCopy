@@ -8,6 +8,8 @@ from odoo.exceptions import ValidationError
 from odoo.osv import expression
 
 import odoo.addons.decimal_precision as dp
+import logging
+_logger = logging.getLogger(__name__)
 
 
 class ProductCategory(models.Model):
@@ -343,6 +345,7 @@ class ProductProduct(models.Model):
     @api.multi
     def write(self, values):
         ''' Store the standard price change in order to be able to retrieve the cost of a product for a given date'''
+        _logger.warning('test')
         res = super(ProductProduct, self).write(values)
         if 'standard_price' in values:
             self._set_standard_price(values['standard_price'])

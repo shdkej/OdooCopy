@@ -454,6 +454,7 @@ var DataSet =  Class.extend(mixins.PropertiesMixin, {
      */
     create: function(data, options) {
         var self = this;
+        console.log(data);
         return this._model.call('create', [data], {
             context: this.get_context()
         }).done(function () {

@@ -113,6 +113,7 @@ class GvmSignContent(models.Model):
 
     check_all = fields.Boolean('전결')
     next_check = fields.Char(string='next_check',compute='_compute_next_check', store=True)
+
     state = fields.Selection([
         ('temp', '임시저장'),
         ('write', '상신'),
@@ -383,7 +384,6 @@ class GvmSignContent(models.Model):
     def sign_view(self):
         uname = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).id
         username = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).name
-        #domain = ['&','|','|',('request_check1','=',uname),('request_check2','=',uname),('request_check3','=',uname),'&',('next_check','=',username),('state','!=','temp')]
         domain = [('next_check','=',username),('state','not in',['temp','done','cancel'])]
         return {
             'name': _('Sign'),
