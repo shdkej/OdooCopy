@@ -375,20 +375,28 @@ class GvmPurchaseProduct(models.Model):
     def button_send_quotation(self):
         self.write({'state': "draft", 'permit_man': self.env.uid})
 	for record in self.product:
-	  record.write({'state':'purchase',
-	  		'request_date':datetime.today()
+	  record.write({'state':'purchase'
 	  })
 
         # Find Stock
         if self.product:
           for product in self.product:
-            stock = self.env['product.product'].search([('specification','=',product.name),
+            stock = self.env['product.product'].search([('model','=',product.name),
                                                         ('stock','>=',1)],limit=1)
             if not stock:
-              stock = self.env['product.product'].search([('specification','=',product.specification),
-                                                          ('stock','>=',1)],limit=1)
-              
+              stock = self.env['product.product'].search([('model','=',product.specification),
+                                                          ('stock','>=',1)],limit=1)  
+            _logger.warning(product.name)
             if stock:
+              #sh
+              #공용자재에 발주번호 작성
+              po = self.name
+              if stock.ponum == False:
+               value = po
+              else:
+               value = stock.ponum + ',' + po
+              stock.write({'ponum':value})
+
               product.stock_item = True            
               # 개수가 모자라면 분할해야 함
               stock_log = stock.stock
@@ -468,10 +476,10 @@ class GvmPurchaseProduct(models.Model):
 	        pd.state = 'cancel'
                 # Stock
                 if pd.stock_item:
-                  stock = self.env['product.product'].search([('specification','=',pd.name)
+                  stock = self.env['product.product'].search([('model','=',pd.name)
                                                              ],limit=1)
                   if not stock:
-                     stock = self.env['product.product'].search([('specification','=',product.specification),
+                     stock = self.env['product.product'].search([('model','=',pd.specification),
                                                                  ('stock','>=',1)],limit=1)
                   if stock:
                     stock.stock = stock.stock + (pd.total_count)

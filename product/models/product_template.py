@@ -22,10 +22,6 @@ class ProductTemplate(models.Model):
     _description = "Product Template"
     _order = "name"
 
-    #sh
-    edit_log = fields.One2many('product.log', 'productlog')
-
-
     def _get_default_category_id(self):
         if self._context.get('categ_id') or self._context.get('default_categ_id'):
             return self._context.get('categ_id') or self._context.get('default_categ_id')
@@ -34,6 +30,12 @@ class ProductTemplate(models.Model):
 
     def _get_default_uom_id(self):
         return self.env["product.uom"].search([], limit=1, order='id').id
+    
+    #sh
+    #공용자재필터
+    model = fields.Char(string = '모델명')
+    maker = fields.Char(string = '제조사')
+    meterial = fields.Char(string = '재질')
 
     name = fields.Char('Name', index=True, required=True, translate=True)
     sequence = fields.Integer('Sequence', default=1, help='Gives the sequence order when displaying a product list')
@@ -297,7 +299,6 @@ class ProductTemplate(models.Model):
 
     @api.multi
     def write(self, vals):
-    	self.write_log()
         tools.image_resize_images(vals)
         res = super(ProductTemplate, self).write(vals)
         if 'attribute_line_ids' in vals or vals.get('active'):
@@ -305,18 +306,7 @@ class ProductTemplate(models.Model):
         if 'active' in vals and not vals.get('active'):
             self.with_context(active_test=False).mapped('product_variant_ids').write({'active': vals.get('active')})
         return res
-    #sh
-    def write_log(self):
-        _logger.warning('test')
-
-	product = self.env['product.product'].search()
-	_logger.warning(product.etc)
-	_logger.warning(self.etc)
-	for record in self:
-	 _logger.warning(record.etc)
-	 for log in record.edit_log:
-	   log.log_user = hr.name 
-	   
+      
     @api.multi
     def copy(self, default=None):
         # TDE FIXME: should probably be copy_data
@@ -436,14 +426,4 @@ class ProductTemplate(models.Model):
                     pass
         return True
 
- #sh
-class ProductLog(models.Model):
-   _name = "product.log"
-   _description = "product.log"
-   _order = ''
-	
-   productlog = fields.Many2one('product.template')
-   log_date = fields.Datetime(string='수정날짜',required=True, default= datetime.today())
-   log_user = fields.Char(string='수정자')
-   log = fields.Char(string='수정내용')
 

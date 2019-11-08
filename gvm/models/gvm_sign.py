@@ -112,7 +112,7 @@ class GvmSignContent(models.Model):
     sign_line = fields.One2many('gvm.signcontent.line','sign','sign_line')
 
     check_all = fields.Boolean('전결')
-    next_check = fields.Char(string='next_check',compute='_compute_next_check')
+    next_check = fields.Char(string='next_check',compute='_compute_next_check', store=True)
     state = fields.Selection([
         ('temp', '임시저장'),
         ('write', '상신'),
@@ -123,7 +123,8 @@ class GvmSignContent(models.Model):
         ('check5', '결재'),
         ('done', '결재완료'),
         ('cancel', '반려'),
-        ('remove', '취소')])
+        ('remove', '취소')
+        ], string='Status', readonly=True, index=True, copy=False, default='temp', track_visibility='onchange')
     holiday_count = fields.Char('holiday_count', compute='_compute_holiday_count')
     confirm_date = fields.Date('confirm_date')
 
@@ -298,16 +299,12 @@ class GvmSignContent(models.Model):
 	    record.request_check3 = ceo
             record.request_check4 = manager[1].id
             record.request_check5 = manager[0].id
-	  #elif record.sign_ids == 1:
-	  #  dep_list = []
-	  #  dep_ids = self.env['hr.employee'].search([('department_id','=',dep.id)])
-	  #  for dep_id in dep_ids:
-	  #    dep_list.append(dep_id.id)
-	  #  record.reference = dep_list
           else:
             record.request_check1 = False
             record.request_check2 = False
             record.request_check3 = boss
+            record.request_check4 = False
+            record.request_check5 = False
 	    record.reference = False
 
     @api.depends('date_from','date_to')
@@ -386,7 +383,8 @@ class GvmSignContent(models.Model):
     def sign_view(self):
         uname = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).id
         username = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).name
-        domain = ['&','|','&','|',('request_check1','=',uname),('request_check2','=',uname),('request_check3','=',uname),('next_check','=',username),('state','!=','temp')]
+        #domain = ['&','|','|',('request_check1','=',uname),('request_check2','=',uname),('request_check3','=',uname),'&',('next_check','=',username),('state','!=','temp')]
+        domain = [('next_check','=',username),('state','not in',['temp','done','cancel'])]
         return {
             'name': _('Sign'),
             'domain': domain,

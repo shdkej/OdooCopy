@@ -69,38 +69,6 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         },300);
 
     },
-    sort_tree: function(project_dic) {
-        var flag = true;
-        var second_array = [];
-        // id, title, subs, start, seq, rate
-        var i;
-        console.log(project_dic);
-        $.each(project_dic, function(index, item){
-            console.log(index);
-            $.each(project_dic, function(index, item){
-                console.log(index);
-                if (project_dic[item.title].rate != 1){return true};
-                var child_project = project_dic.filter(c => c.title.indexOf(item.title) != -1);
-                console.log(child_project);
-                //4
-                if (child_project.length != 0){
-                    project_dic.map(function(ar){
-                        if (child_project.indexOf(ar.title)){
-                            ar.rate+=item.id+0.1;
-                            console.log(item.id);
-                        }
-                    });
-                }
-                //3
-                if (index == project_dic.length)
-                {
-                    project_dic.push(project_dic[0]);
-                    project_dic.shift();
-                }
-            });
-        })
-        return project_dic;
-    },
     update_project: function(){
         var self = this;
         var project_selected = $('#gvm_search_product.comboTreeInputBox').val();
@@ -292,8 +260,6 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         var seq_name = parent_product.childNodes[2].textContent;
         console.log(seq_name);
         var selected_cel = $('#mytable tbody td:nth-child(3):contains(' + seq_name + ')');
-        var sub_filter = self.sub_data.filter(c => c.indexOf(seq_name) != -1);
-        console.log(sub_filter);
         var detail_cell = $(parent_product);
         //if (detail_cell.css('display') == 'none'){
         //    detail_cell.show();

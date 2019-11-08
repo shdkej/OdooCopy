@@ -216,7 +216,6 @@ class GvmProduct(models.Model):
         self.write({'destination_date': datetime.today(), 
 	            'destination_man': self.env.user.name,
 		    'state': 'destination'})
-	Product = request.env['gvm.product']
         return {}
 
     @api.multi

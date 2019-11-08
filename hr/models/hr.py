@@ -201,13 +201,13 @@ class Employee(models.Model):
         if year_entering == 0 and companyMonth != presentMonth and companyDay == presentDay:
         #연차 1개를 증가시킨다.
           record.holiday_count += 1.0
-          _logger.warning("%d under 1 year" % record.name)
+          _logger.warning("%s under 1 year" % record.name)
         #1년미만 입사자
         elif year_entering == 1 and companyMonth != presentMonth and companyDay == presentDay:
 	 if companyMonth >= presentMonth:
          #연차 1개를 증가시킨다.
 	  record.holiday_count += 1.0
-          _logger.warning("%d under 1 year" % record.name)
+          _logger.warning("%s under 1 year" % record.name)
         #1년
         elif year_entering == 1 and companyMonth == presentMonth and companyDay == presentDay:
           #2년이상 입사자 해당
@@ -218,7 +218,7 @@ class Employee(models.Model):
 
           #연차 15개를 증가시킨다.
           record.holiday_count += 15.0
-          _logger.warning("%d 1 year" % record.name)
+          _logger.warning("%s 1 year" % record.name)
             
         #3년이상 재직 시 2년마다 연차 총 개수 1개씩 증가
         if year_entering > 2.0 and companyMonth == presentMonth and companyDay == presentDay:   
@@ -226,12 +226,12 @@ class Employee(models.Model):
 	  if year_check == 0.0:
 	   year_1count = (year_entering / 2.0) - 1.0
            record.holiday_count += year_1count
-           _logger.warning("%d 3 year" % record.name)
+           _logger.warning("%s 3 year" % record.name)
 	  #홀수
 	  else:
  	   year_2count = (year_entering - 1.0) / 2.0
 	   record.holiday_count += year_2count
-           _logger.warning("%d 3 year" % record.name)
+           _logger.warning("%s 3 year" % record.name)
 	
         #1년미만 입사자는 max_count = 0 
         if year_entering == 0 and companyMonth != presentMonth and companyDay == presentDay:
