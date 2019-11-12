@@ -231,7 +231,7 @@
             <pivot string="gvm product">
                 <field name="project_id" type="row"/>
                 <field name="destination_date" interval="month" type="col"/>
-                <field name="total_price" type="measure"/>
+                <field name="tax_price" type="measure"/>
             </pivot>
         </field>
     </record>
@@ -287,7 +287,6 @@
             <form>
                 <header>
                     <button type="action" string="발주요청서" name="%(act_purchase_product)d" class="oe_highlight"></button>
-                    <button type="action" string="프로젝트관리" name="%(act_purchase_project)d" class="oe_highlight"></button>
                 </header>
                 <sheet>
                     <widget type="search_table"/>

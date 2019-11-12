@@ -43,7 +43,7 @@ class GvmSignContent(models.Model):
     user_id = fields.Many2one('res.users', string='user_id', default=lambda self: self.env.uid,store=True)
     name = fields.Char(string='name', default='New')
     color = fields.Integer('Color')
-    sign_ids = fields.Integer('sign_ids',compute='_compute_sign')
+    sign_ids = fields.Integer('sign_ids',compute='_compute_sign',store=True)
     dep_ids = fields.Many2one('hr.department',string='department',compute='_compute_sign',store=True)
     job_ids = fields.Many2one('hr.job',string='job_id',compute='_compute_sign',store=True)
 
@@ -108,7 +108,8 @@ class GvmSignContent(models.Model):
     currency_dong = fields.Float(string='dong',default=0.05)
     currency_dollar = fields.Float(string='dollar',default=1079.5)
     attachment = fields.Many2many('ir.attachment', domain="[('res_model','=','gvm.signcontent')]", string='도면')
-    relate_sign = fields.Many2one('gvm.signcontent','sign')
+    relate_sign1 = fields.Many2one('gvm.signcontent',string='출장완료서', domain=[('sign_ids','=',4)])
+    relate_sign2 = fields.Many2one('gvm.signcontent',string='출장계획서', domain=[('sign_ids','=',6)])
     sign_line = fields.One2many('gvm.signcontent.line','sign','sign_line')
 
     check_all = fields.Boolean('전결')
@@ -257,7 +258,7 @@ class GvmSignContent(models.Model):
     @api.depends('user_id')
     def _compute_holiday_count(self):
       for record in self:
-	hr_name = self.env['hr.employee'].search([('name','=',self.user_id.name)])
+	hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',record.user_id.name),('department_id','=', record.user_department.id)])
         record.holiday_count = hr_name.holiday_count
 
     @api.model
@@ -538,7 +539,7 @@ class GvmSignContent(models.Model):
 	        #연차갯수
 	        count = self.check_holiday_count()
 	        #로그인한 유저정보
-	        hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.user_department.id)])
+	        hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',record.user_id.name),('department_id','=',record.user_department.id)])
 	        #총 연차갯수 + 사용했던 연차갯수
 	        h_count = float(hr_name.holiday_count) + float(count)
 	        # 적용

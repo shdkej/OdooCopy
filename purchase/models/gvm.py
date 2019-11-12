@@ -284,18 +284,22 @@ class GvmProduct(models.Model):
 
     @api.multi
     def purchase_project_view(self):
+        cc = {'active_id':'21'}
         return {
+            'domain': ['id','=',21],
             'name': _('Project Manage'),
-            'domain': '[]',
             'res_model': 'project.project',
+            'res_id':21,
             'type': 'ir.actions.act_window',
             'view_id': False,
+            'views': [[False,'form']],
             'target': 'new',
             'view_mode': 'tree,form',
             'view_type': 'form',
             'limit': 80,
-            'context': "{}"
-        }
+            'context': {},
+            }
+        
 
     def gvm_bom_save(val1, vals):
     	Product = request.env['gvm.product']
@@ -361,6 +365,7 @@ class GvmProduct(models.Model):
 			 'bad_state': product_bad_state.upper().encode('utf-8'), 
 			 'etc': product_etc,
 			 'issue':part_id, 
+			 'project_ids': project_id, 
 			 'project_set':[(4, project_id)], 
 		         'request_date':datetime.today() + timedelta(days=7),
 			 'order_man':request.env.user.name})
@@ -373,6 +378,7 @@ class GvmProduct(models.Model):
 			'material': product_material,
 			'original_count': product_original_count,
 			'project_id': product_project_id,
+			'project_ids': project_id, 
 			'issue':part_id,
 			'request_date':datetime.today() + timedelta(days=7),
 			'order_man':request.env.user.name,

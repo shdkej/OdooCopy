@@ -43,7 +43,11 @@
         this.elemInputId = this._elemInput.attr('id');
 
         var is_bom = this._elemInput.hasClass('bom_search');
-        this._elemInput.wrap('<div id="'+ this.comboTreeId + 'Wrapper" class="comboTreeWrapper"></div>');
+        if (is_bom){
+          this._elemInput.wrap('<div id="'+ this.comboTreeId + 'Wrapper" class="comboTreeWrapper_bom"></div>');
+        }else{
+          this._elemInput.wrap('<div id="'+ this.comboTreeId + 'Wrapper" class="comboTreeWrapper"></div>');
+        }
         this._elemInput.wrap('<div id="'+ this.comboTreeId + 'InputWrapper" class="comboTreeInputWrapper"></div>');
         this._elemWrapper = $('#' + this.comboTreeId + 'Wrapper');
 
@@ -64,6 +68,8 @@
         this.processSelected();
 
         this.bindings();
+
+        $('.ComboTreeItemParent ul').css('display','none');
     };
 
 
