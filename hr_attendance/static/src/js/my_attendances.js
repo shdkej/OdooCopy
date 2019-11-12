@@ -8,7 +8,6 @@ var Widget = require('web.Widget');
 var QWeb = core.qweb;
 var _t = core._t;
 
-
 var MyAttendances = Widget.extend({
     events: {
         "click .o_hr_attendance_sign_in_out_icon": function() {
@@ -50,34 +49,34 @@ var MyAttendances = Widget.extend({
     },
 
     get_geolocation: function () {
-      var startPos;
-      var result;
-      var self = this;
-      var hr_employee = new Model('hr.employee');
-      var geoOptions = {
-        timeout: 10 * 1000,
-		enableHighAccuracy: true
-      }
+        var startPos;
+        var result;
+        var self = this;
+        var hr_employee = new Model('hr.employee');
+        var geoOptions = {
+            timeout: 10 * 1000,
+            enableHighAccuracy: true
+        }
 
-      var geoSuccess = function(position) {
-        startPos = position;
-        alert("확인되었습니다.");
-	var lat = startPos.coords.latitude;
-	var lng = startPos.coords.longitude;
-	console.log(lat + ',' + lng);
-	result = [lat, lng];
-        
-	hr_employee.call('naver_geocode', [[], result])
-	  .then(function(result) {
-            self.update_attendance(result);
-	    console.log(result);
-	});
-      };
-      var geoError = function(error) {
-	alert(error.message)
-      };
+        var geoSuccess = function(position) {
+            startPos = position;
+            alert("확인되었습니다.");
+            var lat = startPos.coords.latitude;
+            var lng = startPos.coords.longitude;
+            console.log(lat + ',' + lng);
+            result = [lat, lng];
 
-      navigator.geolocation.getCurrentPosition(geoSuccess, geoError, geoOptions)
+            hr_employee.call('naver_geocode', [[], result])
+                .then(function(result) {
+                    self.update_attendance(result);
+                    console.log(result);
+                });
+        };
+        var geoError = function(error) {
+            alert(error.message)
+        };
+
+        navigator.geolocation.getCurrentPosition(geoSuccess, geoError, geoOptions)
     },
 });
 

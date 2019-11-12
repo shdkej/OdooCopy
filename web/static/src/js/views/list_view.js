@@ -302,18 +302,49 @@ var ListView = View.extend({
     },
     gvm_search: function(){
         var self = this;
-        var tree_data_array = [];
-        $('#gvm_search option').remove();
-        $('#gvm_search').append('<option id="0" value="0"></option>');
             var Project = new Model('project.project');
             Project.query(['name'],['id']).all().then(function(id){
+              var tree_data = [];
               $.each(id, function(index, item){
-                $('#gvm_search').append('<option id="'+index+'" value="'+item.id+'">'+item.name+'</option>');
+                tree_data[index] = ({'id':item.id,'title':item.name, 'rate':1});
               });
-           });
+              return tree_data;
+           }).then(function(ar){
+            var sort_array = self.sort_tree(ar);
+            var combotree = $('#gvm_search').comboTree({
+                source: sort_array
+            });
+        });
     },
- 
-   on_change_check: function(){
+    // 이름을 기준으로 tree 정렬(ex. ssm ak > ssm ak #1)
+    sort_tree: function(project_dic) {
+        var second_array = [];
+        // id, title, subs, rate
+        $.each(project_dic, function(index, item){
+            // 자신과 이름이 같은게 있으면 리스트 따로 저장
+            var child_project = project_dic.filter(function(c){
+                if (c.title != item.title && c.title.indexOf(item.title) != -1){
+                    return true;
+                }
+            })
+            //4
+            if (child_project.length != 0){
+                //child_project.map(c=>c.rate = item.id+0.1);
+                child_project.map(function(c){
+                    c.rate = item.id+0.1;
+                })
+                item.subs = child_project;
+            }
+        });
+
+        // rate가 높은것은 project_dic에서 제거
+        var tree_array = project_dic.filter(function(c){
+            return c.rate == 1;
+        });
+
+        return tree_array;
+    },
+    on_change_check: function(){
 	    if ($('#radiogroup:checked').length >0){
 	      $('#order_button').show();
 	      $('#quotation_change_button').show();

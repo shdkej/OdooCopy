@@ -133,19 +133,6 @@ var FormView = View.extend(common.FieldManagerMixin, {
         this.has_been_loaded.done(function() {
             self.on("change:actual_mode", self, self.toggle_buttons);
             self.on("change:actual_mode", self, self.toggle_sidebar);
-/*            var thead = $(".o_notebook").find(".o_column_sortable").text().replace(/ /gi,"").trim().split('\n\n');
-            var thead2 = $(".o_notebook thead tr th")
-            thead2.each(function(i){
-              thead2.eq(i).insertBefore($(".o_notebook tbody tr td").eq(i)).css('display','table-caption');
-            });
-             
-             for(var i in thead){
-              if(i!=0){
-              var j = i;
-              i++;
-              $("<style>@media(max-width: 475px){.table-striped td:nth-child("+i+"):before{content:'"+thead[j]+"'; font-weight:bold; left:0.5em; position:absolute;}}</style>").appendTo("head");
-              }
-             }*/
         });
         self.on("load_record", self, self.load_record);
         core.bus.on('clear_uncommitted_changes', this, function(chain_callbacks) {

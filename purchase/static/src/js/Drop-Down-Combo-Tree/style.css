@@ -1,6 +1,15 @@
 .comboTreeWrapper{
 	position: relative;
 	text-align: left !important;
+    position: fixed;
+    left: 140px;
+    top: 60px;
+    width: 300px;
+    z-index: 1;
+}
+.comboTreeWrapper_bom{
+	position: relative;
+	text-align: left !important;
 }
 
 .comboTreeInputWrapper{

@@ -17,6 +17,7 @@ auth_crypt/
 auth_ldap/
 auth_oauth/
 auth_signup/
+auto_backup/
 barcodes/
 base/
 base_action_rule/

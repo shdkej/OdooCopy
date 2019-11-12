@@ -196,7 +196,10 @@
 			<td class="tdcolor">지급 된 비용</td>
 			<td width="40%"><field name="had_cost"/></td>
 			<td class="tdcolor">문서첨부</td>
-			<td width="40%"><field name="relate_sign" options="{'no_create_edit':True,'no_create':True}" domain="[('user_id','=',user_id)]"/></td>
+			<td width="40%">
+                출장계획서 : <field name="relate_sign2" options="{'no_create_edit':True,'no_create':True}" domain="[('user_id','=',user_id),('sign_ids','=',6)]" attrs="{'required':[('sign_ids','=',3)]}"/><br/>
+                출장완료서 : <field name="relate_sign1" options="{'no_create_edit':True,'no_create':True}" domain="[('user_id','=',user_id),('sign_ids','=',4)]" attrs="{'required':[('sign_ids','=',3)]}"/>
+            </td>
 		</tr>
 		<tr attrs="{'invisible':[('sign_ids','in',[1,2,5,9])]}">
 			<td class="tdcolor">프로젝트</td>
@@ -501,9 +504,9 @@ $(document).ready(function(){
         <menuitem name="문서 목록" id="menu_sign_herit" parent="menu_sign" action="act_sign" sequence="2"/>
         <menuitem name="내 문서" id="menu_sign_content_my" parent="menu_sign_root" action="act_sign_content_my" sequence="3"/>
         <menuitem name="참조문서" id="menu_sign_content_ref" parent="menu_sign_root" action="act_sign_reference_content" sequence="3"/>
-        <menuitem name="결재 할 문서" id="menu_sign_content" parent="menu_sign_root" action="ir_actions_server_gvm" sequence="0" groups="hr.group_hr_manager"/>
-        <menuitem name="결재 한 문서" id="menu_sign_content_check" parent="menu_sign_root" action="act_sign_content_check" sequence="2" groups="hr.group_hr_manager"/>
-        <menuitem name="결재 된 문서" id="menu_sign_content_finish" parent="menu_sign" action="act_sign_content_finish" sequence="1" groups="hr.group_hr_manager"/>
+        <menuitem name="결재 할 문서" id="menu_sign_content" parent="menu_sign_root" action="ir_actions_server_gvm" sequence="0"/>
+        <menuitem name="결재 한 문서" id="menu_sign_content_check" parent="menu_sign_root" action="act_sign_content_check" sequence="2"/>
+        <menuitem name="결재 된 문서" id="menu_sign_content_finish" parent="menu_sign" action="act_sign_content_finish" sequence="1"/>
         <menuitem name="전체문서" id="menu_sign_content_all" parent="menu_sign" action="act_sign_content_all" sequence="2" groups="hr.group_hr_manager"/>
 
 </odoo>

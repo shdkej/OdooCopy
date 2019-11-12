@@ -51,7 +51,8 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         Project.query(['name','project_rate']).filter([['is_finish','=',false]]).all().then(function(id){
             var tree_test = [];
             $.each(id, function(index, item){
-                tree_test[index] = ({'id':item.id,'title':item.name, 'subs':[], 'rate':1});
+                //tree_test[index] = ({'id':item.id,'title':item.name, 'subs':[], 'rate':1});
+                tree_test[index] = ({'id':item.id,'title':item.name, 'rate':1});
             })
             return tree_test;
         }).then(function(ar){
@@ -111,6 +112,9 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
                 $('#gvm_search_product_part').append('<option id="'+index+'" value="'+item.id+'">'+item.name+'</option>');
             })
         });
+        if (project_selected != ''){
+            $('#gvm_quick_create').show();
+        }
         this.search();
     },
     update_part: function(){
@@ -324,11 +328,27 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
     add_excel: function(){
         self.$('#mytable').jexcel('insertRow',1);
     },
-    gvm_quick_create: function(event){
+    gvm_quick_create: function(){
+        var self = this;
         var project_id = '';
         var name = '';
         var model = '';
-        //console.log(event.currentTarget);
+
+        var project_selected = $('#gvm_search_product.comboTreeInputBox').val();
+        var Project = new Model('project.project');
+        var project_id = Project.query(['id']).filter([['name','=',project_selected]]).all().then(function(id){
+            var prj_id = id[0].id
+            var action = {
+                type: 'ir.actions.act_window',
+                res_model: 'project.project',
+                res_id: prj_id,
+                view_mode: 'form',
+                target: 'new',
+                view_type: 'form',
+                views: [[false, 'form']],
+            };
+            self.do_action(action);
+        })
         //new data.DataSet(this, model, undefined)
         //        .create({'name':name,'project_id':project_id,'user_id':1,'stage_id':18}, undefined);
     },
