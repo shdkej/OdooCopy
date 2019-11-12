@@ -113,7 +113,8 @@ class GvmSignContent(models.Model):
     sign_line = fields.One2many('gvm.signcontent.line','sign','sign_line')
 
     check_all = fields.Boolean('전결')
-    next_check = fields.Char(string='next_check',compute='_compute_next_check',store=True)
+    next_check = fields.Char(string='next_check',compute='_compute_next_check', store=True)
+
     state = fields.Selection([
         ('temp', '임시저장'),
         ('write', '상신'),
@@ -464,8 +465,8 @@ class GvmSignContent(models.Model):
 	  h_count = float(hr_name.holiday_count) - float(count)
 	  _logger.warning(h_count)
 
-	  if h_count < -7:
-           raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
+	  #if h_count < -7:
+          # raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
 	  hr_name.holiday_count = float(h_count)
 	  _logger.warning(hr_name.holiday_count)
 

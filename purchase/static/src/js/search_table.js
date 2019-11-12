@@ -318,6 +318,7 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         //var selected_cel = $('#mytable tbody td:nth-child(3):contains(' + seq_name + ')');
         //var sub_filter = self.sub_data.filter(c => c.indexOf(seq_name) != -1);
         //var detail_cell = $(parent_product);
+
         //if (detail_cell.css('display') == 'none'){
         //    detail_cell.show();
         //}else{

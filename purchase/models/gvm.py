@@ -223,10 +223,6 @@ class GvmProduct(models.Model):
         self.write({'destination_date': datetime.today(), 
 	            'destination_man': self.env.user.name,
 		    'state': 'destination'})
-	Product = request.env['gvm.product']
-	Update = Product.search([])
-	for record in Update:
-          record.tax_price = record.total_price + record.total_price * 0.1
         return {}
 
     @api.multi
