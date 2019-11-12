@@ -30,12 +30,19 @@ class ProductTemplate(models.Model):
 
     def _get_default_uom_id(self):
         return self.env["product.uom"].search([], limit=1, order='id').id
+<<<<<<< HEAD
+    model = fields.Char(string = '모델명')
+    maker = fields.Char(string = '제조사')
+    meterial = fields.Char(string = '재질')
+
+=======
     
     #sh
     #공용자재필터
     model = fields.Char(string = '모델명')
     maker = fields.Char(string = '제조사')
     meterial = fields.Char(string = '재질')
+>>>>>>> fea00f5a34f1034165c52aba1f2219d73fadeacd
 
     name = fields.Char('Name', index=True, required=True, translate=True)
     sequence = fields.Integer('Sequence', default=1, help='Gives the sequence order when displaying a product list')
@@ -269,6 +276,7 @@ class ProductTemplate(models.Model):
 
     @api.onchange('uom_id')
     def _onchange_uom_id(self):
+    	_logger.warning("test")
         if self.uom_id:
             self.uom_po_id = self.uom_id.id
 
@@ -306,7 +314,6 @@ class ProductTemplate(models.Model):
         if 'active' in vals and not vals.get('active'):
             self.with_context(active_test=False).mapped('product_variant_ids').write({'active': vals.get('active')})
         return res
-      
     @api.multi
     def copy(self, default=None):
         # TDE FIXME: should probably be copy_data
@@ -323,7 +330,7 @@ class ProductTemplate(models.Model):
                 for template in self]
 
     @api.model
-    def name_search(self, name='', args=None, operator='ilike', limit=100):
+    def ame_search(self, name='', args=None, operator='ilike', limit=100):
         # Only use the product.product heuristics if there is a search term and the domain
         # does not specify a match on `product.template` IDs.
         if not name or any(term[0] == 'id' for term in (args or [])):

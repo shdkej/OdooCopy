@@ -309,7 +309,7 @@
 		    <field name="explain"/>
 		    <field name="etc"/>
 		    <field name="reason"/>
-            <field name="ponum"/>
+            <field name="ponum" readonly="1"/>
 		</field>
                    <field name="list_price" position="attributes">            
 		   <attribute name="name">list_price</attribute>

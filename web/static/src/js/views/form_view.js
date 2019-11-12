@@ -52,6 +52,7 @@ var FormView = View.extend(common.FieldManagerMixin, {
         'click #receive_button': 'gvm_change_state1',
 	'click #add_check': function(){
 	  var id = Number($('#add_check').attr('name'))
+      console.log(id)
 	  var td = $('.check_hidden:eq('+id+')').removeClass('o_form_invisible');
 	  $('.check_hidden:eq('+(id+2)+')').removeClass('o_form_invisible');
 	  $('tr:eq(2)').prepend('<td style="border:0!important"></td>')

@@ -12,6 +12,9 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
+import logging
+_logger = logging.getLogger(__name__)
+
 class ProductCategory(models.Model):
     _name = "product.category"
     _description = "Product Category"
@@ -26,7 +29,7 @@ class ProductCategory(models.Model):
     type = fields.Selection([
 	 ('consu' '소모품'),
 	 ('purchase','구매품'),
-	 ('process','가공품')])
+	 ('process','가공품')], track_visibility='alaways')
 #        ('view', 'View'),
 #        ('normal', 'Normal')], 'Category Type', default='normal',
 #        help="A category of the view type is a virtual category that can be used as the parent of another category to create a hierarchical structure.")
@@ -341,12 +344,11 @@ class ProductProduct(models.Model):
         if not (self.env.context.get('create_from_tmpl') and len(product.product_tmpl_id.product_variant_ids) == 1):
             product._set_standard_price(vals.get('standard_price') or 0.0)
         return product
-
+     
     @api.multi
     def write(self, values):
         ''' Store the standard price change in order to be able to retrieve the cost of a product for a given date'''
-        _logger.warning('test')
-        res = super(ProductProduct, self).write(values)
+	res = super(ProductProduct, self).write(values)
         if 'standard_price' in values:
             self._set_standard_price(values['standard_price'])
         return res
