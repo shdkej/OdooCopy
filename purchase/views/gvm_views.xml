@@ -1,294 +1,299 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-        <record id="gvm_product_tree" model="ir.ui.view">
-            <field name="name">gvm.product.tree</field>
-            <field name="model">gvm.product</field>
-            <field name="arch" type="xml">
-                <tree decoration-muted="state in ('cancel','bad')" decoration-info="destination_date!=False" decoration-danger="expected_date!=False and current_date>expected_date and destination_date==False" decoration-bf="expected_date!=False and current_date>expected_date and destination_date==False" default_order="purchase_by_maker asc">
-		    <field name="sequence_num"/>
-		    <field name="purchase_by_maker" string="발주번호"/>
-                    <field name="name" string="도면번호"/>
-                    <field name="product_name" required="1"/>
-                    <field name="specification"/>
-                    <field name="material"/>
-		    <field name="issue" string="파트"/>
-		    <field name="create_date" widget="date"/>
-                    <field name="request_date"/>
-		    <field name="drawing_man"/>
-                    <field name="original_count"/>
-                    <field name="total_count"/>
-		    <field name="draft_request_date"/>
-		    <field name="partner_ids"/>
-		    <field name="partner_id" groups="purchase.group_purchase_manager"/>
-	            <field name="price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
-	            <field name="total_price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
-		    <field name="order_date"/>
-                    <field name="expected_date"/>
-                    <field name="destination_date"/>
-		    <field name="receiving_date"/>
-                    <field name="category" invisible="1"/>
-		    <field name="request_receiving_man"/>
-		    <field name="reorder_num" string="자재상태"/>
-                    <field name="state"/>
-		    <field name="bad_item"/>
-		    <field name="bad_state"/>
-		    <field name="complete_date"/>
-		    <field name="etc"/>
-		    <button name="button_destination" type="object" string="입고" class="oe_highlight" attrs="{'invisible' :[('destination_date','!=',False)]}" groups="purchase.group_purchase_manager" confirm="입고되었습니까?"/>
-		    <button name="button_request_receiving" type="object" string="출고요청" class="oe_highlight" attrs="{'invisible' : ['|',('receiving_date','!=',False),('destination_date','==',False)]}" confirm="출고 요청 하시겠습니까?"/>
-		    <button name="button_receiving" type="object" string="출고" class="oe_highlight" attrs="{'invisible' :[('state','!=','request_receiving')]}" confirm="출고 승인 하시겠습니까?" groups="purchase.group_purchase_manager"/>
-                </tree>
-		</field>
-	</record>
-        <record id="gvm_product_tree_all" model="ir.ui.view">
-            <field name="name">gvm.product.tree_all</field>
-            <field name="model">gvm.product</field>
-            <field name="arch" type="xml">
-                <tree decoration-muted="state in ('cancel','bad')" decoration-info="destination_date!=False" decoration-danger="expected_date!=False and current_date>expected_date and destination_date==False" decoration-bf="expected_date!=False and current_date>expected_date and destination_date==False" default_order="issue asc">
-		    <field name="sequence_num"/>
-		    <field name="purchase_by_maker" string="발주번호"/>
-                    <field name="name" string="도면번호"/>
-                    <field name="product_name" required="1"/>
-                    <field name="specification"/>
-                    <field name="material"/>
-		    <field name="issue" string="파트"/>
-		    <field name="create_date" widget="date"/>
-                    <field name="request_date"/>
-		    <field name="drawing_man"/>
-                    <field name="original_count"/>
-                    <field name="total_count"/>
-		    <field name="draft_request_date"/>
-		    <field name="partner_ids"/>
-		    <field name="partner_id" groups="purchase.group_purchase_manager"/>
-	            <field name="price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
-	            <field name="total_price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
-		    <field name="order_date"/>
-                    <field name="expected_date"/>
-                    <field name="destination_date"/>
-		    <field name="receiving_date"/>
-                    <field name="category" invisible="1"/>
-		    <field name="request_receiving_man"/>
-		    <field name="reorder_num" string="자재상태"/>
-                    <field name="state"/>
-		    <field name="bad_item"/>
-		    <field name="bad_state"/>
-		    <field name="complete_date"/>
-		    <field name="etc"/>
-		    <button name="button_destination" type="object" string="입고" class="oe_highlight" attrs="{'invisible' :[('destination_date','!=',False)]}" groups="purchase.group_purchase_manager" confirm="입고되었습니까?"/>
-		    <button name="button_request_receiving" type="object" string="출고요청" class="oe_highlight" attrs="{'invisible' : ['|',('receiving_date','!=',False),('destination_date','==',False)]}" confirm="출고 요청 하시겠습니까?"/>
-		    <button name="button_receiving" type="object" string="출고" class="oe_highlight" attrs="{'invisible' :[('state','!=','request_receiving')]}" confirm="출고 승인 하시겠습니까?" groups="purchase.group_purchase_manager"/>
-                </tree>
-		</field>
-	</record>
-        <record id="gvm_product_tree_receiving" model="ir.ui.view">
-            <field name="name">gvm.product.tree_receiving</field>
-            <field name="model">gvm.product</field>
-            <field name="arch" type="xml">
-                <tree decoration-muted="state in ('cancel','bad')" decoration-danger="expected_date!=False and current_date>expected_date or stock_item==True" decoration-bf="expected_date!=False and current_date>expected_date" default_order="create_date desc">
-		    <field name="sequence_num"/>
-                    <field name="expected_date"/>
-		    <field name="partner_id" groups="purchase.group_purchase_manager"/>
-		    <field name="project_id" string="프로젝트"/>
-		    <field name="issue" string="파트"/>
-		    <field name="purchase_by_maker" string="발주번호"/>
-                    <field name="name" string="도면번호"/>
-                    <field name="product_name" required="1"/>
-                    <field name="specification"/>
-                    <field name="material"/>
-		    <field name="create_date" widget="date"/>
-                    <field name="request_date"/>
-		    <field name="drawing_man"/>
-                    <field name="original_count"/>
-                    <field name="total_count"/>
-		    <field name="draft_request_date"/>
-		    <field name="partner_ids"/>
-	            <field name="price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
-	            <field name="total_price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
-		    <field name="order_date"/>
-                    <field name="destination_date"/>
-                    <field name="category" invisible="1"/>
-		    <field name="reorder_num" string="자재상태"/>
-                    <field name="state"/>
-		    <field name="bad_item"/>
-		    <field name="bad_state"/>
-		    <field name="stock_item"/>
-		    <field name="etc"/>
-		    <button name="button_destination" type="object" string="입고" class="oe_highlight" attrs="{'invisible' :[('destination_date','!=',False)]}" groups="purchase.group_purchase_manager" confirm="입고되었습니까?"/>
-		    <button name="button_request_receiving" type="object" string="출고요청" class="oe_highlight" attrs="{'invisible' : [('state','!=','destination')]}" confirm="출고 요청 하시겠습니까?"/>
-		    <button name="button_receiving" type="object" string="출고" class="oe_highlight" attrs="{'invisible' :[('state','!=','request_receiving')]}" confirm="출고 승인 하시겠습니까?" groups="purchase.group_purchase_manager"/>
-                </tree>
-		</field>
-	</record>
-        <record id="gvm_product_form" model="ir.ui.view">
-            <field name="name">gvm.product.form</field>
-            <field name="model">gvm.product</field>
-	    <field name="priority" eval="0"/>
-            <field name="arch" type="xml">
-                <form string="gvm">
-		<group>
-		    <field name="sequence_num"/>
-                    <field name="name" string="도면번호"/>
-                    <field name="product_name" required="1"/>
-                    <field name="specification"/>
-                    <field name="material"/>
-                    <field name="order_man"/>
-		    <field name="partner_ids"/>
-                    <field name="category"/>
-                    <field name="project_set" widget="many2many_tags"/>
-                    <field name="part"/>
-                    <field name="issue"/>
-		    <field name="purchase"/>
-		    <field name="purchase_by_maker"/>
-		    <field name="etc"/>
-                    <field name="attachment" widget="many2many_binary"/>
-		</group>
-		<notebook>
-		<page string="detail">
-		<group>
-		<group>
-                    <field name="state"/>
-                    <field name="release_place"/>
-                    <field name="request_date"/>
-                    <field name="expected_date"/>
-                    <field name="destination_date"/>
-                    <field name="destination_man"/>
-                    <field name="receiving_date"/>
-		    <field name="receiving_man"/>
-		    <field name="release_place"/>
-                    <field name="request_receiving_man"/>
-		    <field name="complete_date"/>
-		</group>
-		<group>
-                    <field name="original_count"/>
-                    <field name="total_count"/>
-	            <field name="price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
-	            <field name="total_price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
-		</group>
-		</group>
-		</page>
-		<page string="이력">
-		<group>
-		    <field name="bad_state"/>
-		    <field name="reorder_text"/>
-		</group>
-		</page>
-		</notebook>
-		<div class="oe_chatter">
-			<field name="message_follower_ids" widget="mail_followers"/>
-			<field name="message_ids" widget="mail_thread"/>
-		</div>
-		</form>
-	    </field>
-	</record>
+    <record id="gvm_product_tree" model="ir.ui.view">
+        <field name="name">gvm.product.tree</field>
+        <field name="model">gvm.product</field>
+        <field name="arch" type="xml">
+            <tree decoration-muted="state in ('cancel','bad')" decoration-info="destination_date!=False" decoration-danger="expected_date!=False and current_date>expected_date and destination_date==False" decoration-bf="expected_date!=False and current_date>expected_date and destination_date==False" default_order="purchase_by_maker asc">
+                <field name="sequence_num"/>
+                <field name="purchase_by_maker" string="발주번호"/>
+                <field name="name" string="도면번호"/>
+                <field name="product_name" required="1"/>
+                <field name="specification"/>
+                <field name="material"/>
+                <field name="issue" string="파트"/>
+                <field name="create_date" widget="date"/>
+                <field name="request_date"/>
+                <field name="drawing_man"/>
+                <field name="original_count"/>
+                <field name="total_count"/>
+                <field name="draft_request_date"/>
+                <field name="partner_ids"/>
+                <field name="partner_id" groups="purchase.group_purchase_manager"/>
+                <field name="price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
+                <field name="total_price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
+                <field name="order_date"/>
+                <field name="expected_date"/>
+                <field name="destination_date"/>
+                <field name="receiving_date"/>
+                <field name="category" invisible="1"/>
+                <field name="request_receiving_man"/>
+                <field name="reorder_num" string="자재상태"/>
+                <field name="state"/>
+                <field name="bad_item"/>
+                <field name="bad_state"/>
+                <field name="complete_date"/>
+                <field name="etc"/>
+                <button name="button_destination" type="object" string="입고" class="oe_highlight" attrs="{'invisible' :[('destination_date','!=',False)]}" groups="purchase.group_purchase_manager" confirm="입고되었습니까?"/>
+                <button name="button_request_receiving" type="object" string="출고요청" class="oe_highlight" attrs="{'invisible' : ['|',('receiving_date','!=',False),('destination_date','==',False)]}" confirm="출고 요청 하시겠습니까?"/>
+                <button name="button_receiving" type="object" string="출고" class="oe_highlight" attrs="{'invisible' :[('state','!=','request_receiving')]}" confirm="출고 승인 하시겠습니까?" groups="purchase.group_purchase_manager"/>
+            </tree>
+        </field>
+    </record>
+    <record id="gvm_product_tree_all" model="ir.ui.view">
+        <field name="name">gvm.product.tree_all</field>
+        <field name="model">gvm.product</field>
+        <field name="arch" type="xml">
+            <tree decoration-muted="state in ('cancel','bad')" decoration-info="destination_date!=False" decoration-danger="expected_date!=False and current_date>expected_date and destination_date==False" decoration-bf="expected_date!=False and current_date>expected_date and destination_date==False" default_order="issue asc">
+                <field name="sequence_num"/>
+                <field name="purchase_by_maker" string="발주번호"/>
+                <field name="name" string="도면번호"/>
+                <field name="product_name" required="1"/>
+                <field name="specification"/>
+                <field name="material"/>
+                <field name="issue" string="파트"/>
+                <field name="create_date" widget="date"/>
+                <field name="request_date"/>
+                <field name="drawing_man"/>
+                <field name="original_count"/>
+                <field name="total_count"/>
+                <field name="draft_request_date"/>
+                <field name="partner_ids"/>
+                <field name="partner_id" groups="purchase.group_purchase_manager"/>
+                <field name="price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
+                <field name="total_price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
+                <field name="order_date"/>
+                <field name="expected_date"/>
+                <field name="destination_date"/>
+                <field name="receiving_date"/>
+                <field name="category" invisible="1"/>
+                <field name="request_receiving_man"/>
+                <field name="reorder_num" string="자재상태"/>
+                <field name="state"/>
+                <field name="bad_item"/>
+                <field name="bad_state"/>
+                <field name="complete_date"/>
+                <field name="etc"/>
+                <button name="button_destination" type="object" string="입고" class="oe_highlight" attrs="{'invisible' :[('destination_date','!=',False)]}" groups="purchase.group_purchase_manager" confirm="입고되었습니까?"/>
+                <button name="button_request_receiving" type="object" string="출고요청" class="oe_highlight" attrs="{'invisible' : ['|',('receiving_date','!=',False),('destination_date','==',False)]}" confirm="출고 요청 하시겠습니까?"/>
+                <button name="button_receiving" type="object" string="출고" class="oe_highlight" attrs="{'invisible' :[('state','!=','request_receiving')]}" confirm="출고 승인 하시겠습니까?" groups="purchase.group_purchase_manager"/>
+            </tree>
+        </field>
+    </record>
+    <record id="gvm_product_tree_receiving" model="ir.ui.view">
+        <field name="name">gvm.product.tree_receiving</field>
+        <field name="model">gvm.product</field>
+        <field name="arch" type="xml">
+            <tree decoration-muted="state in ('cancel','bad')" decoration-danger="expected_date!=False and current_date>expected_date or stock_item==True" decoration-bf="expected_date!=False and current_date>expected_date" default_order="create_date desc">
+                <field name="sequence_num"/>
+                <field name="expected_date"/>
+                <field name="partner_id" groups="purchase.group_purchase_manager"/>
+                <field name="project_id" string="프로젝트"/>
+                <field name="issue" string="파트"/>
+                <field name="purchase_by_maker" string="발주번호"/>
+                <field name="name" string="도면번호"/>
+                <field name="product_name" required="1"/>
+                <field name="specification"/>
+                <field name="material"/>
+                <field name="create_date" widget="date"/>
+                <field name="request_date"/>
+                <field name="drawing_man"/>
+                <field name="original_count"/>
+                <field name="total_count"/>
+                <field name="draft_request_date"/>
+                <field name="partner_ids"/>
+                <field name="price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
+                <field name="total_price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
+                <field name="order_date"/>
+                <field name="destination_date"/>
+                <field name="category" invisible="1"/>
+                <field name="reorder_num" string="자재상태"/>
+                <field name="state"/>
+                <field name="bad_item"/>
+                <field name="bad_state"/>
+                <field name="stock_item"/>
+                <field name="etc"/>
+                <button name="button_destination" type="object" string="입고" class="oe_highlight" attrs="{'invisible' :[('destination_date','!=',False)]}" groups="purchase.group_purchase_manager" confirm="입고되었습니까?"/>
+                <button name="button_request_receiving" type="object" string="출고요청" class="oe_highlight" attrs="{'invisible' : [('state','!=','destination')]}" confirm="출고 요청 하시겠습니까?"/>
+                <button name="button_receiving" type="object" string="출고" class="oe_highlight" attrs="{'invisible' :[('state','!=','request_receiving')]}" confirm="출고 승인 하시겠습니까?" groups="purchase.group_purchase_manager"/>
+            </tree>
+        </field>
+    </record>
+    <record id="gvm_product_form" model="ir.ui.view">
+        <field name="name">gvm.product.form</field>
+        <field name="model">gvm.product</field>
+        <field name="priority" eval="0"/>
+        <field name="arch" type="xml">
+            <form string="gvm">
+                <sheet>
+                    <group>
+                        <group string="기본정보">
+                            <field name="sequence_num"/>
+                            <field name="name" string="도면번호"/>
+                            <field name="product_name" required="1"/>
+                            <field name="specification"/>
+                            <field name="material"/>
+                            <field name="order_man"/>
+                            <field name="partner_ids"/>
+                            <field name="category"/>
+                        </group>
+                        <group>
+                            <field name="project_set" widget="many2many_tags"/>
+                            <field name="part" string="유닛"/>
+                            <field name="issue" string="파트"/>
+                            <field name="purchase" string="구매발주"/>
+                            <field name="purchase_by_maker"/>
+                            <field name="etc"/>
+                            <field name="attachment" widget="many2many_binary"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="상태">
+                            <group>
+                                <group>
+                                    <field name="state"/>
+                                    <field name="release_place"/>
+                                    <field name="request_date"/>
+                                    <field name="expected_date"/>
+                                    <field name="destination_date"/>
+                                    <field name="destination_man"/>
+                                    <field name="receiving_date"/>
+                                    <field name="receiving_man"/>
+                                    <field name="release_place"/>
+                                    <field name="request_receiving_man"/>
+                                    <field name="complete_date"/>
+                                </group>
+                                <group>
+                                    <field name="original_count"/>
+                                    <field name="total_count"/>
+                                    <field name="price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
+                                    <field name="total_price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="이력">
+                            <group>
+                                <field name="bad_state"/>
+                                <field name="reorder_text"/>
+                            </group>
+                        </page>
+                    </notebook>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
 
-        <record model="ir.ui.view" id="gvm_product_kanban">
-            <field name="name">gvm.product.kanban</field>
-            <field name="model">gvm.product</field>
-            <field name="arch" type="xml">
-                <kanban class="o_kanban_mobile">
-                    <field name="name"/>
-                    <field name="write_date"/>
-		    <field name="project_id"/>
-		    <field name="part_name"/>
-                    <templates>
-                        <t t-name="kanban-box">
-                            <div t-attf-class="oe_kanban_card oe_kanban_global_click">
-                                <div class="row">
-                                    <div class="col-xs-6">
-                                        <strong><span><t t-esc="record.name.value"/></span></strong>
-                                    </div>
-                                    <div class="col-xs-6 pull-right text-right">
-                                        <span><t t-esc="record.write_date.value and record.write_date.value.split(' ')[0] or False"/></span>
-                                    </div>
+    <record model="ir.ui.view" id="gvm_product_kanban">
+        <field name="name">gvm.product.kanban</field>
+        <field name="model">gvm.product</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="name"/>
+                <field name="write_date"/>
+                <field name="project_id"/>
+                <field name="part_name"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="row">
+                                <div class="col-xs-6">
+                                    <strong><span><t t-esc="record.name.value"/></span></strong>
                                 </div>
-                                <div class="row">
-                                    <div class="col-xs-6">
-					<span><t t-esc="record.project_id.value"/><t t-esc="record.part_name.value"/></span>
-                                    </div>
-                                    <div class="col-xs-6">
-                                        <span class="pull-right text-right">
-                                            <field name="destination_date" widget="kanban_label_selection"/>
-                                        </span>
-                                    </div>
+                                <div class="col-xs-6 pull-right text-right">
+                                    <span><t t-esc="record.write_date.value and record.write_date.value.split(' ')[0] or False"/></span>
                                 </div>
                             </div>
-                        </t>
-                    </templates>
-                </kanban>
-            </field>
-        </record>
+                            <div class="row">
+                                <div class="col-xs-6">
+                                    <span><t t-esc="record.project_id.value"/><t t-esc="record.part_name.value"/></span>
+                                </div>
+                                <div class="col-xs-6">
+                                    <span class="pull-right text-right">
+                                        <field name="destination_date" widget="kanban_label_selection"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
 
-	<record model="ir.ui.view" id="gvm_product_pivot">
-		<field name="name">gvm.product.pivot</field>
-		<field name="model">gvm.product</field>
-		<field name="arch" type="xml">
-			<pivot string="gvm product">
-				<field name="project_id" type="row"/>
-				<field name="destination_date" interval="month" type="col"/>
-				<field name="total_price" type="measure"/>
-			</pivot>
-		</field>
-	</record>
+    <record model="ir.ui.view" id="gvm_product_pivot">
+        <field name="name">gvm.product.pivot</field>
+        <field name="model">gvm.product</field>
+        <field name="arch" type="xml">
+            <pivot string="gvm product">
+                <field name="project_id" type="row"/>
+                <field name="destination_date" interval="month" type="col"/>
+                <field name="tax_price" type="measure"/>
+            </pivot>
+        </field>
+    </record>
 
-       <record id="view_gvm_product_filter" model="ir.ui.view">
-            <field name="name">gvm.product.select</field>
-            <field name="model">gvm.product</field>
-            <field name="arch" type="xml">
-                <search string="Search Product">
-                    <field name="product_name"/>
-                    <field name="name" string="도면번호"/>
-                    <field name="specification"/>
-                    <field name="create_uid"/>
-		    <field name="partner_id"/>
-		    <filter name="current_month" string="Current Month" domain="[('create_date','&lt;',(context_today()+relativedelta(months=1)).strftime('%%Y-%%m-01')),('create_date','&gt;=',time.strftime('%%Y-%%m-01'))]"/>
-		    <filter name="prev_month" string="Prev Month" domain="[('create_date','&gt;=',(context_today()-relativedelta(months=1)).strftime('%%Y-%%m-01')),('create_date','&lt;',time.strftime('%%Y-%%m-01'))]"/>
-                    <filter name="cate_1" string="기구/가공품" domain="[('category','=',1)]"/>
-                    <filter name="cate_2" string="기구/표준품" domain="[('category','=',2)]"/>
-                    <filter name="cate_3" string="전장/가공품" domain="[('category','=',3)]"/>
-                    <filter name="cate_4" string="전장/표준품" domain="[('category','=',4)]"/>
-                    <separator/>
-                    <group expand="0" string="Group By">
-                        <filter string="프로젝트" domain="[]" context="{'group_by':'project_id'}"/>
-                        <filter string="업체별" domain="[]" context="{'group_by':'partner_id'}"/>
-                        <filter string="요청일자별" domain="[]" context="{'group_by':'request_date'}"/>
-                    </group>
-                </search>
-            </field>
-        </record>
+    <record id="view_gvm_product_filter" model="ir.ui.view">
+        <field name="name">gvm.product.select</field>
+        <field name="model">gvm.product</field>
+        <field name="arch" type="xml">
+            <search string="Search Product">
+                <field name="product_name"/>
+                <field name="name" string="도면번호"/>
+                <field name="specification"/>
+                <field name="create_uid"/>
+                <field name="partner_id"/>
+                <filter name="current_month" string="Current Month" domain="[('create_date','&lt;',(context_today()+relativedelta(months=1)).strftime('%%Y-%%m-01')),('create_date','&gt;=',time.strftime('%%Y-%%m-01'))]"/>
+                <filter name="prev_month" string="Prev Month" domain="[('create_date','&gt;=',(context_today()-relativedelta(months=1)).strftime('%%Y-%%m-01')),('create_date','&lt;',time.strftime('%%Y-%%m-01'))]"/>
+                <filter name="cate_1" string="기구/가공품" domain="[('category','=',1)]"/>
+                <filter name="cate_2" string="기구/표준품" domain="[('category','=',2)]"/>
+                <filter name="cate_3" string="전장/가공품" domain="[('category','=',3)]"/>
+                <filter name="cate_4" string="전장/표준품" domain="[('category','=',4)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="프로젝트" domain="[]" context="{'group_by':'project_id'}"/>
+                    <filter string="업체별" domain="[]" context="{'group_by':'partner_id'}"/>
+                    <filter string="요청일자별" domain="[]" context="{'group_by':'request_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
 
-        <record id="act_purchase_product" model="ir.actions.server">
-            <field name="sequence" eval="5"/>
-            <field name="state">code</field>
-            <field name="type">ir.actions.server</field>
-            <field name="model_id" ref="model_gvm_product"/>
-            <field name="condition">True</field>
-            <field name="code">action = env["gvm.product"].purchase_view()</field>
-            <field name="name">purchase</field>
-        </record>
-        <record id="act_purchase_project" model="ir.actions.server">
-            <field name="sequence" eval="5"/>
-            <field name="state">code</field>
-            <field name="type">ir.actions.server</field>
-            <field name="model_id" ref="model_gvm_product"/>
-            <field name="condition">True</field>
-            <field name="code">action = env["gvm.product"].purchase_project_view()</field>
-            <field name="name">purchase_project</field>
-        </record>
-        <record model="ir.ui.view" id="purchase_search_table_view">
-            <field name="name">gvm.product.graph</field>
-            <field name="model">gvm.product</field>
-            <field name="arch" type="xml">
-                <form>
-		  <header>
-                  <button type="action" string="발주요청서" name="%(act_purchase_product)d" class="oe_highlight"></button>
-                  <button type="action" string="프로젝트관리" name="%(act_purchase_project)d" class="oe_highlight"></button>
-		  </header>
-		  <sheet>
-		    <widget type="search_table"/>
-		  </sheet>
-                </form>
-            </field>
-        </record>
+    <record id="act_purchase_product" model="ir.actions.server">
+        <field name="sequence" eval="5"/>
+        <field name="state">code</field>
+        <field name="type">ir.actions.server</field>
+        <field name="model_id" ref="model_gvm_product"/>
+        <field name="condition">True</field>
+        <field name="code">action = env["gvm.product"].purchase_view()</field>
+        <field name="name">purchase</field>
+    </record>
+    <record id="act_purchase_project" model="ir.actions.server">
+        <field name="sequence" eval="5"/>
+        <field name="state">code</field>
+        <field name="type">ir.actions.server</field>
+        <field name="model_id" ref="model_gvm_product"/>
+        <field name="condition">True</field>
+        <field name="code">action = env["gvm.product"].purchase_project_view()</field>
+        <field name="name">purchase_project</field>
+    </record>
+    <record model="ir.ui.view" id="purchase_search_table_view">
+        <field name="name">gvm.product.graph</field>
+        <field name="model">gvm.product</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button type="action" string="발주요청서" name="%(act_purchase_product)d" class="oe_highlight"></button>
+                </header>
+                <sheet>
+                    <widget type="search_table"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
 
 
     <record id="action_gvm_product" model="ir.actions.act_window">
@@ -301,9 +306,9 @@
         <field name="view_id" ref="gvm_product_tree_all"/>
         <field name="context">{"search_default_filter_to_sell":1}</field>
         <field name="help" type="html">
-          <p class="oe_view_nocontent_create">
-            Click to define a new product.
-          </p>
+            <p class="oe_view_nocontent_create">
+                Click to define a new product.
+            </p>
         </field>
     </record>
     <record id="action_gvm_product_destination" model="ir.actions.act_window">
@@ -328,58 +333,58 @@
         <field name="context">{"search_default_filter_to_sell":1}</field>
         <field name="domain">[('state','in',['purchase','purchasing'])]</field>
     </record>
-        <record id="purchase_search_table_action" model="ir.actions.act_window">
-            <field name="name">BOM</field>
-            <field name="res_model">gvm.product</field>
-            <field name="view_type">tree</field>
-            <field name="view_mode">form</field>
-            <field name="target">new</field>
-            <field name="view_id" ref="purchase_search_table_view"/>
-        </record>
-        <record id="gvm_purchase_product_tree" model="ir.ui.view">
-            <field name="name">gvm.purchase.product.tree</field>
-            <field name="model">gvm.purchase_product</field>
-            <field name="arch" type="xml">
-                <tree decoration-bf="message_unread==True" decoration-muted="state in ('cancel','bad')" decoration-info="state in ('wait','confirmed')" string="Purchase Order">
-                    <field name="project_id" string="프로젝트"/>
-                    <field name="issue" string="파트"/>
-                    <field name="order_man"/>
-                    <field name="message_unread" invisible="1"/>
-                    <field name="name" string="Reference"/>
-                    <field name="date_order" />
-                    <field name="partner_id"/>
-                    <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
-                    <field name="currency_id" invisible="1"/>
-                    <field name="state"/>
-		    <field name="charge"/>
-                    <field name="invoice_status" invisible="1"/>
-                </tree>
-	    </field>
-	</record>
-        <record id="gvm_purchase_product_form2" model="ir.ui.view">
-            <field name="name">gvm.purchase.product.form</field>
-            <field name="model">gvm.purchase_product</field>
-	    <field name="priority" eval="20"/>
-            <field name="arch" type="xml">
-                <form string="gvm">
-                    <div class="oe_title">
-                        <label string="Request for Quotation " />
-                        <h1>
-                            <field name="name" readonly="1"/>
-                        </h1>
-                    </div>
+    <record id="purchase_search_table_action" model="ir.actions.act_window">
+        <field name="name">BOM</field>
+        <field name="res_model">gvm.product</field>
+        <field name="view_type">tree</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="purchase_search_table_view"/>
+    </record>
+    <record id="gvm_purchase_product_tree" model="ir.ui.view">
+        <field name="name">gvm.purchase.product.tree</field>
+        <field name="model">gvm.purchase_product</field>
+        <field name="arch" type="xml">
+            <tree decoration-bf="message_unread==True" decoration-muted="state in ('cancel','bad')" decoration-info="state in ('modify','confirmed')" string="Purchase Order">
+                <field name="project_id" string="프로젝트"/>
+                <field name="issue" string="파트"/>
+                <field name="order_man"/>
+                <field name="message_unread" invisible="1"/>
+                <field name="name" string="Reference"/>
+                <field name="date_order" />
+                <field name="partner_id"/>
+                <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="state"/>
+                <field name="charge"/>
+                <field name="invoice_status" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+    <record id="gvm_purchase_product_form2" model="ir.ui.view">
+        <field name="name">gvm.purchase.product.form</field>
+        <field name="model">gvm.purchase_product</field>
+        <field name="priority" eval="20"/>
+        <field name="arch" type="xml">
+            <form string="gvm">
+                <div class="oe_title">
+                    <label string="Request for Quotation " />
+                    <h1>
+                        <field name="name" readonly="1"/>
+                    </h1>
+                </div>
+                <group>
                     <group>
-                        <group>
-                            <field name="partner_id" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" domain="[('supplier','=',True)]" string="업체명"/>
-                        </group>
-		   </group>
-			<notebook>
-			  <page string='품목'>
-			  </page>
-			</notebook>
-		</form>
-	    </field>
-	</record>
+                        <field name="partner_id" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" domain="[('supplier','=',True)]" string="업체명"/>
+                    </group>
+                </group>
+                <notebook>
+                    <page string='품목'>
+                    </page>
+                </notebook>
+            </form>
+        </field>
+    </record>
     <record id="action_gvm_purchase_product" model="ir.actions.act_window">
         <field name="name">발주 검토완료항목</field>
         <field name="type">ir.actions.act_window</field>

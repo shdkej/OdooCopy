@@ -4,6 +4,7 @@
             <field name="name">project inherited sign</field>
             <field name="model">project.project</field>
             <field name="inherit_id" ref="project.edit_project"/>
+            <field name="priority" eval="14"/>
             <field name="arch" type="xml">
                  <xpath expr="//page[@name='manage']" position="inside">
 		      <group string='sign' name='sign'>

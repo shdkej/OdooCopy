@@ -651,12 +651,25 @@ var PivotView = View.extend({
         });
         var widgets = this.widgets;
         for (i = 0; i < rows.length; i++) {
-            $row = $('<tr>');
-            $header = $('<td>')
+	    //sh
+	    //합계UI관리
+	    if(i == 0){
+	        $row = $('<tr>');
+                $header = $('<td>')
                 .text(rows[i].title)
                 .data('id', rows[i].id)
-                .css('padding-left', (5 + rows[i].indent * 30) + 'px')
-                .addClass(rows[i].expanded ? 'o_pivot_header_cell_opened' : 'o_pivot_header_cell_closed');
+                .css('padding-left', 100 + 'px')
+                .addClass(rows[i].expanded ? 'o_pivot_header_cell_opened' : 'o_pivot_header_cell_closed');}
+	    //사용자UI관리	
+	    else{
+	        $row = $('<tr>');
+	        $header = $('<td>')
+	        .text(rows[i].title)
+	        .data('id', rows[i].id)
+	        .css('padding-left', (5 + rows[i].indent * 30) + 'px')
+	//	.css('position','fixed')
+	        .addClass(rows[i].expanded ? 'o_pivot_header_cell_opened' : 'o_pivot_header_cell_closed');}
+
             if (rows[i].indent > 0) $header.attr('title', groupby_labels[rows[i].indent - 1]);
             $header.appendTo($row);
             for (j = 0; j < length; j++) {

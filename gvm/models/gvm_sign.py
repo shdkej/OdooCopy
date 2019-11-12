@@ -43,15 +43,16 @@ class GvmSignContent(models.Model):
     user_id = fields.Many2one('res.users', string='user_id', default=lambda self: self.env.uid,store=True)
     name = fields.Char(string='name', default='New')
     color = fields.Integer('Color')
-    sign_ids = fields.Integer('sign_ids',compute='_compute_sign')
+    sign_ids = fields.Integer('sign_ids',compute='_compute_sign',store=True)
     dep_ids = fields.Many2one('hr.department',string='department',compute='_compute_sign',store=True)
     job_ids = fields.Many2one('hr.job',string='job_id',compute='_compute_sign',store=True)
 
     writer = fields.Char(string='writer', compute='_compute_user_info')
     user_department = fields.Many2one('hr.department',string='user_department',compute='_compute_user_info')
     user_job_id = fields.Many2one('hr.job',string='user_job_id',compute='_compute_user_info')
-    content = fields.Text(string='content',store=True)
-    content2 = fields.Text(string='content',store=True)
+    content = fields.Text(string='내용',store=True)
+    content2 = fields.Text(string='출장목적',store=True)
+    content3 = fields.Text(string='비고',store=True)
 
     check = fields.Boolean(string='check',compute='_compute_check')
     request_check1 = fields.Many2one('hr.employee',string='request_check1',store=True)
@@ -126,11 +127,17 @@ class GvmSignContent(models.Model):
     currency_dong = fields.Float(string='dong',default=0.05)
     currency_dollar = fields.Float(string='dollar',default=1079.5)
     attachment = fields.Many2many('ir.attachment', domain="[('res_model','=','gvm.signcontent')]", string='도면')
-    relate_sign = fields.Many2one('gvm.signcontent','sign')
+    relate_sign1 = fields.Many2one('gvm.signcontent',string='출장완료서', domain=[('sign_ids','=',4)])
+    relate_sign2 = fields.Many2one('gvm.signcontent',string='출장계획서', domain=[('sign_ids','=',6)])
     sign_line = fields.One2many('gvm.signcontent.line','sign','sign_line')
 
     check_all = fields.Boolean('전결')
+<<<<<<< HEAD
     next_check = fields.Char(string='next_check',compute='_compute_next_check',store=True)
+=======
+    next_check = fields.Char(string='next_check',compute='_compute_next_check', store=True)
+
+>>>>>>> fea00f5a34f1034165c52aba1f2219d73fadeacd
     state = fields.Selection([
         ('temp', '임시저장'),
         ('write', '상신'),
@@ -141,8 +148,13 @@ class GvmSignContent(models.Model):
         ('check5', '결재'),
         ('done', '결재완료'),
         ('cancel', '반려'),
+<<<<<<< HEAD
         ('remove', '취소'), 
         ('workdone', '업무진행완료')],string='Status', readonly=True, index=True, copy=False, default='temp', track_visibility='onchange')
+=======
+        ('remove', '취소')
+        ], string='Status', readonly=True, index=True, copy=False, default='temp', track_visibility='onchange')
+>>>>>>> fea00f5a34f1034165c52aba1f2219d73fadeacd
     holiday_count = fields.Char('holiday_count', compute='_compute_holiday_count')
     confirm_date = fields.Date('confirm_date')
 
@@ -271,7 +283,7 @@ class GvmSignContent(models.Model):
     @api.depends('user_id')
     def _compute_holiday_count(self):
       for record in self:
-	hr_name = self.env['hr.employee'].search([('name','=',self.user_id.name)])
+	hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',record.user_id.name),('department_id','=', record.user_department.id)])
         record.holiday_count = hr_name.holiday_count
 
     @api.model
@@ -348,6 +360,7 @@ class GvmSignContent(models.Model):
 	    record.request_check3 = ceo
             record.request_check4 = manager[1].id
             record.request_check5 = manager[0].id
+<<<<<<< HEAD
           #sh
           #업무요청확인서
 	  elif record.sign_ids == 10:
@@ -363,6 +376,12 @@ class GvmSignContent(models.Model):
             record.request_check1 = False
             record.request_check2 = False
             record.request_check3 = boss 
+=======
+          else:
+            record.request_check1 = False
+            record.request_check2 = False
+            record.request_check3 = boss
+>>>>>>> fea00f5a34f1034165c52aba1f2219d73fadeacd
             record.request_check4 = False
             record.request_check5 = False
 	    record.reference = False
@@ -464,8 +483,12 @@ class GvmSignContent(models.Model):
     def sign_view(self):
         uname = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).id
         username = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).name
+<<<<<<< HEAD
         #domain = ['&','|','&','|',('request_check1','=',uname),('request_check2','=',uname),('request_check3','=',uname),('next_check','=',username),('state','!=','temp')]
         domain = [('next_check','=',username), ('state','not in', ['temp', 'cancel'])]
+=======
+        domain = [('next_check','=',username),('state','not in',['temp','done','cancel'])]
+>>>>>>> fea00f5a34f1034165c52aba1f2219d73fadeacd
         return {
             'name': _('Sign'),
             'domain': domain,
@@ -545,8 +568,8 @@ class GvmSignContent(models.Model):
 	  h_count = float(hr_name.holiday_count) - float(count)
 	  _logger.warning(h_count)
 
-	  if h_count < -7:
-           raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
+	  #if h_count < -7:
+          # raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
 	  hr_name.holiday_count = float(h_count)
 	  _logger.warning(hr_name.holiday_count)
 
@@ -620,7 +643,7 @@ class GvmSignContent(models.Model):
 	        #연차갯수
 	        count = self.check_holiday_count()
 	        #로그인한 유저정보
-	        hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.user_department.id)])
+	        hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',record.user_id.name),('department_id','=',record.user_department.id)])
 	        #총 연차갯수 + 사용했던 연차갯수
 	        h_count = float(hr_name.holiday_count) + float(count)
 	        # 적용

@@ -3,8 +3,10 @@
     <t t-name="purchase.Search_Table">
       <div id="main">
 	<div>
-	  <button id="gvm_save" class="btn btn-sm">SAVE</button>
+	  <button id="gvm_save" class="btn btn-sm oe_highlight">SAVE</button>
 	  <button id="gvm_purchase_order" class="btn btn-sm btn-default">발주</button>
+	  <button id="detail_product_get" class="btn btn-sm">수정이력보기</button>
+	  <button id="gvm_quick_create" class="btn btn-sm" style="display:none;float:right;">유닛,파트 관리</button>
 	  <span style='font-size:10px;'>상태: A-정상,  B-가공불량, C-설계불량, D-작업자파손, E-구매불량, F-분실, G-업체미스</span>
 	</div>
 	<div>
@@ -15,11 +17,9 @@
           파트 : <select id="gvm_search_product_part" width="100px">
 	    <option></option>
 	  </select>
-	</div>
-	  <button id="product_search" class="btn btn-sm">Search</button>
-	  <button id="detail_product_get" class="btn btn-sm">자세히</button>
-	<div id="mytable"></div>
+	</div>  
+	<div id="mytable" style="margin:10px"></div>
 	    <button id="add_product" class="btn btn-sm">+</button>
-      </div>
+    </div>
     </t>
 </templates>

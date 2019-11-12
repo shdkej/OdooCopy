@@ -918,6 +918,7 @@ class DataSet(http.Controller):
       check = 'check'+str(state_id)
       check_date = 'check'+str(state_id)+'_date'
       request_check = 'request_check'+str(state_id)
+      # state 입력을 안받으면
       if not state:
         #sh
         #업무요청보고서

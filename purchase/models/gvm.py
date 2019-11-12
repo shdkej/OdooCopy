@@ -13,6 +13,9 @@ from odoo.addons.base.res.res_partner import WARNING_MESSAGE, WARNING_HELP
 from odoo.http import content_disposition, dispatch_rpc, request
 import odoo.addons.decimal_precision as dp
 import logging
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 _logger = logging.getLogger(__name__)
 class GvmProduct(models.Model):
@@ -65,7 +68,7 @@ class GvmProduct(models.Model):
         ('done', '출고'),
 	('keep','보류'),
 	('unkeep','보류해제'),
-        ('no', 'UPLOAD'),
+        ('no', '작성됨'),
         ('purchase', '발주'),
         ('purchasing', '발주진행중'),
         ('purchase_complete', '발주완료'),
@@ -75,7 +78,7 @@ class GvmProduct(models.Model):
 	('cancel','발주취소'),
         ('request_receiving', '출고요청'),
         ('destination', '입고')
-        ], string='Status', default='no')
+        ], string='Status', default='no',track_visibility="onchange")
     partner_id = fields.Char('업체명',store=True, compute='_compute_partner')
     partner_ids = fields.Many2one('res.partner','업체',domain='[("supplier","=",True)]')
     sequence_num = fields.Char('번호')
@@ -101,6 +104,7 @@ class GvmProduct(models.Model):
 	('G', '업체미스'),
 	], string='불량유형', default='A')
     release_place = fields.Many2one('gvm.product.release',string='출고지')
+    sub_id = fields.Char('sub_id')
 
     def _generate_order_by(self, order_spec, query):
 	my_order = "case when substring(sequence_num from '^P') IS NULL then substring(sequence_num from '^\d+$')::int end, sequence_num"
@@ -124,13 +128,16 @@ class GvmProduct(models.Model):
            if att.name.find(record.name) != -1:
              record.attachment = att
 
-    @api.depends('specification','name')
+    @api.depends('name')
     def _compute_set_price(self):
      for record in self:
+       value = ''
        if record.specification:
-         record.known_price = self.search([('specification','=',record.specification),('price','!=','0')],limit=1).price
-       elif record.product_name:
-         record.known_price = self.search([('name','=',record.name),('price','!=','0')],limit=1).price
+            value = record.specification
+            record.known_price = self.search(['&','|',('specification','ilike',value),('name','ilike',value),('price','!=','0')], limit=1).price
+       elif record.name:
+            value = record.name
+            record.known_price = self.search(['&','|',('specification','ilike',value),('name','ilike',value),('price','!=','0')], limit=1).price
 
     @api.depends('total_count','price')
     def _compute_total_price(self):
@@ -216,10 +223,6 @@ class GvmProduct(models.Model):
         self.write({'destination_date': datetime.today(), 
 	            'destination_man': self.env.user.name,
 		    'state': 'destination'})
-	Product = request.env['gvm.product']
-	Update = Product.search([])
-	for record in Update:
-          record.tax_price = record.total_price + record.total_price * 0.1
         return {}
 
     @api.multi
@@ -277,34 +280,39 @@ class GvmProduct(models.Model):
 
     @api.multi
     def purchase_project_view(self):
+        cc = {'active_id':'21'}
         return {
+            'domain': ['id','=',21],
             'name': _('Project Manage'),
-            'domain': '[]',
             'res_model': 'project.project',
+            'res_id':21,
             'type': 'ir.actions.act_window',
             'view_id': False,
+            'views': [[False,'form']],
             'target': 'new',
             'view_mode': 'tree,form',
             'view_type': 'form',
             'limit': 80,
-            'context': "{}"
-        }
+            'context': {},
+            }
+        
 
     def gvm_bom_save(val1, vals):
     	Product = request.env['gvm.product']
     	Project = request.env['project.project']
 	Part = request.env['project.issue']
 	column = ['id','sequence_num','name','product_name','material','original_count', 'etc']
+	ko_column = ['id','번호','도번 및 규격','품명','재질','원수', '비고']
 	if vals:
 	  project_id = Project.search([('name','=',vals[0][9].encode('utf-8'))]).id
 	  part_id = Part.search([('name','=',vals[0][10].encode('utf-8')),('project_id','=',project_id)]).id
         for val in vals:
-          product_checkbox = val[0]
+          product_id = val[0]
           product_sequence_num = val[1]
           product_main_name = val[2].encode('utf-8')
           product_name = val[3].encode('utf-8')
           product_material = val[4].encode('utf-8')
-          product_original_count = val[5].encode('utf-8')
+          product_original_count = val[5]
           product_etc = val[6].encode('utf-8')
           product_bad_state = val[7]
           product_project_id = val[9].encode('utf-8')
@@ -312,8 +320,8 @@ class GvmProduct(models.Model):
           # 수정 시 표시 붙여주기
 	  if (product_bad_state == False or product_bad_state.upper().encode('utf-8') == 'FALSE'):
 	    product_bad_state = 'A'
-	  if str(product_checkbox) != 'None':
-  	    Update = Product.search([('id','=',product_checkbox)])
+	  if str(product_id) != 'None':
+  	    Update = Product.search([('id','=',product_id)])
             product_seq_num = '' 
             if Update.sequence_num:
                 if Update.sequence_num.find('-') != -1:
@@ -327,29 +335,35 @@ class GvmProduct(models.Model):
 		'bad_state': product_bad_state.upper().encode('utf-8'), 
                 'sequence_num': product_seq_num,
 	    })
+            # 수정된 자재의 발주서에 표시
+            if Update.purchase_by_maker:
+                Update.purchase_by_maker.state = 'modify'
 
             # reorder text
 	    reorder_text = Update.reorder_text or ''
 	    newPd = Product.create({'name': product_main_name})
 	    for i in range(1,7):
-	      if Update[column[i]] != val[i]:
-	        #text = column[i] + ' : ' + Update[column[i]] + ' -> ' + val[i] + ' ( ' + str(datetime.today())[0:10] + ' )'
-	        text = column[i] + ' : ' + repr(Update[column[i]]).encode('utf-8') + ' -> ' + repr(val[i]).encode('utf-8') + ' ( ' + str(datetime.today())[0:10] + ' )'
+              text = ''
+	      if str(Update[column[i]]) != val[i] and not i==1:
+	        text = str('%s : %s -> %s (%s)' 
+                    % ( str(unicode(ko_column[i])), Update[column[i]], val[i], str(datetime.today())[0:10]))
 	        reorder_text += text
-	        reorder_text += '<br>'
+	        reorder_text += '<br><br>'
 
 	      newPd.write({
 		column[i] : val[i],
 	      })
 	    Update.write({'reorder_text':reorder_text})
 
-	    #같은이름의 같은프로젝트에 있는 자재에 모두 이력을 쓰도록 해야겠다
+	    ##같은이름의 같은프로젝트에 있는 자재에 모두 이력을 쓰도록 해야겠다
 	    newPd.write({'reorder_text':reorder_text, 
 	    		 'project_id': product_project_id,
 			 'bad_state': product_bad_state.upper().encode('utf-8'), 
 			 'etc': product_etc,
 			 'issue':part_id, 
+			 'project_ids': project_id, 
 			 'project_set':[(4, project_id)], 
+		         'request_date':datetime.today() + timedelta(days=7),
 			 'order_man':request.env.user.name})
 	  else:
 	    PONum = Product.create({
@@ -360,6 +374,7 @@ class GvmProduct(models.Model):
 			'material': product_material,
 			'original_count': product_original_count,
 			'project_id': product_project_id,
+			'project_ids': project_id, 
 			'issue':part_id,
 			'request_date':datetime.today() + timedelta(days=7),
 			'order_man':request.env.user.name,

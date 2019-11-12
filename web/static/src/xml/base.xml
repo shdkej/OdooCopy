@@ -963,7 +963,7 @@
 </t>
 
 <div t-name="SearchView.FilterMenu" class="btn-group o_dropdown">
-            <select id="gvm_search" class="gvm_search" name="gvm_search" style="width:300px" autocomplete="off"/>
+            <input type="text" autocomplete="off" id="gvm_search" width="100px" placeholder="Select"/>
             <select class="gvm_search_part" id="gvm_search_part" name="gvm_search" style="display:none"></select>
             <button class="gvm_search_export" id="gvm_search_export" name="gvm_search_export" style="display:none">엑셀로 출력</button>
     <button class="o_dropdown_toggler_btn btn btn-sm dropdown-toggle" data-toggle="dropdown">

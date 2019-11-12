@@ -311,7 +311,7 @@ return Widget.extend({
             this.tmp_part_name = part;
         },
         'click #gvm_search_export': function(){
-            var project_id = $('#gvm_search option:selected').val();
+            var project_id = $('#gvm_search.comboTreeInputBox').val();
             var url = window.location.origin;
             location.href = url + '/web/export/gvm_xls?project_id=' + project_id;
         },
@@ -325,6 +325,8 @@ return Widget.extend({
         this.tmp_part_name = '';
     },
     change_project: function(){
+        var search = $('#gvm_search.comboTreeInputBox').val();
+        if (search == ''){return false};//빈값일 경우 넘어가기
         for (var i=0; i<2; i++){
            $('.o_facet_remove').trigger('click');
            if (this.searchview.model == 'gvm.product'){
@@ -342,7 +344,7 @@ return Widget.extend({
         search_part.append('<option id="0" value="0"></option>');
         if ($('#gvm_search option:eq(1)') !== 'undefined'){
           search_part.show();
-          Part.query(['name']).filter([['project_id','=',$('#gvm_search option:selected').text()]]).all().then(function(id){
+          Part.query(['name']).filter([['project_id', '=', $('#gvm_search.comboTreeInputBox').val()]]).all().then(function(id){
             $.each(id, function(index, item){
                   search_part.append('<option id="'+index+'" value="'+index+'">'+item.name+'</option>');
             });
@@ -352,7 +354,7 @@ return Widget.extend({
         }
     },
     gvm_commit_search: function (state) {
-        var search = $('#gvm_search option:selected').text()
+        var search = $('#gvm_search.comboTreeInputBox').val();
         var search_part = $('#gvm_search_part option:selected').text()
         var self = this;
         var filters = _.invoke(this.propositions, 'get_filter'),

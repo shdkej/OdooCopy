@@ -62,20 +62,21 @@ class GvmPurchaseProduct(models.Model):
     date_order = fields.Datetime('Order Date', required=True, states=READONLY_STATES, index=True, copy=False, default=fields.Datetime.now,\
         help="Depicts the date where the Quotation should be validated and converted into a purchase order.")
     date_approve = fields.Date('Approval Date', readonly=1, index=True, copy=False)
-    partner_id = fields.Many2one('res.partner', string='Vendor', required=True, states=READONLY_STATES, change_default=True, track_visibility='always')
+    partner_id = fields.Many2one('res.partner', string='Vendor', required=True, states=READONLY_STATES, change_default=True, track_visibility='onchange')
     dest_address_id = fields.Many2one('res.partner', string='Drop Ship Address', states=READONLY_STATES,\
         help="Put an address if you want to deliver directly from the vendor to the customer. "\
              "Otherwise, keep empty to deliver to your own company.")
     currency_id = fields.Many2one('res.currency', 'Currency', required=True, states=READONLY_STATES,\
         default=lambda self: self.env.user.company_id.currency_id.id)
     state = fields.Selection([
-        ('write', 'Write'),
-        ('draft', 'RFQ'),
+        ('write', '작성'),
+        ('draft', '발주검토완료'),
         ('sent', 'RFQ Sent'),
+        ('modify', '수정됨'),
         ('to approve', 'To Approve'),
         ('purchase', 'Purchase Order'),
-        ('done', 'Locked'),
-        ('cancel', 'Cancelled')
+        ('done', '완료'),
+        ('cancel', '취소')
         ], string='Status', readonly=True, index=True, copy=False, default='write', track_visibility='onchange')
     notes = fields.Text('Terms and Conditions')
 
@@ -93,7 +94,7 @@ class GvmPurchaseProduct(models.Model):
     # There is no inverse function on purpose since the date may be different on each line
     date_planned = fields.Datetime(string='Scheduled Date', store=True, index=True)
 
-    amount_untaxed = fields.Monetary(string='Untaxed Amount', store=True, readonly=True, track_visibility='always')
+    amount_untaxed = fields.Monetary(string='Untaxed Amount', store=True, readonly=True, track_visibility='onchange')
     amount_tax = fields.Monetary(string='Taxes', store=True, readonly=True)
     amount_total = fields.Monetary(string='Total', store=True, readonly=True)
 
@@ -126,12 +127,12 @@ class GvmPurchaseProduct(models.Model):
     permit_man = fields.Many2one('res.users','검토자')
     category = fields.Selection([('1','기구/가공품'),('2','기구/요소품'),('3','전장/가공품'),('4','전장/요소품'),('5','기타')])
 
-    product = fields.One2many('gvm.product','purchase_by_maker',string='발주', index=True)
+    product = fields.One2many('gvm.product','purchase_by_maker',string='발주', index=True,track_visibility="onchange")
     purchase_product = fields.Many2many('gvm.product',string='product')
     release_place = fields.Many2one('gvm.product.release',string='출고지')
 
     #sh
-    request = fields.Char(string='재발주 요청 사유', index=True)
+    request = fields.Char(string='재발주 요청 사유', index=True, track_visibility="onchange")
     charge = fields.Char(string='출고 담당자', index=True)
 
     @api.depends('order_man')
@@ -376,25 +377,25 @@ class GvmPurchaseProduct(models.Model):
         self.write({'state': "draft", 'permit_man': self.env.uid})
 
         if self.product:
-          for product in self.product:
+	  for product in self.product:
 	    product.write({'state':'purchase'
 	    })
+
             # Find Stock
-            if product.name != False:
-               stock = self.env['product.product'].search([('model','=',product.name),('stock','>=',1)],limit=1)
-               if not stock:
-                stock = self.env['product.product'].search([('model','=',product.specification),('stock','>=',1)],limit=1)
-            else:
-               stock = self.env['product.product'].search([('model','=',product.specification),('stock','>=',1)],limit=1)            
+            stock = self.env['product.product'].search([('model','ilike',product.name),
+                                                        ('stock','>=',1)],limit=1)
+            if not stock:
+              stock = self.env['product.product'].search([('model','ilike',product.specification),
+                                                          ('stock','>=',1)],limit=1)
 
             if stock:
-              #sh 
+              #sh
               #공용자재에 발주번호 작성
               po = self.name
               if stock.ponum == False:
-                value = po
+               value = po
               else:
-                value= stock.ponum+ ',' + po
+               value = stock.ponum + ',' + po
               stock.write({'ponum':value})
 
               product.stock_item = True            
@@ -476,10 +477,10 @@ class GvmPurchaseProduct(models.Model):
 	        pd.state = 'cancel'
                 # Stock
                 if pd.stock_item:
-                  stock = self.env['product.product'].search([('specification','=',pd.name)
-                                                             ],limit=1)
+                  stock = self.env['product.product'].search([('model','=',pd.name),
+                                                                 ('stock','>=',1)],limit=1)
                   if not stock:
-                     stock = self.env['product.product'].search([('specification','=',product.specification),
+                     stock = self.env['product.product'].search([('model','=',pd.specification),
                                                                  ('stock','>=',1)],limit=1)
                   if stock:
                     stock.stock = stock.stock + (pd.total_count)

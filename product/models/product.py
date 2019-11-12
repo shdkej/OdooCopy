@@ -8,6 +8,8 @@ from odoo.exceptions import ValidationError
 from odoo.osv import expression
 
 import odoo.addons.decimal_precision as dp
+import logging
+_logger = logging.getLogger(__name__)
 
 
 import logging
@@ -128,12 +130,12 @@ class ProductProduct(models.Model):
 
     #sh
     ponum = fields.Char(string = 'PO 번호', index=True)
-    etc = fields.Char(string = '비고', index=True, track_visibility='alaways')
+    etc = fields.Char(string = '비고', index=True,track_visibility='alaways')
     model = fields.Char(string = '모델명', index=True, track_visibility='alaways')
     maker = fields.Char(string = '제조사', index=True, track_visibility='alaways')
     explain = fields.Char(string = '설명', index=True, track_visibility='alaways')
-    storage_location = fields.Char(string = '보관위치', index=True, track_visibility='alaways')
-    stock = fields.Float(string = '재고', index=True, default=1.0, track_visibility='alaways')
+    storage_location = fields.Char(string = '보관위치',index=True, track_visibility='alaways')
+    stock = fields.Char(string = '재고', index=True, default=1.0, track_visibility='alaways')
     meterial = fields.Char(string = '재질', index=True, track_visibility='alaways')
     reason = fields.Char(string = '재고 사유', index=True, track_visibility='alaways')
     team = fields.Selection([('total','전체'),
