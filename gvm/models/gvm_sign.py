@@ -50,8 +50,9 @@ class GvmSignContent(models.Model):
     writer = fields.Char(string='writer', compute='_compute_user_info')
     user_department = fields.Many2one('hr.department',string='user_department',compute='_compute_user_info')
     user_job_id = fields.Many2one('hr.job',string='user_job_id',compute='_compute_user_info')
-    content = fields.Text(string='content',store=True)
-    content2 = fields.Text(string='content',store=True)
+    content = fields.Text(string='내용',store=True)
+    content2 = fields.Text(string='출장목적',store=True)
+    content3 = fields.Text(string='비고',store=True)
 
     check = fields.Boolean(string='check',compute='_compute_check')
     request_check1 = fields.Many2one('hr.employee',string='request_check1',store=True)
