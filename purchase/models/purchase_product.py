@@ -372,23 +372,31 @@ class GvmPurchaseProduct(models.Model):
         return self.env['report'].get_action(self, 'purchase.report_purchasequotation_by_maker')
 
     @api.multi
-    def button_send_quotation(self):
+    def button_send_quotation(self): 
         self.write({'state': "draft", 'permit_man': self.env.uid})
-	for record in self.product:
-	  record.write({'state':'purchase',
-	  		'request_date':datetime.today()
-	  })
 
-        # Find Stock
         if self.product:
           for product in self.product:
-            stock = self.env['product.product'].search([('specification','=',product.name),
-                                                        ('stock','>=',1)],limit=1)
-            if not stock:
-              stock = self.env['product.product'].search([('specification','=',product.specification),
-                                                          ('stock','>=',1)],limit=1)
-              
+	    product.write({'state':'purchase'
+	    })
+            # Find Stock
+            if product.name != False:
+               stock = self.env['product.product'].search([('model','=',product.name),('stock','>=',1)],limit=1)
+               if not stock:
+                stock = self.env['product.product'].search([('model','=',product.specification),('stock','>=',1)],limit=1)
+            else:
+               stock = self.env['product.product'].search([('model','=',product.specification),('stock','>=',1)],limit=1)            
+
             if stock:
+              #sh 
+              #공용자재에 발주번호 작성
+              po = self.name
+              if stock.ponum == False:
+                value = po
+              else:
+                value= stock.ponum+ ',' + po
+              stock.write({'ponum':value})
+
               product.stock_item = True            
               # 개수가 모자라면 분할해야 함
               stock_log = stock.stock

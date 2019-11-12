@@ -10,6 +10,9 @@ from odoo.osv import expression
 import odoo.addons.decimal_precision as dp
 
 
+import logging
+_logger = logging.getLogger(__name__)
+
 class ProductCategory(models.Model):
     _name = "product.category"
     _description = "Product Category"
@@ -24,7 +27,7 @@ class ProductCategory(models.Model):
     type = fields.Selection([
 	 ('consu' '소모품'),
 	 ('purchase','구매품'),
-	 ('process','가공품')])
+	 ('process','가공품')], track_visibility='alaways')
 #        ('view', 'View'),
 #        ('normal', 'Normal')], 'Category Type', default='normal',
 #        help="A category of the view type is a virtual category that can be used as the parent of another category to create a hierarchical structure.")
@@ -124,19 +127,19 @@ class ProductProduct(models.Model):
         help="The sale price is managed from the product template. Click on the 'Variant Prices' button to set the extra attribute prices.")
 
     #sh
-    etc = fields.Char(string = '비고', index=True)
-    model = fields.Char(string = '모델명', index=True)
-    maker = fields.Char(string = '제조사', index=True)
-    explain = fields.Char(string = '설명', index=True)
-    storage_location = fields.Char(string = '보관위치',index=True)
-    stock = fields.Float(string = '재고', index=True, default=1.0)
-    meterial = fields.Char(string = '재질', index=True)
-    reason = fields.Char(string = '재고 사유', index=True)
-#    edit_log = fields.One2many('product.log', 'productlog')
+    ponum = fields.Char(string = 'PO 번호', index=True)
+    etc = fields.Char(string = '비고', index=True, track_visibility='alaways')
+    model = fields.Char(string = '모델명', index=True, track_visibility='alaways')
+    maker = fields.Char(string = '제조사', index=True, track_visibility='alaways')
+    explain = fields.Char(string = '설명', index=True, track_visibility='alaways')
+    storage_location = fields.Char(string = '보관위치', index=True, track_visibility='alaways')
+    stock = fields.Float(string = '재고', index=True, default=1.0, track_visibility='alaways')
+    meterial = fields.Char(string = '재질', index=True, track_visibility='alaways')
+    reason = fields.Char(string = '재고 사유', index=True, track_visibility='alaways')
     team = fields.Selection([('total','전체'),
     ('control','제어'),
     ('electric','전장'),
-    ('plan','설계')])
+    ('plan','설계')],track_visibility='alaways')
 
 
     default_code = fields.Char('Internal Reference', index=True)
@@ -339,11 +342,11 @@ class ProductProduct(models.Model):
         if not (self.env.context.get('create_from_tmpl') and len(product.product_tmpl_id.product_variant_ids) == 1):
             product._set_standard_price(vals.get('standard_price') or 0.0)
         return product
-
+     
     @api.multi
     def write(self, values):
         ''' Store the standard price change in order to be able to retrieve the cost of a product for a given date'''
-        res = super(ProductProduct, self).write(values)
+	res = super(ProductProduct, self).write(values)
         if 'standard_price' in values:
             self._set_standard_price(values['standard_price'])
         return res
@@ -589,18 +592,6 @@ class ProductProduct(models.Model):
         # When sale/product is installed alone, there is no need to create procurements. Only
         # sale_stock and sale_service need procurements
         return False
-
-#sh
-#class ProductLog(models.Model):
-#    _name = "product.log"
-#    _description = "product.log"
-#    _order = 'date'
-    
-#    productlog = fields.Many2one('product.product')
-#    log_date = fields.Datetime(string='수정날짜')
-#    log_user = fields.Char(string='수정자')
-#    log = fields.Char(string='수정내용')
-
 
 class ProductPackaging(models.Model):
     _name = "product.packaging"

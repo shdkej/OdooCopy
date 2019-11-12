@@ -79,7 +79,7 @@
 		     <button name="button_check_all" string="전결" type="object" groups="hr.group_hr_manager" attrs="{'invisible':['|','|',('state','=','done'),('check_all','=',False),('check','=',False)]}" confirm="전결하시겠습니까?"/>
 		     <button name="button_reorder" string="재상신" type="object" states="cancel"/>
 		     <button name="button_reorder" string="재상신" type="object" states="remove"/>
-                     <field name="state" widget="statusbar" statusbar_visible="write,check1,check2,done" readonly="1"/>
+                     <field name="state" widget="statusbar" statusbar_visible="write,check1,check2,done,workdone" readonly="1"/>
                   </header>
           <sheet>
              <field name="sign_ids" invisible="1"/>
@@ -146,6 +146,31 @@
                                       <span attrs="{'invisible':[('request_check6','=',False)]}"> 결재예정 : </span>
                                       <field name="request_check6" domain="[('job_id.no_of_hired_employee','>',3)]" attrs="{'invisible':[('check6','!=',False)]}" options="{'no_create_edit':True,'no_create':True}"/></td>
 			</tr>
+        <!--sh
+            #업무요청확인서-->       
+          <tr height="30" attrs="{'invisible':[('sign_ids','!=',10)]}">
+                <td class="tdcolor" attrs="{'invisible':[('sign_ids','!=',10)]}">업무담당자</td>
+                <td class="tdcolor" attrs="{'invisible':[('sign_ids','!=',10)]}">합의</td>       
+                <td class="tdcolor" attrs="{'invisible':[('sign_ids','!=',10)]}">합의</td>      
+          </tr>
+          <tr height="80" attrs="{'invisible':[('sign_ids','!=',10)]}">
+                <td attrs="{'invisible':[('sign_ids','!=',10)]}">
+                         <field name="check6" readonly="1"/>
+                         <span style="font-size:5px"><field name="check6_date" readonly="1"/></span>
+                         <span attrs="{'invisible':[('request_check6','=',False)]}"> 결재예정 : </span>
+                         <field name="request_check6" attrs="{'invisible':[('check6','!=',False)]}" options="{'no_create_edit':True,'no_create':True}"/></td>
+                <td attrs="{'invisible':[('sign_ids','!=',10)]}">
+                         <field name="check4" readonly="1"/>
+                         <span style="font-size:5px"><field name="check4_date" readonly="1"/></span>
+                         <span attrs="{'invisible':[('request_check4','=',False)]}"> 결재예정 : </span>
+                         <field name="request_check4" domain="[('job_id.no_of_hired_employee','&gt;',3)]" attrs="{'invisible':[('check4','!=',False)]}" options="{'no_create_edit':True,'no_create':True}"/></td>
+                <td attrs="{'invisible':[('sign_ids','!=',10)]}">
+                         <field name="check5" readonly="1"/>
+                         <span style="font-size:5px"><field name="check5_date" readonly="1"/></span>
+                         <span attrs="{'invisible':[('request_check5','=',False)]}"> 결재예정 : </span>
+                         <field name="request_check5" domain="[('job_id.no_of_hired_employee','&gt;',3)]" attrs="{'invisible':[('check5','!=',False)]}" options="{'no_create_edit':True,'no_create':True}"/></td>
+
+           </tr>
 			<tr height="30" class="no_excel">
 				<td colspan='4'>참조 : <field name="reference" widget="many2many_tags" option="{'no_create_edit':True,'no_create':True}"/></td>
 			</tr>
@@ -166,6 +191,25 @@
 			<td class="tdcolor">기간</td>
 			<td width="40%"><field name="date_from"/> 부터 <field name="date_to"/></td>
 		</tr>
+        <tr attrs="{'invisible':['|',('sign_ids','!=', 1),('rest1','!=', 'refresh')]}">    
+           <td class="tdcolor">출장기간</td>
+           <td width="40%"><span style="color:red;"><field name="refresh_date" readonly="1"/></span></td>   
+           <td class="tdcolor">총 리프레시</td>
+           <td width="40%"><span style="color:red;"><field name="refresh_num" readonly="1"/></span></td>   
+        </tr>
+        <tr attrs="{'invisible':['|',('sign_ids','!=', 1),('rest1','!=', 'refresh')]}">    
+           <td class="tdcolor">현재 사용 갯수</td>
+           <td width="90%" colspan="3"><span style="color:red;"><field name="refresh_use_num" readonly="1"/></span></td>   
+        </tr>        
+        <tr attrs="{'invisible':[('sign_ids','!=', 10)]}">
+           <td class="tdcolor" states="done,workdone">발생 비용</td>
+           <td width="90%" colspan="3" states="done,workdone"><field name="price"/></td>   
+       </tr>
+       <tr attrs="{'invisible':[('sign_ids','!=', 10)]}">
+           <td class="tdcolor">개인/업무</td>
+           <td width="90%" colspan="3"><field name="item"/></td>    
+       </tr>
+
 		<tr attrs="{'invisible':[('sign_ids','!=', 9)]}">
 		        <td class="tdcolor">직급</td>
 		        <td width="40%"><field name="job_ids"/></td>
@@ -198,7 +242,7 @@
 			<td class="tdcolor">문서첨부</td>
 			<td width="40%"><field name="relate_sign" options="{'no_create_edit':True,'no_create':True}" domain="[('user_id','=',user_id)]"/></td>
 		</tr>
-		<tr attrs="{'invisible':[('sign_ids','in',[1,2,5,9])]}">
+		<tr attrs="{'invisible':[('sign_ids','in',[1,2,5,9,10])]}">
 			<td class="tdcolor">프로젝트</td>
 			<td width="90%" colspan="3"><field name="project"/></td>
 		</tr>
@@ -206,7 +250,7 @@
 			<td class="tdcolor">분류</td>
 			<td width="90%" colspan="3"><field name="rest1"/></td>
 		</tr>
-		<tr attrs="{'invisible':[('sign_ids','not in',[3,4])]}">
+		<tr attrs="{'invisible':[('sign_ids','not in',[3,4,10])]}">
 			<td class="tdcolor">파일첨부</td>
                         <td width="90%" colspan="3"><field name="attachment" widget="many2many_binary"/></td>
 		</tr>
@@ -220,7 +264,15 @@
 	                <td width="90%" height="150" colspan="6" class="tdleft">
 	                <field name="content"/></td>
 	        </tr>
-	        <tr attrs="{'invisible':[('sign_ids','in',[6,9])]}">
+        <tr attrs="{'invisible':[('sign_ids','!=',10)]}">
+              <td class="tdcolor">요청 사유</td>
+              <td width="90%" height="400" colspan="3"><field name ="request"/></td>
+        </tr>
+        <tr attrs="{'invisible':[('sign_ids','!=',10)]}">
+              <td class="tdcolor">기타</td>
+              <td width="90%" height="100" colspan="3"><field name ="etc"/></td>
+        </tr>
+        <tr attrs="{'invisible':[('sign_ids','in',[6,9,10])]}">
 			<td class="tdcolor">내용</td>
 			<td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','in',[2,3,5,6,9])]}" class="tdleft">
                         <field name="content"/></td>
@@ -484,7 +536,7 @@ $(document).ready(function(){
             <field name="state">code</field>
             <field name="type">ir.actions.server</field>
             <field name="model_id" ref="model_gvm_signcontent"/>
-            <field name="code">action = env["gvm.signcontent"].sign_view()</field>
+            <field name="code">action = env["gvm.signcontent"].sign_view()</field> 
             <field name="condition">True</field>
             <field name="name">결재 할 문서</field>
         </record>
@@ -501,9 +553,9 @@ $(document).ready(function(){
         <menuitem name="문서 목록" id="menu_sign_herit" parent="menu_sign" action="act_sign" sequence="2"/>
         <menuitem name="내 문서" id="menu_sign_content_my" parent="menu_sign_root" action="act_sign_content_my" sequence="3"/>
         <menuitem name="참조문서" id="menu_sign_content_ref" parent="menu_sign_root" action="act_sign_reference_content" sequence="3"/>
-        <menuitem name="결재 할 문서" id="menu_sign_content" parent="menu_sign_root" action="ir_actions_server_gvm" sequence="0" groups="hr.group_hr_manager"/>
-        <menuitem name="결재 한 문서" id="menu_sign_content_check" parent="menu_sign_root" action="act_sign_content_check" sequence="2" groups="hr.group_hr_manager"/>
-        <menuitem name="결재 된 문서" id="menu_sign_content_finish" parent="menu_sign" action="act_sign_content_finish" sequence="1" groups="hr.group_hr_manager"/>
+        <menuitem name="결재 할 문서" id="menu_sign_content" parent="menu_sign_root" action="ir_actions_server_gvm" sequence="0" />
+        <menuitem name="결재 한 문서" id="menu_sign_content_check" parent="menu_sign_root" action="act_sign_content_check" sequence="2" />
+        <menuitem name="결재 된 문서" id="menu_sign_content_finish" parent="menu_sign" action="act_sign_content_finish" sequence="1"  />
         <menuitem name="전체문서" id="menu_sign_content_all" parent="menu_sign" action="act_sign_content_all" sequence="2" groups="hr.group_hr_manager"/>
 
 </odoo>

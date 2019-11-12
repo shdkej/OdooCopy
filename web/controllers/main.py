@@ -915,21 +915,39 @@ class DataSet(http.Controller):
       state_id = index.index(index_list[0]) + 1
       name = request.env.user.name
       uid = request.env['res.users'].search([('name','=',name)]).id
-
       check = 'check'+str(state_id)
       check_date = 'check'+str(state_id)+'_date'
       request_check = 'request_check'+str(state_id)
       if not state:
-        state = check
-        if len(index_list) < 2:
-          state = 'done'
+        #sh
+        #업무요청보고서
+        if sign_id.sign_ids == 10:
+          state = check
+          #결제완료
+          if len(index_list) < 3:
+             state = 'done'
+          #업무진행완료
+          if len(index_list) == 1:
+             state = 'workdone'
+        else:
+          state = check
+          if len(index_list) < 2:
+             state = 'done'
       if sign_id.reason and comment:
         if state == 'cancel':
           comment = '* ' + comment + ' *'
         comment = sign_id.reason + "\n" + comment
 
       if sign_id[request_check].name == name:
+        #sh
+        #코멘트가 없을경우 작성하지않는다.
+        if comment == '':
+           comment = comment
+        else :
+            comment = "\n" + comment + '_' + name
         sign_id.sudo(1).write({
+           #sh
+           #코멘트작성
            'reason':comment,
            'state':state,
 	   check:uid,
