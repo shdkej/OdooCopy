@@ -303,45 +303,36 @@ class GvmSignContent(models.Model):
        if self.rest1 == 'refresh':
           #출장비정산서찾기     
           sign = self.env['gvm.signcontent'].search([('user_id','=',self.env.uid),('sign','=','출장비정산서')],limit=1)
-          
-          #출장비정산서를 한번도 작성하지 않았을경우/ 작성자가 임의로 날짜를 변경하는경우
-          if sign.date_from == False:
-              date_from = self.refresh_date_from
-              date_to = self.refresh_date_to
-          #작성자가 임의로 날짜를 변경하는경우
-          elif self.refresh_date_to != sign.date_from:
-              date_from = self.refresh_date_from
-              date_to = self.refresh_date_to
-          #출장비정산서를 작성한 경우
-          else:  
-              self.refresh_date_to = sign.date_from
-              self.refresh_date_from = sign.date_to
-              date_from = sign.date_to
-              date_to = sign.date_from
-          
-          #리프레시 개수 구하기
-          datefrom = datetime.strptime(date_from, '%Y-%m-%d')
-          dateto = datetime.strptime(date_to, '%Y-%m-%d')
-          num = datefrom - dateto 
-          num = str(num)  
-          num = num.split(' days')
-          num = num[0]
-          if num not in '00:00:00':
-             self.refresh_num = int(num) / 30              
-          else:
-             self.refresh_num = 0
-          
-          #현재 사용 개수 구하기
-          self_dateto =datetime.strptime(self.date_from, '%Y-%m-%d')
-          self_datefrom = datetime.strptime(self.date_to, '%Y-%m-%d') 
-          self_num = self_datefrom - self_dateto 
-          self_num = str(self_num)  
-          self_num = self_num.split(' day')
-          self_num = self_num[0]
-          if self_num not in '00:00:00':
-            self.refresh_use_num = int(self_num) + 1
-          else: 
-            self.refresh_use_num = 1 
+          _logger.warning(sign)
+
+          if sign:
+              self.refresh_date = sign.date_from + ' ~ ' + sign.date_to 
+
+              datefrom = datetime.strptime(sign.date_to, '%Y-%m-%d')
+              dateto = datetime.strptime(sign.date_from, '%Y-%m-%d')
+              num = datefrom - dateto 
+              num = str(num)  
+              num = num.split(' days')
+              num = num[0]
+              if num not in '00:00:00':
+                 self.refresh_num = int(num) / 30              
+              else:
+                 self.refresh_num = 0
+
+              self_dateto =datetime.strptime(self.date_from, '%Y-%m-%d')
+              self_datefrom = datetime.strptime(self.date_to, '%Y-%m-%d') 
+              self_num = self_datefrom - self_dateto 
+              self_num = str(self_num)  
+              self_num = self_num.split(' day')
+              self_num = self_num[0]
+              if self_num not in '00:00:00':
+                self.refresh_use_num = int(self_num) + 1
+              else: 
+                self.refresh_use_num = 1 
+
+              _logger.warning("test")
+              _logger.warning(self.refresh_num)
+              _logger.warning(self.refresh_use_num)
 
     @api.onchange('sign_ids')
     def _default_check1(self):
@@ -363,7 +354,6 @@ class GvmSignContent(models.Model):
 	    record.request_check3 = ceo
             record.request_check4 = manager[1].id
             record.request_check5 = manager[0].id
-    
           #sh
           #업무요청확인서
 	  elif record.sign_ids == 10:
@@ -532,7 +522,13 @@ class GvmSignContent(models.Model):
 	 #상태 정보: 취소상태
          self.write({'state':'remove'})
 
+        #출장비정산서
 	elif self.sign.num == 3:
+	 #상태 정보: 취소상태
+	 self.write({'state':'remove'})
+
+        #지출결의서
+	elif self.sign.num == 5:
 	 #상태 정보: 취소상태
 	 self.write({'state':'remove'})
 
@@ -637,7 +633,9 @@ class GvmSignContent(models.Model):
 
     @api.multi
     def write(self, vals):
-        allower = [1,168,294]
+        #sh
+        #[취소권한부여] 168: 유예진, 295: 이승현, : 김진우, : 조나래
+        allower = [1,168,294,295]
         for record in self:
             if record.state in ['temp','write','cancel']:
 	     if self.env.user.name != record.user_id.name and self.env.uid != 1:
