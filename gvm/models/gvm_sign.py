@@ -90,7 +90,8 @@ class GvmSignContent(models.Model):
 
     #sh
     #근태신청서_리프레시확인 
-    refresh_date = fields.Char(string='출장기간',store=True)
+    refresh_date_to = fields.Date('start', default=fields.Datetime.now) 
+    refresh_date_from = fields.Date('end', default=fields.Datetime.now)
     refresh_num = fields.Integer(default=0)
     refresh_use_num = fields.Integer(default=0)
 
@@ -295,12 +296,12 @@ class GvmSignContent(models.Model):
         record.my_doc_count = len(my_doc)
         record.my_check_count = len(my_check_doc)
         record.my_ref_count = len(my_ref_doc)
-
+   
     #sh
-    @api.onchange('rest1','date_from','date_to')
+    @api.onchange('rest1','refresh_date_to','refresh_date_from')
     def _refresh_check(self):
        if self.rest1 == 'refresh':
-
+          #출장비정산서찾기     
           sign = self.env['gvm.signcontent'].search([('user_id','=',self.env.uid),('sign','=','출장비정산서')],limit=1)
           _logger.warning(sign)
 
@@ -356,18 +357,11 @@ class GvmSignContent(models.Model):
           #sh
           #업무요청확인서
 	  elif record.sign_ids == 10:
-            record.request_check3 = boss
-          
-          #elif record.sign_ids == 1:
-	  #  dep_list = []
-	  #  dep_ids = self.env['hr.employee'].search([('department_id','=',dep.id)])
-	  #  for dep_id in dep_ids:
-	  #    dep_list.append(dep_id.id)
-	  #  record.reference = dep_list
+            record.request_check3 = boss 
           else:
             record.request_check1 = False
             record.request_check2 = False
-            record.request_check3 = boss 
+            record.request_check3 = boss
             record.request_check4 = False
             record.request_check5 = False
 	    record.reference = False

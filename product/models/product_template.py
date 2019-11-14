@@ -30,7 +30,6 @@ class ProductTemplate(models.Model):
 
     def _get_default_uom_id(self):
         return self.env["product.uom"].search([], limit=1, order='id').id
-    
     #sh
     #공용자재필터
     model = fields.Char(string = '모델명')
