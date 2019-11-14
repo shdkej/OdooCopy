@@ -30,19 +30,12 @@ class ProductTemplate(models.Model):
 
     def _get_default_uom_id(self):
         return self.env["product.uom"].search([], limit=1, order='id').id
-<<<<<<< HEAD
-    model = fields.Char(string = '모델명')
-    maker = fields.Char(string = '제조사')
-    meterial = fields.Char(string = '재질')
-
-=======
     
     #sh
     #공용자재필터
     model = fields.Char(string = '모델명')
     maker = fields.Char(string = '제조사')
     meterial = fields.Char(string = '재질')
->>>>>>> fea00f5a34f1034165c52aba1f2219d73fadeacd
 
     name = fields.Char('Name', index=True, required=True, translate=True)
     sequence = fields.Integer('Sequence', default=1, help='Gives the sequence order when displaying a product list')

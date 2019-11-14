@@ -127,17 +127,13 @@ class GvmSignContent(models.Model):
     currency_dong = fields.Float(string='dong',default=0.05)
     currency_dollar = fields.Float(string='dollar',default=1079.5)
     attachment = fields.Many2many('ir.attachment', domain="[('res_model','=','gvm.signcontent')]", string='도면')
-    relate_sign1 = fields.Many2one('gvm.signcontent',string='출장완료서', domain=[('sign_ids','=',4)])
-    relate_sign2 = fields.Many2one('gvm.signcontent',string='출장계획서', domain=[('sign_ids','=',6)])
+    relate_sign1 = fields.Many2one('gvm.signcontent',string='출장완료서')
+    relate_sign2 = fields.Many2one('gvm.signcontent',string='출장계획서')
     sign_line = fields.One2many('gvm.signcontent.line','sign','sign_line')
 
     check_all = fields.Boolean('전결')
-<<<<<<< HEAD
-    next_check = fields.Char(string='next_check',compute='_compute_next_check',store=True)
-=======
     next_check = fields.Char(string='next_check',compute='_compute_next_check', store=True)
 
->>>>>>> fea00f5a34f1034165c52aba1f2219d73fadeacd
     state = fields.Selection([
         ('temp', '임시저장'),
         ('write', '상신'),
@@ -148,13 +144,8 @@ class GvmSignContent(models.Model):
         ('check5', '결재'),
         ('done', '결재완료'),
         ('cancel', '반려'),
-<<<<<<< HEAD
         ('remove', '취소'), 
         ('workdone', '업무진행완료')],string='Status', readonly=True, index=True, copy=False, default='temp', track_visibility='onchange')
-=======
-        ('remove', '취소')
-        ], string='Status', readonly=True, index=True, copy=False, default='temp', track_visibility='onchange')
->>>>>>> fea00f5a34f1034165c52aba1f2219d73fadeacd
     holiday_count = fields.Char('holiday_count', compute='_compute_holiday_count')
     confirm_date = fields.Date('confirm_date')
 
@@ -306,39 +297,41 @@ class GvmSignContent(models.Model):
         record.my_ref_count = len(my_ref_doc)
 
     #sh
-    @api.onchange('rest1')
+    @api.onchange('rest1','date_from','date_to')
     def _refresh_check(self):
        if self.rest1 == 'refresh':
 
           sign = self.env['gvm.signcontent'].search([('user_id','=',self.env.uid),('sign','=','출장비정산서')],limit=1)
           _logger.warning(sign)
-          self.refresh_date = sign.date_from + ' ~ ' + sign.date_to 
 
-          datefrom = datetime.strptime(sign.date_to, '%Y-%m-%d')
-          dateto = datetime.strptime(sign.date_from, '%Y-%m-%d')
-          num = datefrom - dateto 
-          num = str(num)  
-          num = num.split(' days')
-          num = num[0]
-          if num not in '00:00:00':
-             self.refresh_num = int(num) / 30              
-          else:
-             self.refresh_num = 0
+          if sign:
+              self.refresh_date = sign.date_from + ' ~ ' + sign.date_to 
 
-          self_dateto =datetime.strptime(self.date_from, '%Y-%m-%d')
-          self_datefrom = datetime.strptime(self.date_to, '%Y-%m-%d') 
-          self_num = self_datefrom - self_dateto 
-          self_num = str(self_num)  
-          self_num = self_num.split(' day')
-          self_num = self_num[0]
-          if self_num not in '00:00:00':
-            self.refresh_use_num = int(self_num) + 1
-          else: 
-            self.refresh_use_num = 1 
+              datefrom = datetime.strptime(sign.date_to, '%Y-%m-%d')
+              dateto = datetime.strptime(sign.date_from, '%Y-%m-%d')
+              num = datefrom - dateto 
+              num = str(num)  
+              num = num.split(' days')
+              num = num[0]
+              if num not in '00:00:00':
+                 self.refresh_num = int(num) / 30              
+              else:
+                 self.refresh_num = 0
 
-          _logger.warning("test")
-          _logger.warning(self.refresh_num)
-          _logger.warning(self.refresh_use_num)
+              self_dateto =datetime.strptime(self.date_from, '%Y-%m-%d')
+              self_datefrom = datetime.strptime(self.date_to, '%Y-%m-%d') 
+              self_num = self_datefrom - self_dateto 
+              self_num = str(self_num)  
+              self_num = self_num.split(' day')
+              self_num = self_num[0]
+              if self_num not in '00:00:00':
+                self.refresh_use_num = int(self_num) + 1
+              else: 
+                self.refresh_use_num = 1 
+
+              _logger.warning("test")
+              _logger.warning(self.refresh_num)
+              _logger.warning(self.refresh_use_num)
 
     @api.onchange('sign_ids')
     def _default_check1(self):
@@ -360,7 +353,6 @@ class GvmSignContent(models.Model):
 	    record.request_check3 = ceo
             record.request_check4 = manager[1].id
             record.request_check5 = manager[0].id
-<<<<<<< HEAD
           #sh
           #업무요청확인서
 	  elif record.sign_ids == 10:
@@ -376,12 +368,6 @@ class GvmSignContent(models.Model):
             record.request_check1 = False
             record.request_check2 = False
             record.request_check3 = boss 
-=======
-          else:
-            record.request_check1 = False
-            record.request_check2 = False
-            record.request_check3 = boss
->>>>>>> fea00f5a34f1034165c52aba1f2219d73fadeacd
             record.request_check4 = False
             record.request_check5 = False
 	    record.reference = False
@@ -483,12 +469,7 @@ class GvmSignContent(models.Model):
     def sign_view(self):
         uname = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).id
         username = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).name
-<<<<<<< HEAD
-        #domain = ['&','|','&','|',('request_check1','=',uname),('request_check2','=',uname),('request_check3','=',uname),('next_check','=',username),('state','!=','temp')]
-        domain = [('next_check','=',username), ('state','not in', ['temp', 'cancel'])]
-=======
         domain = [('next_check','=',username),('state','not in',['temp','done','cancel'])]
->>>>>>> fea00f5a34f1034165c52aba1f2219d73fadeacd
         return {
             'name': _('Sign'),
             'domain': domain,
@@ -547,7 +528,13 @@ class GvmSignContent(models.Model):
 	 #상태 정보: 취소상태
          self.write({'state':'remove'})
 
+        #출장비정산서
 	elif self.sign.num == 3:
+	 #상태 정보: 취소상태
+	 self.write({'state':'remove'})
+
+        #지출결의서
+	elif self.sign.num == 5:
 	 #상태 정보: 취소상태
 	 self.write({'state':'remove'})
 
@@ -652,7 +639,9 @@ class GvmSignContent(models.Model):
 
     @api.multi
     def write(self, vals):
-        allower = [1,168,294]
+        #sh
+        #[취소권한부여] 168: 유예진, 295: 이승현, : 김진우, : 조나래
+        allower = [1,168,294,295]
         for record in self:
             if record.state in ['temp','write','cancel']:
 	     if self.env.user.name != record.user_id.name and self.env.uid != 1:
