@@ -207,9 +207,8 @@
                                 <td width="40%"><field name="had_cost"/></td>
                                 <td class="tdcolor">문서첨부</td>
                                 <td width="40%">
-                                    <!--
                                     출장계획서 : <field name="relate_sign2" options="{'no_create_edit':True,'no_create':True}" domain="[('user_id','=',user_id),('sign_ids','=',6)]" attrs="{'required':[('sign_ids','=',3)]}"/><br/>
-                                    출장완료서 : <field name="relate_sign1" options="{'no_create_edit':True,'no_create':True}" domain="[('user_id','=',user_id),('sign_ids','=',4)]" attrs="{'required':[('sign_ids','=',3)]}"/>-->
+                                    출장완료서 : <field name="relate_sign1" options="{'no_create_edit':True,'no_create':True}" domain="[('user_id','=',user_id),('sign_ids','=',4)]" attrs="{'required':[('sign_ids','=',3)]}"/>
                                 </td>
                             </tr>
                             <tr attrs="{'invisible':[('sign_ids','in',[1,2,5,9])]}">

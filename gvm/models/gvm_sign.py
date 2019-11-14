@@ -128,8 +128,8 @@ class GvmSignContent(models.Model):
     currency_dong = fields.Float(string='dong',default=0.05)
     currency_dollar = fields.Float(string='dollar',default=1079.5)
     attachment = fields.Many2many('ir.attachment', domain="[('res_model','=','gvm.signcontent')]", string='도면')
-    relate_sign1 = fields.Many2one('gvm.signcontent',string='출장완료서', domain=[('sign_ids','=',4)])
-    relate_sign2 = fields.Many2one('gvm.signcontent',string='출장계획서', domain=[('sign_ids','=',6)])
+    relate_sign1 = fields.Many2one('gvm.signcontent',string='출장완료서')
+    relate_sign2 = fields.Many2one('gvm.signcontent',string='출장계획서')
     sign_line = fields.One2many('gvm.signcontent.line','sign','sign_line')
 
     check_all = fields.Boolean('전결')
