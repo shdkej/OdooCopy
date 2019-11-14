@@ -173,71 +173,76 @@ class Employee(models.Model):
 
      #sh
     def _check_holiday_count(self):
-      _logger.warning("test")
-
-      #입사일기준
+      #임직원전체 검색
       employees = self.env['hr.employee'].search([])
-      companyDate = ""
-      year_entering = ''
       for record in employees:
-       fmt = '%Y-%m-%d'
+
+       #입사일자가 있는경우
        if record.join_date:
-        companyDate = datetime.datetime.strptime(record.join_date,fmt).date()
-        companyYear = companyDate.year
-        companyMonth = companyDate.month
-        companyDay = companyDate.day
+         #입사일
+         companyDate = datetime.datetime.strptime(record.join_date,'%Y-%m-%d').date()
+         companyYear = companyDate.year
+         companyMonth = companyDate.month
+         companyDay = companyDate.day
 
-        #현재시간
-        now = datetime.datetime.now()
-        presentYear = now.year
-        presentMonth = now.month
-        presentDay = now.day
+         #현재시간
+         now = datetime.datetime.now()
+         presentYear = now.year
+         presentMonth = now.month
+         presentDay = now.day
+         now = datetime.date(presentYear,presentMonth,presentDay)
+        
+         #년수계산하기
+         year_entering = now - companyDate
+         year_entering = year_entering / 365
 
-        #3년이상 종사자
-        year_entering = presentYear - companyYear
-        year_check = year_entering % 2.0
+         #days 삭제필요
 
-       #1년미만 입사자
-        if year_entering == 0 and companyMonth != presentMonth and companyDay == presentDay:
-        #연차 1개를 증가시킨다.
-          record.holiday_count += 1.0
-          _logger.warning("%s under 1 year" % record.name)
-        #1년미만 입사자
-        elif year_entering == 1 and companyMonth != presentMonth and companyDay == presentDay:
-	 if companyMonth >= presentMonth:
-         #연차 1개를 증가시킨다.
-	  record.holiday_count += 1.0
-          _logger.warning("%s under 1 year" % record.name)
-        #1년
-        elif year_entering == 1 and companyMonth == presentMonth and companyDay == presentDay:
-          #2년이상 입사자 해당
-          if (presentYear - companyYear) >= 2.0:
+         #3년이상 종사자 2년마다 연차 개수 2개씩 증가
+         #홀수일경우에만 연차개수 1개씩증가(3년,5년,7년...)
+         year_check = year_entering % 2.0
+
+         #1년미만 입사자
+         if year_entering == 0 and companyMonth != presentMonth and companyDay == presentDay:
+           #연차 1개를 증가시킨다.
+           record.holiday_count += 1.0
+           _logger.warning("%s under 1 year" % record.name)
+         #1년
+         elif year_entering == 1 and companyMonth == presentMonth and companyDay == presentDay:
+           #연차 15개를 증가시킨다.
+           record.holiday_count += 15.0
+           _logger.warning("%s 1 year" % record.name)
+         #2년
+         elif year_entering > 1 and companyMonth == presentMonth and companyDay == presentDay:
            #남은 연차의 갯수가 + 일경우 연차 초기화
-            if record.holiday_count > 0.0:
-             record.holiday_count = 0.0
-
-          #연차 15개를 증가시킨다.
-          record.holiday_count += 15.0
-          _logger.warning("%s 1 year" % record.name)
-            
-        #3년이상 재직 시 2년마다 연차 총 개수 1개씩 증가
-        if year_entering > 2.0 and companyMonth == presentMonth and companyDay == presentDay:   
-          #짝수
-	  if year_check == 0.0:
-	   year_1count = (year_entering / 2.0) - 1.0
-           record.holiday_count += year_1count
-           _logger.warning("%s 3 year" % record.name)
-	  #홀수
-	  else:
- 	   year_2count = (year_entering - 1.0) / 2.0
-	   record.holiday_count += year_2count
-           _logger.warning("%s 3 year" % record.name)
+           if record.holiday_count > 0.0:
+              record.holiday_count = 0.0
+           #연차 15개를 증가시킨다.
+           record.holiday_count += 15.0
+           _logger.warning("%s 2 year" % record.name)
+         #3년이상 재직 시 2년마다 연차 총 개수 1개씩 증가
+         if year_entering > 2  and companyMonth == presentMonth and companyDay == presentDay:   
+           #짝수
+	   if year_check == 0:
+	     year_1count = (year_entering / 2.0) - 1.0
+             record.holiday_count += year_1count
+             _logger.warning("%s 3 year" % record.name)
+	   #홀수
+	   else:
+ 	     year_2count = (year_entering - 1.0) / 2.0
+	     record.holiday_count += year_2count
+             _logger.warning("%s 3 year" % record.name)
 	
-        #1년미만 입사자는 max_count = 0 
-        if year_entering == 0 and companyMonth != presentMonth and companyDay == presentDay:
-          record.holiday_max_count = 0
-        else:
-          record.holiday_max_count = record.holiday_count
+         #1년미만 입사자는 max_count = 0 
+         if year_entering == 0 and companyMonth != presentMonth and companyDay == presentDay:
+           record.holiday_max_count = 0
+         else:
+           record.holiday_max_count = record.holiday_count
+       
+       #입사일이없는경우
+       else:
+            record.holiday_max_count = 0
+            record.holiday_count = 0
 
       _logger.warning("Check Holiday Complete")
 
