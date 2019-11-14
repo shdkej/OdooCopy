@@ -90,10 +90,11 @@ class GvmSignContent(models.Model):
 
     #sh
     #근태신청서_리프레시확인 
-    refresh_date_to = fields.Date('start', default=fields.Datetime.now) 
-    refresh_date_from = fields.Date('end', default=fields.Datetime.now)
+    refresh_date_to = fields.Date('start',default=fields.Datetime.now)
+    refresh_date_from = fields.Date('end',default=fields.Datetime.now)
     refresh_num = fields.Integer(default=0)
     refresh_use_num = fields.Integer(default=0)
+    refresh_days = fields.Integer(default=0)
 
     #sh
     #업무요청확인서
@@ -303,36 +304,53 @@ class GvmSignContent(models.Model):
        if self.rest1 == 'refresh':
           #출장비정산서찾기     
           sign = self.env['gvm.signcontent'].search([('user_id','=',self.env.uid),('sign','=','출장비정산서')],limit=1)
-          _logger.warning(sign)
+                    
+          #출장비정산을 한번도 작성하지 않은경우
+          if sign.date_to == False:
+            date_to = self.refresh_date_to
+            date_from = self.refresh_date_from
+          #본인이 날짜를 수정했을경우  
+          elif sign.date_to != self.refresh_date_to: 
+            date_to = self.refresh_date_to
+            date_from = self.refresh_date_from
+          #출장비정산서를 작성한경우
+          else:
+            self.refresh_date_to = sign.date_from
+            self.refresh_date_from = sign.date_to
+            date_to = sign.date_from
+            date_from = sign.date_to
+          _logger.warning(self.refresh_date_to)
+          _logger.warning(sign.date_to)
 
-          if sign:
-              self.refresh_date = sign.date_from + ' ~ ' + sign.date_to 
-
-              datefrom = datetime.strptime(sign.date_to, '%Y-%m-%d')
-              dateto = datetime.strptime(sign.date_from, '%Y-%m-%d')
-              num = datefrom - dateto 
-              num = str(num)  
+          #리프레시계산
+          datefrom = datetime.strptime(date_from, '%Y-%m-%d')
+          dateto = datetime.strptime(date_to, '%Y-%m-%d')
+          num = datefrom - dateto 
+          num = str(num)
+          #출장비정산서:Datetime, 출장기간:Date 
+          if sign.date_to == False:
+              num = num.split(' day')
+          else:
               num = num.split(' days')
-              num = num[0]
-              if num not in '00:00:00':
-                 self.refresh_num = int(num) / 30              
-              else:
-                 self.refresh_num = 0
+          num = num[0]
+          if num not in '00:00:00':
+             self.refresh_num = int(num) / 30              
+             self.refresh_days = int(num)
+          else:
+             self.refresh_days = 0
+             self.refresh_num = 0
 
-              self_dateto =datetime.strptime(self.date_from, '%Y-%m-%d')
-              self_datefrom = datetime.strptime(self.date_to, '%Y-%m-%d') 
-              self_num = self_datefrom - self_dateto 
-              self_num = str(self_num)  
-              self_num = self_num.split(' day')
-              self_num = self_num[0]
-              if self_num not in '00:00:00':
-                self.refresh_use_num = int(self_num) + 1
-              else: 
-                self.refresh_use_num = 1 
-
-              _logger.warning("test")
-              _logger.warning(self.refresh_num)
-              _logger.warning(self.refresh_use_num)
+          #현재 연차개수 계산
+          self_dateto =datetime.strptime(self.date_to, '%Y-%m-%d')
+          self_datefrom = datetime.strptime(self.date_from, '%Y-%m-%d') 
+          self_num = self_datefrom - self_dateto 
+          self_num = str(self_num)  
+          self_num = self_num.split(' day')
+          self_num = self_num[0]
+          if self_num not in '00:00:00':
+             self.refresh_use_num = int(self_num) + 1
+          else: 
+             self.refresh_use_num = 1 
 
     @api.onchange('sign_ids')
     def _default_check1(self):
@@ -361,7 +379,7 @@ class GvmSignContent(models.Model):
           else:
             record.request_check1 = False
             record.request_check2 = False
-            record.request_check3 = boss
+            record.request_check3 = boss 
             record.request_check4 = False
             record.request_check5 = False
 	    record.reference = False
