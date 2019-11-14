@@ -172,6 +172,16 @@
                                 <td class="tdcolor">기간</td>
                                 <td width="40%"><field name="out_of_work_date_from"/> 부터 <field name="out_of_work_date_to"/></td>
                             </tr>
+                           <tr attrs="{'invisible':['|',('sign_ids','!=', 1),('rest1','!=', 'refresh')]}"> 
+                               <td class="tdcolor">출장기간</td>    
+                               <td width="40%"><field name="refresh_date_to"/> 부터 <field name="refresh_date_from"/></td>      
+                               <td class="tdcolor">총 리프레시</td> 
+                               <td width="40%"><span style="color:red;"><field name="refresh_num" readonly="1"/></span></td>    
+                            </tr>   
+                            <tr attrs="{'invisible':['|',('sign_ids','!=', 1),('rest1','!=', 'refresh')]}">     
+                               <td class="tdcolor">현재 사용 갯수</td>  
+                               <td width="90%" colspan="3"><span style="color:red;"><field name="refresh_use_num" readonly="1"/></span></td>    
+                            </tr>           
                             <tr attrs="{'invisible':[('sign_ids','!=', 9)]}">
                                 <td class = "tdcolor">외근 동행자</td>
                                 <td width="40%"><field name='out_of_work_companion'/></td>    
