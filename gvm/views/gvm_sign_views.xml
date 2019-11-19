@@ -86,6 +86,7 @@
                     <field name="check" invisible="1"/>
                     <field name="user_department" invisible="1"/>
                     <field name="next_check" invisible="1"/>
+                    <field name="check_confirm" invisible="1"/>
                     <div class="gvm_sign" id="gvm_sign">
                         <span><input type="button" id="add_check" name="0" class="check_button" value="추가" attrs="{'invisible':[('state','!=','temp')]}"/></span>
                         <table width="100%">
@@ -166,12 +167,14 @@
                                 <td class="tdcolor">기간</td>
                                 <td width="40%"><field name="date_from"/> 부터 <field name="date_to"/></td>
                             </tr>
+                            <!--
                             <tr attrs="{'invisible':[('sign_ids','!=', 9)]}">
                                 <td class="tdcolor">직급</td>
                                 <td width="40%"><field name="job_ids"/></td>
                                 <td class="tdcolor">기간</td>
                                 <td width="40%"><field name="out_of_work_date_from"/> 부터 <field name="out_of_work_date_to"/></td>
                             </tr>
+                            -->
                            <tr attrs="{'invisible':['|',('sign_ids','!=', 1),('rest1','!=', 'refresh')]}"> 
                                <td class="tdcolor">출장기간</td>    
                                <td width="40%"><field name="refresh_date_to"/> 부터 <field name="refresh_date_from"/></td>      
@@ -207,8 +210,8 @@
                                 <td width="40%"><field name="had_cost"/></td>
                                 <td class="tdcolor">문서첨부</td>
                                 <td width="40%">
-                                    출장계획서 : <field name="relate_sign2" options="{'no_create_edit':True,'no_create':True}" domain="[('user_id','=',user_id),('sign_ids','=',6)]" attrs="{'required':[('sign_ids','=',3)]}"/><br/>
-                                    출장완료서 : <field name="relate_sign1" options="{'no_create_edit':True,'no_create':True}" domain="[('user_id','=',user_id),('sign_ids','=',4)]" attrs="{'required':[('sign_ids','=',3)]}"/>
+                                    출장계획서 : <field name="relate_sign2" options="{'no_create_edit':True,'no_create':True}" domain="[('user_id','=',user_id),('sign_ids','=',6)]" attrs="{'required':[('sign_ids','=',3),('check_confirm','=',True)]}"/><br/>
+                                    출장완료서 : <field name="relate_sign1" options="{'no_create_edit':True,'no_create':True}" domain="[('user_id','=',user_id),('sign_ids','=',4)]" attrs="{'required':[('sign_ids','=',3),('check_confirm','=',True)]}"/>
                                 </td>
                             </tr>
                             <tr attrs="{'invisible':[('sign_ids','in',[1,2,5,9])]}">

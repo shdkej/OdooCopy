@@ -165,7 +165,8 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
                         item.original_count,        //5
                         item.etc,                   //6
                         item.bad_state,             //7
-                        item.purchase_by_maker[1]]);//8
+                        item.purchase_by_maker[1],  //8
+                        ]);
                     self.data_id.push(item.id);
                 }
             })
@@ -199,6 +200,14 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
             editable: this.editable,
             columns: [
             {type: 'checkbox'},
+            {type: 'text'},
+            {type: 'text'},
+            {type: 'text'},
+            {type: 'text'},
+            {type: 'text'},
+            {type: 'text'},
+            {type: 'dropdown', source:['A','B','C','D','E','F','G'] },
+            {type: 'text'},
             ]
         });
         var seq_name = '';
