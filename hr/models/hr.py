@@ -171,7 +171,7 @@ class Employee(models.Model):
             if not employee._check_recursion():
                raise ValidationError(_('Error! You cannot create recursive hierarchy of Employee(s).'))
 
-     #sh
+    #sh_20191119
     def _check_holiday_count(self):
       #임직원전체 검색
       employees = self.env['hr.employee'].search([])
@@ -193,13 +193,13 @@ class Employee(models.Model):
          now = datetime.date(presentYear,presentMonth,presentDay)
         
          #년수계산하기
-         year_entering = now - companyDate
-         year_entering = year_entering / 365
-
+         year_entering = now - companyDate  
          #days 삭제필요
+         year_entering = str(year_entering).split(' days, 0:00:00')
+         year_entering = int(year_entering[0]) / 365
+         _logger.warning(year_entering) 
 
-         #3년이상 종사자 2년마다 연차 개수 2개씩 증가
-         #홀수일경우에만 연차개수 1개씩증가(3년,5년,7년...)
+         #홀수/ 짝수 판별
          year_check = year_entering % 2.0
 
          #1년미만 입사자
@@ -222,6 +222,9 @@ class Employee(models.Model):
            _logger.warning("%s 2 year" % record.name)
          #3년이상 재직 시 2년마다 연차 총 개수 1개씩 증가
          if year_entering > 2  and companyMonth == presentMonth and companyDay == presentDay:   
+           #3년이상 종사자 2년마다 연차 개수 2개씩 증가
+           #홀수일경우에만 연차개수 1개씩증가(3년,5년,7년...)
+           #16년:16개, 15년:16개, 14년:17개, 13년:17개, 12년:18개
            #짝수
 	   if year_check == 0:
 	     year_1count = (year_entering / 2.0) - 1.0
