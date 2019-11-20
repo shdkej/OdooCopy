@@ -86,25 +86,6 @@ class HrEmployee(models.Model):
 	
         return self.attendance_action(next_action, address)
     
-    def _Check_check_out_time(self):
-        """ 퇴근을 하지 않았을경우, 다음날 00시 00분 00초에 자동으로  퇴근이 된다."""
-        date = datetime.now()
-        hour = date.hour
-        minute = date.minute
- 	_logger.warning("test")
-
-        check_out_time = datetime.now()
-        check_out_time = check_out_time.replace(hour=15, minute=0,second=0)
-						    
-        hr_attendance = self.env['hr.attendance'].search([('check_out', '=', False)])
-  	_logger.warning("test1")					         
-        if hour == 15 and minute == 00:
-         for att in hr_attendance:
-	     _logger.warning("test2")
-	     att.write({
-		     'check_out':check_out_time
-	     })
-
     @api.multi
     def attendance_action(self, next_action, location):
         """ Changes the attendance of the employee.
@@ -124,7 +105,15 @@ class HrEmployee(models.Model):
         action_message['attendance'] = modified_attendance.read()[0]
         return {'action': action_message}
    
-   #sh
+    #sh
+    def button_leavework(self): 
+       """ 출근과 퇴근을 사용자가 지정하여 사용할 수 있다. 사무실에서 찍은경우 사무실의 기록을 가져온다."""
+       """현재사용자 퇴근버튼을 눌렀을경우"""
+       #현재사용자의 출근시간을 찾는다.
+       gotowork = self.env['hr.timeattendance'].search([('user_id','=',self.env.uid)]).gotowork
+       _logger.warning("gotowork")
+
+    #sh
     def _Check_check_out_time(self):
        """ 퇴근을 하지 않았을경우, 다음날 00시 00분 00초에 자동으로  퇴근이 된다."""
        #현재시간	

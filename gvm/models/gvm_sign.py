@@ -95,12 +95,9 @@ class GvmSignContent(models.Model):
     #근태신청서_리프레시확인 
     refresh_date_to = fields.Date('start',default=fields.Datetime.now)
     refresh_date_from = fields.Date('end',default=fields.Datetime.now)
-    refresh_num = fields.Integer(default=0)
-    refresh_use_num = fields.Integer(default=0)
-    refresh_days = fields.Integer(default=0)
-    refresh_num_text = fields.Char('리프레시 개수')
-    refresh_use_num_text = fields.Char('총 사용 개수')
-    refresh_days_text = fields.Char('총 일수')
+    refresh_num = fields.Integer(store=True,compute='_refresh_check')
+    refresh_use_num = fields.Integer(store=True,compute='_refresh_check')
+    refresh_days = fields.Integer(store=True,compute='_refresh_check')
 
     #sh_20191119
     #업무요청확인서
@@ -337,24 +334,25 @@ class GvmSignContent(models.Model):
         record.my_ref_count = len(my_ref_doc)
    
     #sh
-    @api.onchange('rest1','refresh_date_to','refresh_date_from')
+    @api.depends('rest1','refresh_date_to','refresh_date_from')
     def _refresh_check(self):
-       if self.rest1 == 'refresh':
+      for record in self:
+        if record.rest1 == 'refresh':
           #출장비정산서찾기     
           sign = self.env['gvm.signcontent'].search([('user_id','=',self.env.uid),('sign','=','출장비정산서')],limit=1)
                     
           #출장비정산을 한번도 작성하지 않은경우
           if sign.date_to == False:
-            date_to = self.refresh_date_to
-            date_from = self.refresh_date_from
+            date_to = record.refresh_date_to
+            date_from = record.refresh_date_from
           #본인이 날짜를 수정했을경우  
-          elif sign.date_to != self.refresh_date_to: 
-            date_to = self.refresh_date_to
-            date_from = self.refresh_date_from
+          elif sign.date_to != record.refresh_date_to: 
+            date_to = record.refresh_date_to
+            date_from = record.refresh_date_from
           #출장비정산서를 작성한경우
           else:
-            self.refresh_date_to = sign.date_from
-            self.refresh_date_from = sign.date_to
+            record.refresh_date_to = sign.date_from
+            record.refresh_date_from = sign.date_to
             date_to = sign.date_from
             date_from = sign.date_to
 
@@ -365,29 +363,33 @@ class GvmSignContent(models.Model):
           num = str(num)
           #출장비정산서(Datetime):days, 출장기간(Date):day
           if sign.date_to == False:
-              num = num.split(' day')
-          else:
               num = num.split(' days')
+          else:
+              num = num.split(' day')
           num = num[0]
           if num not in '00:00:00':
-             self.refresh_num = int(num) / 30              
-             self.refresh_days = int(num)
+             record.refresh_num = int(num) / 30              
+             record.refresh_days = int(num)
           else:
-             self.refresh_days = 0
-             self.refresh_num = 0
+             record.refresh_days = 0
+             record.refresh_num = 0
+          _logger.warning(record.refresh_num)
+          _logger.warning(record.refresh_days)
             
           #현재 연차개수 계산
-          self_dateto =datetime.strptime(self.date_to, '%Y-%m-%d')
-          self_datefrom = datetime.strptime(self.date_from, '%Y-%m-%d') 
+          self_dateto = datetime.strptime(record.date_to, '%Y-%m-%d')
+          self_datefrom = datetime.strptime(record.date_from, '%Y-%m-%d') 
           self_num = self_datefrom - self_dateto 
           self_num = str(self_num)  
           self_num = self_num.split(' day')
           self_num = self_num[0]
           if self_num not in '00:00:00':
-             self.refresh_use_num = int(self_num) + 1
+             record.refresh_use_num = int(self_num) + 1
           else: 
-             self.refresh_use_num = 1 
-          
+             record.refresh_use_num = 1
+          _logger.warning(record.refresh_use_num)
+
+
     @api.onchange('sign_ids')
     def _default_check1(self):
         for record in self:

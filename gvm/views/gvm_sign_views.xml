@@ -190,29 +190,28 @@
                                 <td width="40%"><field name="date_from"/> 부터 <field name="date_to"/></td>
                             </tr>
                             <!--리프레시휴가-->
-                            <tr attrs="{'invisible':['|',('sign_ids','!=', 1),('rest1','!=', 'refresh')]}"> 
-                                <td class="tdcolor">출장기간</td> 
-                                <td width="40%"><field name="refresh_date_to"/> 부터 <field name="refresh_date_from"/></td>
-                                <td class="tdcolor">리프레시 개수</td> 
-                                <td width="40%"><span style="color:red;"><field name="refresh_num_text"/></span>
-                                    <span attrs="{'invisible':[('sign_ids','!=',1)]}"> (총 일수 : <field name="refresh_days_text"/></span> 일)</td>
-                            </tr>   
-                            <tr attrs="{'invisible':['|',('sign_ids','!=', 1),('rest1','!=', 'refresh')]}">    
-                                <td class="tdcolor">총 사용 개수</td>
-                                <td width="90%" colspan="3"><span style="color:red;"><field name="refresh_use_num" readonly="1"/></span></td>   
-                            </tr>      
-                            <!--업무요청서--> 
-                            <tr attrs="{'invisible':[('sign_ids','!=', 10)]}">
-                                <td class="tdcolor" states="done,workdone">발생 비용</td>
-                                <td width="90%" colspan="3" states="done,workdone"><field name="price"/></td>   
-                            </tr>
-                            <tr attrs="{'invisible':[('sign_ids','!=', 10)]}">
-                                <td class="tdcolor">개인/업무</td>
-                                <td width="90%" colspan="3"><field name="item"/></td>    
-                            </tr>
-                            <!--  외근확인서
-                            <tr attrs="{'invisible':[('sign_ids','!=', 9)]}">
-
+                           <tr attrs="{'invisible':['|',('sign_ids','!=', 1),('rest1','!=', 'refresh')]}"> 
+                               <td class="tdcolor">출장기간</td> 
+                               <td width="40%"><field name="refresh_date_to"/> 부터 <field name="refresh_date_from"/></td>
+                               <td class="tdcolor">리프레시 개수</td> 
+                               <td width="40%"><span style="color:red;"><field name="refresh_num"/></span>
+                               <span attrs="{'invisible':[('sign_ids','!=',1)]}"> (총 일수 : <field name="refresh_days"/> 일)</span></td>
+                           </tr>   
+                           <tr attrs="{'invisible':['|',('sign_ids','!=', 1),('rest1','!=', 'refresh')]}">    
+                               <td class="tdcolor">총 사용 개수</td>
+                               <td width="90%" colspan="3"><span style="color:red;"><field name="refresh_use_num" readonly="1"/></span></td>   
+                           </tr>      
+                           <!--업무요청서--> 
+                           <tr attrs="{'invisible':[('sign_ids','!=', 10)]}">
+                               <td class="tdcolor" states="done,workdone">발생 비용</td>
+                               <td width="90%" colspan="3" states="done,workdone"><field name="price"/></td>   
+                           </tr>
+                           <tr attrs="{'invisible':[('sign_ids','!=', 10)]}">
+                               <td class="tdcolor">개인/업무</td>
+                               <td width="90%" colspan="3"><field name="item"/></td>    
+                           </tr>
+                           <!--  외근확인서
+                        <tr attrs="{'invisible':[('sign_ids','!=', 9)]}">
                                <td class = "tdcolor">외근 동행자</td>
                                <td width="40%"><field name='out_of_work_companion'/></td>    
                                <td class = "tdcolor">이동 수단</td>
