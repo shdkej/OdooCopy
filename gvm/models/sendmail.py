@@ -15,12 +15,15 @@ gvm_mail_id = config.get('MAIL','MAIL_ID')
 gvm_mail_pw = config.get('MAIL','MAIL_PW')
 
 class gvm_mail():
-  def gvm_send_mail(self, uname, receiver, post, postId, po_num, model_name, menu_id, action_id):
+  def gvm_send_mail(self, uname, receiver, post, postId, po_num, model_name, menu_id, action_id,Flag=True):
      sender = 'nohsh@gvmltd.com'
      receivers = []
      name = uname.encode('utf-8')
      url = "https://erp.gvmltd.com/"
-     subject = "[GVM]["+str(po_num)+"]"+ name + " 님이 "+ post +" 를 올렸습니다."
+     if Flag == True:
+         subject = "[GVM]["+str(po_num)+"]"+ name + " 님이 "+ post +" 를 올렸습니다."
+     else :
+         subject = "[GVM]["+str(po_num)+"]"+ name + post
 
      if is_test == 'True':#True
        subject = '[TEST]' + subject

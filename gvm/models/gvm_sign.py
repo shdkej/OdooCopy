@@ -38,6 +38,7 @@ class GvmSign(models.Model):
 class GvmSignContent(models.Model):
     _name = "gvm.signcontent"
     _description = "signcontent"
+    _inherit = ['mail.thread', 'ir.needaction_mixin']
     _order = 'create_date desc, name desc'
 
     user_id = fields.Many2one('res.users', string='user_id', default=lambda self: self.env.uid,store=True)
@@ -62,13 +63,15 @@ class GvmSignContent(models.Model):
     request_check5 = fields.Many2one('hr.employee',string='request_check5',store=True)
     #업무담당자
     request_check6 = fields.Many2one('hr.employee',string='request_check6',store=True)
+    
     check1 = fields.Many2one('res.users',string='check1',store=True)
     check2 = fields.Many2one('res.users',string='check2',store=True)
     check3 = fields.Many2one('res.users',string='check3',store=True)
     check4 = fields.Many2one('res.users',string='check4',store=True)
-    check5 = fields.Many2one('res.users',string='check5',store=True)
+    check5 = fields.Many2one('res.users',string='check5',store=True)    
     #업무담당자
     check6 = fields.Many2one('res.users',string='check6',store=True)
+    
     check1_date = fields.Datetime('check1_date')
     check2_date = fields.Datetime('check2_date')
     check3_date = fields.Datetime('check3_date')
@@ -95,13 +98,17 @@ class GvmSignContent(models.Model):
     refresh_num = fields.Integer(default=0)
     refresh_use_num = fields.Integer(default=0)
     refresh_days = fields.Integer(default=0)
+    refresh_num_text = fields.Char('리프레시 개수')
+    refresh_use_num_text = fields.Char('총 사용 개수')
+    refresh_days_text = fields.Char('총 일수')
 
-    #sh
+    #sh_20191119
     #업무요청확인서
     item = fields.Selection([('individual','개인'),('business','업무')],default='individual')
     etc = fields.Text(string='기타',store=True)
-    price = fields.Char(string='발생비용')
+    price = fields.Char(string='발생비용',store=True)
     request = fields.Text(string='요청사유',store=True)  
+
 
     project = fields.Many2one('project.project',string='name')
     sign = fields.Many2one('gvm.sign', string='sign',required=True)
@@ -169,6 +176,7 @@ class GvmSignContent(models.Model):
     out_of_work_content2 = fields.Text(string='content2',store=True)
     out_of_work_date_to = fields.Datetime(default = datetime.today())
     out_of_work_date_from = fields.Datetime(default = datetime.today())
+    check_confirm = fields.Boolean('상신확인', default=False)
 	
     @api.depends('date_from','date_to','job_ids')
     def _compute_basic_cost(self):
@@ -236,6 +244,10 @@ class GvmSignContent(models.Model):
            record.dep_ids = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).department_id.id
            record.job_ids = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).job_id.id
            record.sign_ids = record.sign.num
+           _logger.warning("test")
+           _logger.warning(record.dep_ids)
+           _logger.warning(record.job_ids)
+
     @api.model
     def _compute_user_info(self):
         for record in self:
@@ -319,15 +331,13 @@ class GvmSignContent(models.Model):
             self.refresh_date_from = sign.date_to
             date_to = sign.date_from
             date_from = sign.date_to
-          _logger.warning(self.refresh_date_to)
-          _logger.warning(sign.date_to)
 
           #리프레시계산
           datefrom = datetime.strptime(date_from, '%Y-%m-%d')
           dateto = datetime.strptime(date_to, '%Y-%m-%d')
           num = datefrom - dateto 
           num = str(num)
-          #출장비정산서:Datetime, 출장기간:Date 
+          #출장비정산서(Datetime):days, 출장기간(Date):day
           if sign.date_to == False:
               num = num.split(' day')
           else:
@@ -339,7 +349,7 @@ class GvmSignContent(models.Model):
           else:
              self.refresh_days = 0
              self.refresh_num = 0
-
+            
           #현재 연차개수 계산
           self_dateto =datetime.strptime(self.date_to, '%Y-%m-%d')
           self_datefrom = datetime.strptime(self.date_from, '%Y-%m-%d') 
@@ -351,7 +361,7 @@ class GvmSignContent(models.Model):
              self.refresh_use_num = int(self_num) + 1
           else: 
              self.refresh_use_num = 1 
-
+          
     @api.onchange('sign_ids')
     def _default_check1(self):
         for record in self:
@@ -372,7 +382,7 @@ class GvmSignContent(models.Model):
 	    record.request_check3 = ceo
             record.request_check4 = manager[1].id
             record.request_check5 = manager[0].id
-          #sh
+          #sh_20191119
           #업무요청확인서
 	  elif record.sign_ids == 10:
             record.request_check3 = boss 
@@ -386,8 +396,9 @@ class GvmSignContent(models.Model):
 
     @api.depends('date_from','date_to')
     def _onchange_timesheet(self):  
-    
-      self_dateto =datetime.strptime(self.date_from, '%Y-%m-%d')
+      #sh
+      #리프레시_날짜를변경할경우
+      self_dateto = datetime.strptime(self.date_from, '%Y-%m-%d')
       self_datefrom = datetime.strptime(self.date_to, '%Y-%m-%d') 
       self_num = self_datefrom - self_dateto 
       self_num = str(self_num)  
@@ -400,10 +411,12 @@ class GvmSignContent(models.Model):
 
       for record in self:
         if record.sign_ids == 2:
-	 #작성한 기간동안 검색을 위해서 삭제 //(하루전날로 체크해야했음)
-         worktime = self.env['account.analytic.line'].search([('date_from','>=',record.date_from),('date_to','<=',record.date_to),('user_id','=',record.user_id.id)])  #,('unit_amount','>=',1)])
+         #sh_20191119
+	 #잔업특근기간수정
+         date_from = datetime.strptime(record.date_from, '%Y-%m-%d')
+         date_from = date_from + dt.timedelta(days=-1)
+         worktime = self.env['account.analytic.line'].search([('date_from','>=',str(date_from)),('date_to','<=',record.date_to),('user_id','=',record.user_id.id)])  #,('unit_amount','>=',1)])
          record.timesheet = worktime
-         _logger.warning(worktime)
 
     @api.model
     def _check_name(self):
@@ -421,7 +434,8 @@ class GvmSignContent(models.Model):
 
     @api.multi
     def button_check_all(self):
-        #sh
+        #sh_20191119
+        #업무담당자
         if slef.sign_ids != 10:
             self.sudo(self.user_id.id).write({'state':'done', 'check3': self.env.uid, 'next_check':self.request_check4.id or 'done', 'check3_date': datetime.now()})
         else:
@@ -481,7 +495,7 @@ class GvmSignContent(models.Model):
     def sign_view(self):
         uname = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).id
         username = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).name
-        domain = [('next_check','=',username),('state','not in',['temp','done','cancel'])]
+        domain = [('next_check','=',username),('state','not in',['temp','cancel'])]
         return {
             'name': _('Sign'),
             'domain': domain,
@@ -591,12 +605,10 @@ class GvmSignContent(models.Model):
 
     def check_holiday_count(self, rest1=None, date_to=None, date_from=None):
         count = 0
-	#반려를 클릭한 경우
 	if rest1 != None:
 	   rest = rest1
 	   date_to = date_to
 	   date_from = date_from
-	#반려를 클릭하지 않은경우
 	else:
 	   rest = self.rest1
 	   date_to = self.date_to
@@ -627,6 +639,7 @@ class GvmSignContent(models.Model):
         if vals.get('name','New') == 'New':
            vals['name'] = self.env['ir.sequence'].next_by_code('gvm.sign.number') or '/'
         res = super(GvmSignContent, self).create(vals)
+        res.check_confirm = True
 	return res
 
     @api.multi
@@ -659,8 +672,9 @@ class GvmSignContent(models.Model):
 	     if self.env.user.name != record.user_id.name and self.env.uid != 1:
                raise UserError(_('본인 외 수정 불가'))
             else:
-             if self.env.uid not in allower:
-                raise UserError(_('이미 결재가 진행 중인 문서는 수정이 불가합니다.'))
+             if self.sign_ids != 10:
+                 if self.env.uid not in allower:
+                    raise UserError(_('이미 결재가 진행 중인 문서는 수정이 불가합니다.'))
         return super(GvmSignContent, self).write(vals)
 
 

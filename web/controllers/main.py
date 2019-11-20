@@ -920,8 +920,8 @@ class DataSet(http.Controller):
       request_check = 'request_check'+str(state_id)
       # state 입력을 안받으면
       if not state:
-        #sh
-        #업무요청보고서
+        #sh_20191119
+        #업무요청확인서
         if sign_id.sign_ids == 10:
           state = check
           #결제완료
@@ -934,20 +934,49 @@ class DataSet(http.Controller):
           state = check
           if len(index_list) < 2:
              state = 'done'
+      #sh_20191119
+      #반려시, 기안자에게 메일을 보낸다.
+      sender = request.env.user.name
+      receiver = request.env['res.users'].search([('name','=',name)]).id
+      #제목
+      #gvm/model/sendmail.py에 양식이있음. 같이변경해야함.
+      post = '님에 의하여 반려되었습니다. 결재문서를 확인하세요.'      
+      #메타데이터 id
+      post_id = sign_id.id
+      #문서번호(S0001)
+      po_num = str(sign_id.name)
+      #사용모델위치
+      model_name = 'gvm.signcontent'
+      #링크에서 찾아서 쓰면됨.
+      #현재페이지 위치 찾는 용도(리스트)
+      menu_id = "320"
+      #링크에서 찾아서 쓰면됨.
+      #현재페이지 위치 찾는 용도(폼)
+      action_id = ""
+      #반려일경우 
+      Flag = True
+      if state == 'cancel':
+         Flag = False
+       
+      send_mail = gvm_mail().gvm_send_mail(sender, receiver, post, post_id, po_num, model_name, menu_id, action_id,Flag)
+
       if sign_id.reason and comment:
+        _logger.warning("test_sh")
         if state == 'cancel':
           comment = '* ' + comment + ' *'
         comment = sign_id.reason + "\n" + comment
 
       if sign_id[request_check].name == name:
-        #sh
+        #sh_20191119
+        #업무요청확인서
         #코멘트가 없을경우 작성하지않는다.
         if comment == '':
            comment = comment
         else :
             comment = "\n" + comment + '_' + name
         sign_id.sudo(1).write({
-           #sh
+           #sh_20191119
+           #업무요청확인서
            #코멘트작성
            'reason':comment,
            'state':state,
