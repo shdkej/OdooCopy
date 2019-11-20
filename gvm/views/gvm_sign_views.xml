@@ -70,7 +70,7 @@
         <field name="arch" type="xml">
             <form string="Sign">
                 <header>
-                    <button name="button_remove" string="취소" type="object" states="write" groups="hr.group_hr_manager"  confirm="취소하시겠습니까?" attrs="{'invisible':[('sign_ids','in',[2,4,5,6])]}"/>
+                    <button name="button_remove" string="취소" type="object" states="done" groups="hr.group_hr_manager"  confirm="취소하시겠습니까?" attrs="{'invisible':[('sign_ids','in',[2,4,5,6])]}"/>
                     <input style="position:fixed;left:620px" type="button" class="print" name="print" id="print" value="프린트"/>
                     <input style="position:fixed;left:580px" type="button" class="toexcel" name="toexcel" id="toexcel" value="엑셀"/>
                     <span attrs="{'invisible':[('check','=',False)]}"><input type="button" class="sign_button" id="sign_button" value="결재"/></span>
@@ -212,6 +212,7 @@
                             </tr>
                             <!--  외근확인서
                             <tr attrs="{'invisible':[('sign_ids','!=', 9)]}">
+
                                <td class = "tdcolor">외근 동행자</td>
                                <td width="40%"><field name='out_of_work_companion'/></td>    
                                <td class = "tdcolor">이동 수단</td>

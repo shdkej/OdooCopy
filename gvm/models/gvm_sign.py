@@ -314,7 +314,7 @@ class GvmSignContent(models.Model):
     @api.depends('user_id')
     def _compute_holiday_count(self):
       for record in self:
-	hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',record.user_id.name),('department_id','=', record.user_department.id)])
+	hr_name = self.env['hr.employee'].sudo(1).search([('name','=',record.user_id.name)])
         record.holiday_count = hr_name.holiday_count
 
     @api.model
@@ -593,13 +593,8 @@ class GvmSignContent(models.Model):
 	 #상태 정보: 취소상태
          self.write({'state':'remove'})
 
-        #출장비정산서
-	elif self.sign.num == 3:
-	 #상태 정보: 취소상태
-	 self.write({'state':'remove'})
-
-        #지출결의서
-	elif self.sign.num == 5:
+        #근태신청서를 제외한 모든 문서
+	else:
 	 #상태 정보: 취소상태
 	 self.write({'state':'remove'})
 
@@ -704,8 +699,8 @@ class GvmSignContent(models.Model):
     @api.multi
     def write(self, vals):
         #sh
-        #[취소권한부여] 168: 유예진, 295: 이승현, : 김진우, : 조나래
-        allower = [1,168,294,295]
+        #[취소권한부여] 294: 유예진, 295: 이승현, 258: 김진우, 316: 조나래
+        allower = [1,294,295,258,316]
         for record in self:
             if record.state in ['temp','write','cancel']:
 	     if self.env.user.name != record.user_id.name and self.env.uid != 1:
