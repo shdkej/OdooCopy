@@ -28,6 +28,10 @@ class gvm_mail():
      if is_test == 'True':#True
        subject = '[TEST]' + subject
        url = "http://192.168.0.3/"
+       if receiver:
+         for rc in receiver:
+	   if rc.work_email:
+            _logger.warning(receivers)
      else:#Blank
        if receiver:
          for rc in receiver:

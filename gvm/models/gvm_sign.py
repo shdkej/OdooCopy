@@ -687,7 +687,7 @@ class GvmSignContent(models.Model):
 	      #sh
 	      #삭제되었을경우 연차 갯수 복귀
 	      #근태신청서
-	      if self.sign.num == 1:
+	      if record.sign.num == 1:
 	        #연차갯수
 	        count = self.check_holiday_count()
 	        #로그인한 유저정보
