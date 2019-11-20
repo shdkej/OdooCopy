@@ -863,11 +863,7 @@ class DataSet(http.Controller):
          for at in att:
             if at.name.find(product_id.name) == -1:
                purchase_id.write({'attachment':[(3, at.id)]})
-      receivers = []
-      receiver = request.env['hr.employee'].search([('department_id','=',6)])
-      for rc in receiver:
-       receivers.append(str(rc.work_email))
-      receivers.append('nohsh@gvmltd.com')
+      receivers = request.env['hr.employee'].search([('department_id','=',6)])
 
       model_name = "gvm.purchase_product"
       menu_id = "357"
@@ -906,6 +902,7 @@ class DataSet(http.Controller):
     def gvm_comment(self, ids, comment, state=None):
       index = ['request_check1','request_check2','request_check3','request_check4','request_check5','request_check6']
 
+      _logger.warning('start comment')
       Model = request.env['gvm.signcontent']
       sign_id = Model.search([('id','=',ids)],limit=1)
       index_list = []
@@ -937,7 +934,7 @@ class DataSet(http.Controller):
       #sh_20191119
       #반려시, 기안자에게 메일을 보낸다.
       sender = request.env.user.name
-      receiver = request.env['res.users'].search([('name','=',name)]).id
+      receiver = request.env['hr.employee'].search([('name','=',name)])
       #제목
       #gvm/model/sendmail.py에 양식이있음. 같이변경해야함.
       post = '님에 의하여 반려되었습니다. 결재문서를 확인하세요.'      
@@ -958,6 +955,7 @@ class DataSet(http.Controller):
       if state == 'cancel':
          Flag = False
        
+      _logger.warning('send mail')
       send_mail = gvm_mail().gvm_send_mail(sender, receiver, post, post_id, po_num, model_name, menu_id, action_id,Flag)
 
       if sign_id.reason and comment:
@@ -984,6 +982,8 @@ class DataSet(http.Controller):
 	   check_date:datetime.datetime.now(),
 	   request_check:False,
         })
+        _logger.warning('write complete')
+      _logger.warning('comment complete')
 
     @http.route('/web/dataset/search_read', type='json', auth="user")
     def search_read(self, model, fields=False, offset=0, limit=False, domain=None, sort=None):
