@@ -321,7 +321,7 @@ class GvmProduct(models.Model):
 	  if (product_bad_state == False or product_bad_state.upper().encode('utf-8') == 'FALSE'):
 	    product_bad_state = 'A'
 	  if str(product_id) != 'None':
-  	    Update = Product.search([('id','=',product_id)])
+            Update = Product.search([('id','=',product_id)])
             product_seq_num = '' 
             if Update.sequence_num:
                 if Update.sequence_num.find('-') != -1:
@@ -330,41 +330,48 @@ class GvmProduct(models.Model):
                 else:
                   product_seq_num = Update.sequence_num + '-' + '1'
 
-	    Update.write({
-	    	'state' : 'bad',
-		'bad_state': product_bad_state.upper().encode('utf-8'), 
-                'sequence_num': product_seq_num,
-	    })
-            # 수정된 자재의 발주서에 표시
-            if Update.purchase_by_maker:
-                Update.purchase_by_maker.state = 'modify'
-
             # reorder text
-	    reorder_text = Update.reorder_text or ''
-	    newPd = Product.create({'name': product_main_name})
-	    for i in range(1,7):
+            reorder_text = Update.reorder_text or ''
+            product_object = ''
+            # 검토완료되지 않은 자재는 바로 수정되도록
+            if Update.state == 'no':
+                product_object = Update
+            # 검토완료된 자재는 기존 자재는 불량으로 변경 후 새로 생성
+            else:
+                if product_bad_state.upper().encode('utf-8') == Update.bad_state:
+                    raise UserError(_('상태 수정이 필요합니다'))
+                product_object = Product.create({'name': product_main_name})
+                Update.write({
+                    'state' : 'bad',
+                    'bad_state': product_bad_state.upper().encode('utf-8'), 
+                    'sequence_num': product_seq_num,
+                })
+                # 수정된 자재의 발주서에 표시
+                if Update.purchase_by_maker:
+                    Update.purchase_by_maker.state = 'modify'
+
+            for i in range(1,7):
               text = ''
-	      if str(Update[column[i]]) != val[i] and not i==1:
-	        text = str('%s : %s -> %s (%s)' 
+              if str(Update[column[i]]) != val[i] and not i==1:
+                text = str('%s : %s -> %s (%s)' 
                     % ( str(unicode(ko_column[i])), Update[column[i]], val[i], str(datetime.today())[0:10]))
-	        reorder_text += text
-	        reorder_text += '<br><br>'
+                reorder_text += text
+                reorder_text += '<br><br>'
 
-	      newPd.write({
-		column[i] : val[i],
-	      })
-	    Update.write({'reorder_text':reorder_text})
-
-	    ##같은이름의 같은프로젝트에 있는 자재에 모두 이력을 쓰도록 해야겠다
-	    newPd.write({'reorder_text':reorder_text, 
-	    		 'project_id': product_project_id,
-			 'bad_state': product_bad_state.upper().encode('utf-8'), 
-			 'etc': product_etc,
-			 'issue':part_id, 
-			 'project_ids': project_id, 
-			 'project_set':[(4, project_id)], 
-		         'request_date':datetime.today() + timedelta(days=7),
-			 'order_man':request.env.user.name})
+              product_object.write({
+                column[i] : val[i],
+              })
+            Update.write({'reorder_text':reorder_text})
+            ##같은이름의 같은프로젝트에 있는 자재에 모두 이력을 쓰도록 해야겠다
+            product_object.write({'reorder_text':reorder_text, 
+                         'project_id': product_project_id,
+                         'bad_state': product_bad_state.upper().encode('utf-8'), 
+                         'etc': product_etc,
+                         'issue':part_id, 
+                         'project_ids': project_id, 
+                         'project_set':[(4, project_id)], 
+                         'request_date':datetime.today() + timedelta(days=7),
+                         'order_man':request.env.user.name})
 	  else:
 	    PONum = Product.create({
 	    		'sequence_num':val[1],

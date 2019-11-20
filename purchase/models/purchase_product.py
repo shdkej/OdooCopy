@@ -164,6 +164,16 @@ class GvmPurchaseProduct(models.Model):
       for product in self.product:
         product.drawing_man = self.drawing_man.name
 
+    @api.onchange('request')
+    def onchange_request_comment(self):
+        for product in self.product:
+            comment = ''
+            if self.request:
+                comment = self.request or ''
+            if product.etc:
+                comment += product.etc
+            product.etc = comment
+
     @api.depends('project_ids')
     def _compute_project_issue(self):
       for record in self:
@@ -240,7 +250,7 @@ class GvmPurchaseProduct(models.Model):
 	  for pd in last_id.product:
 	    pd.write({
 	      'drawing_man':last_id.drawing_man.name,
-              'issue': issue_id
+              'issue': issue_id,
 	    })
 	return res
 
@@ -374,8 +384,6 @@ class GvmPurchaseProduct(models.Model):
 
     @api.multi
     def button_send_quotation(self): 
-        self.write({'state': "draft", 'permit_man': self.env.uid})
-
         if self.product:
 	  for product in self.product:
 	    product.write({'state':'purchase'
@@ -437,6 +445,13 @@ class GvmPurchaseProduct(models.Model):
         action_id = "471"
         po_num = self.env[model_name].search([('id','=',postId)]).name
         send_mail = gvm_mail().gvm_send_mail(sender ,marketing, post, postId, po_num, model_name, menu_id, action_id)
+        # Add Follower
+        # 298:고은경, 254: 김현태, 296: 오정희, 329: 이재혁, 330: 이다운
+        partner_ids = [254, 296, 298, 329, 330]
+        self.sudo().write({'state': "draft",
+                           'permit_man': self.env.uid,
+        })
+        self.message_subscribe_users(user_ids=partner_ids)
 
     @api.multi
     def button_approve(self, force=False):

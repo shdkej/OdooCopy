@@ -38,6 +38,7 @@ class GvmSign(models.Model):
 class GvmSignContent(models.Model):
     _name = "gvm.signcontent"
     _description = "signcontent"
+    _inherit = ['mail.thread', 'ir.needaction_mixin']
     _order = 'create_date desc, name desc'
 
     user_id = fields.Many2one('res.users', string='user_id', default=lambda self: self.env.uid,store=True)
@@ -175,6 +176,7 @@ class GvmSignContent(models.Model):
     out_of_work_content2 = fields.Text(string='content2',store=True)
     out_of_work_date_to = fields.Datetime(default = datetime.today())
     out_of_work_date_from = fields.Datetime(default = datetime.today())
+    check_confirm = fields.Boolean('상신확인', default=False)
 	
     @api.depends('date_from','date_to','job_ids')
     def _compute_basic_cost(self):
@@ -242,6 +244,10 @@ class GvmSignContent(models.Model):
            record.dep_ids = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).department_id.id
            record.job_ids = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).job_id.id
            record.sign_ids = record.sign.num
+           _logger.warning("test")
+           _logger.warning(record.dep_ids)
+           _logger.warning(record.job_ids)
+
     @api.model
     def _compute_user_info(self):
         for record in self:
@@ -633,6 +639,7 @@ class GvmSignContent(models.Model):
         if vals.get('name','New') == 'New':
            vals['name'] = self.env['ir.sequence'].next_by_code('gvm.sign.number') or '/'
         res = super(GvmSignContent, self).create(vals)
+        res.check_confirm = True
 	return res
 
     @api.multi
