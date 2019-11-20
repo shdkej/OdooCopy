@@ -126,6 +126,7 @@
         <field name="name">Attendance</field>
         <field name="tag">hr_attendance_my_attendances</field>
         <field name="target">main</field>
+<!--        <button name="button_leavework" string="퇴근" type="object"/>-->
     </record>
 
     <record id="hr_attendance_action_greeting_message" model="ir.actions.client">
