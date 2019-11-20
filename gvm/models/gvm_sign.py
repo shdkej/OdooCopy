@@ -144,10 +144,10 @@ class GvmSignContent(models.Model):
         ('temp', '임시저장'),
         ('write', '상신'),
         ('check1', '검토'),
-        ('check2', '결재'),
-        ('check3', '결재'),
-        ('check4', '결재'),
-        ('check5', '결재'),
+        ('check2', '결재1'),
+        ('check3', '결재2'),
+        ('check4', '합의1'),
+        ('check5', '합의2'),
         ('done', '결재완료'),
         ('cancel', '반려'),
         ('remove', '취소'), 
@@ -251,11 +251,37 @@ class GvmSignContent(models.Model):
            record.user_job_id = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).job_id.id
            record.user_department = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).department_id.id
            record.writer = record.user_id.name
+
     @api.model
     def _compute_check(self):
         for record in self:
-          if self._check_name() and self._check_me():
+          _logger.warning("record = %s" % record)
+          check_name = self._check_name()
+          check_me = self._check_me()
+          _logger.warning("check_name = %s" % check_name)
+          _logger.warning("check_me = %s" % check_me)
+          if check_name and check_me:
             record.check = True
+
+    @api.model
+    def _check_name(self):
+        for record in self:
+          if record.name != self.env.user.name \
+          and record.check1.id != self.env.uid \
+          and record.check2.id != self.env.uid \
+          and record.check3.id != self.env.uid \
+          and record.check4.id != self.env.uid \
+          and record.check5.id != self.env.uid \
+          and record.check6.id != self.env.uid:
+            return True
+
+    @api.model
+    def _check_me(self):
+        for record in self:
+          _logger.warning("next_check = %s" % record.next_check)
+          _logger.warning("self env = %s" % self.env.user.name)
+          if record.next_check == self.env.user.name :return True
+
     @api.depends('state')
     def _compute_next_check(self):
       index = ['request_check1','request_check2','request_check3','request_check4','request_check5','request_check6']
@@ -285,7 +311,7 @@ class GvmSignContent(models.Model):
     @api.depends('user_id')
     def _compute_holiday_count(self):
       for record in self:
-	hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',record.user_id.name),('department_id','=', record.user_department.id)])
+	hr_name = self.env['hr.employee'].sudo(1).search([('name','=',record.user_id.name)])
         record.holiday_count = hr_name.holiday_count
 
     @api.model
@@ -373,27 +399,49 @@ class GvmSignContent(models.Model):
           manager = self.env['hr.employee'].search([('department_id','=',10)])
           ceo = self.env['hr.employee'].search([('id','=',126)])
           if record.sign_ids in [2,3]:
+            record.request_check1 = False
+            record.request_check2 = False
             record.request_check3 = boss
             record.request_check4 = manager[1].id
             record.request_check5 = manager[0].id
+            record.request_check6 = False
+          elif record.sign_ids == 4:
+            record.request_check1 = False
+            record.request_check2 = boss
+            record.request_check3 = ceo
+            record.request_check4 = False
+            record.request_check5 = False
+            record.request_check6 = False
           elif record.sign_ids == 5:
+            record.request_check1 = False
+            record.request_check2 = False
             record.request_check3 = boss
+            record.request_check4 = False
             record.request_check5 = manager[2].id
+            record.request_check6 = False
 	  elif record.sign_ids == 6:
+            record.request_check1 = False
 	    record.request_check2 = boss
 	    record.request_check3 = ceo
-            record.request_check4 = manager[1].id
-            record.request_check5 = manager[0].id
+            record.request_check4 = False
+            record.request_check5 = False
+            record.request_check6 = False
           #sh_20191119
           #업무요청확인서
 	  elif record.sign_ids == 10:
+            record.request_check1 = False
+            record.request_check2 = False
             record.request_check3 = boss 
+            record.request_check4 = False
+            record.request_check5 = False
+            record.request_check6 = boss
           else:
             record.request_check1 = False
             record.request_check2 = False
             record.request_check3 = boss 
             record.request_check4 = False
             record.request_check5 = False
+            record.request_check6 = False
 	    record.reference = False
 
     @api.depends('date_from','date_to')
@@ -420,15 +468,6 @@ class GvmSignContent(models.Model):
          worktime = self.env['account.analytic.line'].search([('date_from','>=',str(date_from)),('date_to','<=',record.date_to),('user_id','=',record.user_id.id)])  #,('unit_amount','>=',1)])
          record.timesheet = worktime
 
-    @api.model
-    def _check_name(self):
-        for record in self:
-          if record.name != self.env.user.name and record.check1.id != self.env.uid and record.check2.id != self.env.uid and record.check3.id != self.env.uid and record.check4.id != self.env.uid and record.check5.id != self.env.uid and record.check6.id != self.env.uid:return True
-
-    @api.model
-    def _check_me(self):
-        for record in self:
-          if record.next_check == self.env.user.name :return True
     @api.model
     def _check_high_job_id(self):
         for record in self:
@@ -556,13 +595,8 @@ class GvmSignContent(models.Model):
 	 #상태 정보: 취소상태
          self.write({'state':'remove'})
 
-        #출장비정산서
-	elif self.sign.num == 3:
-	 #상태 정보: 취소상태
-	 self.write({'state':'remove'})
-
-        #지출결의서
-	elif self.sign.num == 5:
+        #근태신청서를 제외한 모든 문서
+	else:
 	 #상태 정보: 취소상태
 	 self.write({'state':'remove'})
 
@@ -667,8 +701,8 @@ class GvmSignContent(models.Model):
     @api.multi
     def write(self, vals):
         #sh
-        #[취소권한부여] 168: 유예진, 295: 이승현, : 김진우, : 조나래
-        allower = [1,168,294,295]
+        #[취소권한부여] 294: 유예진, 295: 이승현, 258: 김진우, 316: 조나래
+        allower = [1,294,295,258,316]
         for record in self:
             if record.state in ['temp','write','cancel']:
 	     if self.env.user.name != record.user_id.name and self.env.uid != 1:
