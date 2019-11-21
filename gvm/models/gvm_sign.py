@@ -241,9 +241,6 @@ class GvmSignContent(models.Model):
            record.dep_ids = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).department_id.id
            record.job_ids = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).job_id.id
            record.sign_ids = record.sign.num
-           _logger.warning("test")
-           _logger.warning(record.dep_ids)
-           _logger.warning(record.job_ids)
 
     @api.model
     def _compute_user_info(self):
@@ -255,11 +252,8 @@ class GvmSignContent(models.Model):
     @api.model
     def _compute_check(self):
         for record in self:
-          _logger.warning("record = %s" % record)
           check_name = self._check_name()
           check_me = self._check_me()
-          _logger.warning("check_name = %s" % check_name)
-          _logger.warning("check_me = %s" % check_me)
           if check_name and check_me:
             record.check = True
 
@@ -278,8 +272,6 @@ class GvmSignContent(models.Model):
     @api.model
     def _check_me(self):
         for record in self:
-          _logger.warning("next_check = %s" % record.next_check)
-          _logger.warning("self env = %s" % self.env.user.name)
           if record.next_check == self.env.user.name :return True
 
     @api.depends('state')
@@ -373,8 +365,6 @@ class GvmSignContent(models.Model):
           else:
              record.refresh_days = 0
              record.refresh_num = 0
-          _logger.warning(record.refresh_num)
-          _logger.warning(record.refresh_days)
             
           #현재 연차개수 계산
           self_dateto = datetime.strptime(record.date_to, '%Y-%m-%d')
@@ -395,53 +385,42 @@ class GvmSignContent(models.Model):
         for record in self:
           user = self.env.uid
           dep = self.env['hr.department'].search([('member_ids.user_id','=',user)],limit=1)
-          boss = dep.manager_id.id
-          manager = self.env['hr.employee'].search([('department_id','=',10)])
+          boss = dep.manager_id
+          management = self.env['hr.employee'].search([('department_id','=',10)])
           ceo = self.env['hr.employee'].search([('id','=',126)])
+	  management_manager = management[0]
+
+	  # 중복 결재라인 없애기
+	  if ceo == boss and record.sign_ids in [4,6]:
+	    boss = False
+	  if management_manager == boss:
+	    management_manager = False
+
+	  record.request_check1 = False
+	  record.request_check2 = False
+	  record.request_check4 = False
+	  record.request_check5 = False
+	  record.request_check6 = False
           if record.sign_ids in [2,3]:
-            record.request_check1 = False
-            record.request_check2 = False
             record.request_check3 = boss
-            record.request_check4 = manager[1].id
-            record.request_check5 = manager[0].id
-            record.request_check6 = False
+            record.request_check4 = management[1]
+            record.request_check5 = management_manager
           elif record.sign_ids == 4:
-            record.request_check1 = False
             record.request_check2 = boss
             record.request_check3 = ceo
-            record.request_check4 = False
-            record.request_check5 = False
-            record.request_check6 = False
           elif record.sign_ids == 5:
-            record.request_check1 = False
-            record.request_check2 = False
             record.request_check3 = boss
-            record.request_check4 = False
-            record.request_check5 = manager[2].id
-            record.request_check6 = False
+            record.request_check5 = management[2]
 	  elif record.sign_ids == 6:
-            record.request_check1 = False
 	    record.request_check2 = boss
 	    record.request_check3 = ceo
-            record.request_check4 = False
-            record.request_check5 = False
-            record.request_check6 = False
           #sh_20191119
           #업무요청확인서
 	  elif record.sign_ids == 10:
-            record.request_check1 = False
-            record.request_check2 = False
             record.request_check3 = boss 
-            record.request_check4 = False
-            record.request_check5 = False
             record.request_check6 = boss
           else:
-            record.request_check1 = False
-            record.request_check2 = False
             record.request_check3 = boss 
-            record.request_check4 = False
-            record.request_check5 = False
-            record.request_check6 = False
 	    record.reference = False
 
     @api.depends('date_from','date_to')
@@ -500,7 +479,7 @@ class GvmSignContent(models.Model):
           check4 = self.env['hr.employee'].search([('user_id','=',sign.check4.id)]).id
 	if sign.check5:
           check5 = self.env['hr.employee'].search([('user_id','=',sign.check5.id)]).id
-	_logger.warning(check1)
+
         self.sudo(self.user_id.id).write({'state': 'write',
 	                                  'check1':False,
 					  'check2':False,
@@ -518,7 +497,7 @@ class GvmSignContent(models.Model):
 					  'request_check3':check3 or self.request_check3.id,
 					  'request_check4':check4 or self.request_check4.id,
 					  'request_check5':check5 or self.request_check5.id,
-					  'next_check':self.check1.name})
+                                          })
         #sh
 	#근태신청서
         if self.sign.num == 1:
@@ -602,15 +581,13 @@ class GvmSignContent(models.Model):
 
     @api.multi
     def button_confirm(self):
-	check_name = ''
-	if self.request_check1:
-	 check_name = self.request_check1.name
-	elif self.request_check3:
-	 check_name = self.request_check3.name
-	self.write({'next_check':check_name,
-	    	    'state':'write',
-		    'confirm_date':datetime.today()
-	})
+        check_id_list = self.get_check_list(self, 'request_check')
+        # 중복 검사
+        for check in check_id_list:
+            if len(check_id_list) > len(filter(lambda x:x!=check, check_id_list))+1:
+                raise UserError(_('결재라인은 중복되면 안됩니다.'))
+
+        # 연차 개수 조절
 	if self.sign.num == 1:
 	  count = self.check_holiday_count()
 	  hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
@@ -622,21 +599,19 @@ class GvmSignContent(models.Model):
 	  hr_name.holiday_count = float(h_count)
 	  _logger.warning(hr_name.holiday_count)
 
+        # 메일 발송
         a = gvm_mail()
 	model_name = 'gvm.signcontent'
 	postId = self.id
         po_num = self.env[model_name].search([('id','=',postId)]).name
 
-	receivers = []
-        check1 = self.request_check1.id
-        check2 = self.request_check2.id
-        check3 = self.request_check3.id
-        we = self.env['hr.employee'].search([('id','in',(check1,check2,check3))])
+        receivers = self.env['hr.employee'].search([('id','in',check_id_list)])
         menu_id = "320"
 	action_id = ""
-        for person in we:
-          receivers.append(person)
 	a.gvm_send_mail(self.env.user.name, receivers, '결재문서', postId, po_num, model_name, menu_id, action_id)
+	self.write({'state':'write',
+		    'confirm_date':datetime.today()
+	})
 
 
     def check_holiday_count(self, rest1=None, date_to=None, date_from=None):
@@ -713,6 +688,14 @@ class GvmSignContent(models.Model):
                     raise UserError(_('이미 결재가 진행 중인 문서는 수정이 불가합니다.'))
         return super(GvmSignContent, self).write(vals)
 
+    # request_check 또는 check 로 입력된값들을 불러온다
+    def get_check_list(self, model, field):
+    	check_list = [str(field)+str(b) for b in range(1,7)]
+        check_id_list = []
+        for check in check_list:
+            if model[check]:
+              check_id_list.append(model[check].id)
+        return check_id_list
 
 class GvmSignContentCost(models.Model):
     _name = "gvm.signcontent.cost"
