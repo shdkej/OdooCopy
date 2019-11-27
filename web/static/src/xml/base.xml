@@ -307,7 +307,7 @@
                         <t t-esc="column.string"/>
                     </th>
                 </t>
-		<th t-if="options.selectable || columns_count>5" class="o_list_record_selector" width="1">
+		<th t-if="options.selectable || columns_count>6" class="o_list_record_selector" width="1">
                     <div class="o_checkbox">
                         <input type="checkbox"/>
                     </div>
@@ -365,7 +365,7 @@
     <t t-foreach="columns" t-as="column">
         <td t-if="column.meta"> </td>
     </t>
-    <td t-if="options.selectable || columns.length>4" class="o_list_record_selector">
+    <td t-if="options.selectable || columns.length>5" class="o_list_record_selector">
         <t t-set="checked" t-value="options.select_view_id == record.get('id') ? 'checked' : null"/>
         <input t-if="options.radio" type="radio" name="radiogroup" t-att-checked="checked"/>
         <div t-if="!options.radio" class="o_checkbox">

@@ -429,6 +429,19 @@ var ListView = View.extend({
 	name: confirm_people
       });
     },
+    gvm_excel: function(){
+      var excelFile = '<html xmlns:x="urn:schemas-microsoft-com:office:excel"';
+      excelFile += '<head>';
+      excelFile += '<meta http-equiv="Content-type" content="text/html;charset=utf-8"/>';
+      excelFile += '</head>';
+      excelFile += '<body><table>';
+      excelFile += $(".o_list_view").html();
+      excelFile += '</table></body>';
+      excelFile += '</html>';
+
+      var data_type = 'data:application/vnd.ms-excel';
+      window.open(data_type + ',' + encodeURIComponent(excelFile));
+    },
     /**
      * Instantiate and render the sidebar.
      * Sets this.sidebar
@@ -449,6 +462,7 @@ var ListView = View.extend({
                 this.is_action_enabled('delete') && { label: _t('Delete'), callback: this.do_delete_selected },
                 { label: _t('선택항목입고'), callback: this.gvm_button_destination },
                 { label: _t('선택항목출고'), callback: this.gvm_button_receiving },
+                { label: _t('현재목록엑셀출력'), callback: this.gvm_excel },
             ]));
 
             $node = $node || this.options.$sidebar;

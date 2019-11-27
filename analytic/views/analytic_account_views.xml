@@ -273,7 +273,7 @@
                 <pivot string="Analytic Entries" >
                     <field name="user_id" type="row"/>
 		    <field name="date" interval="month" type="col"/>
-                    <field name="unit_amount" type="measure"/>
+                    <field name="unit_amount" type="measure" string="잔업시간"/>
                 </pivot>
             </field>
         </record>
