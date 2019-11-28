@@ -124,6 +124,17 @@
                             </group>
                         </page>
                         <page name="manage" string="manage" groups="project.group_project_manager">
+                            <group name="work">
+                                <group>
+                                    <field name="line_ids" string="공수">
+                                        <tree editable="true">
+                                            <field name="name" string="작업명"/>
+                                            <field name="work_time" string="업무시간" sum="Total amount"/>
+                                            <field name="unit_amount" string="잔업시간" sum="Total amount"/>
+                                        </tree>
+                                    </field>
+                                </group>
+                            </group>
                         </page>
                         <page name="emails" string="etc" attrs="{'invisible': [('alias_domain', '=', False)]}">
                             <group>
@@ -196,11 +207,34 @@
                 <field name="sequence" widget="handle"/>
                 <field name="message_needaction" invisible="1"/>
                 <field name="active" invisible="1"/>
-                <field name="site" string="Project Name"/>
+                <field name="site" string="Site"/>
                 <field name="name" string="Project Name"/>
+                <field name="work_time" string="업무시간"/>
                 <field name="user_id" string="Project Manager"/>
                 <field name="partner_id" string="Contact"/>
             </tree>
+        </field>
+    </record>
+
+    <record id="view_project_project_pivot" model="ir.ui.view">
+        <field name="name">project.project.pivot</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <pivot string="Project">
+                <field name="name" type="row"/>
+                <field name="work_time" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_project_project_graph" model="ir.ui.view">
+        <field name="name">project.project.graph</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <graph string="Project">
+                <field name="name"/>
+                <field name="work_time" type="measure"/>
+            </graph>
         </field>
     </record>
 
@@ -220,9 +254,9 @@
                             <field name="world" string="해외 프로젝트"/>
                         </group>
                         <group name='options' invisible="1">
-                            <field name="tasks" string="유닛">
+                            <field name="tasks" string="작업">
                                 <tree editable="true">
-                                    <field name="name" string="유닛명"/>
+                                    <field name="name" string="작업명"/>
                                 </tree>
                             </field>
                             <field name="use_tasks" invisible="1"/>
@@ -257,6 +291,15 @@
         <field name="view_mode">form</field>
         <field name="view_id" ref="project_project_view_form_simplified"/>
         <field name="target"></field>
+    </record>
+
+    <record id="action_project_analysis" model="ir.actions.act_window">
+        <field name="res_model">project.project</field>
+        <field name="name">프로젝트 보고서</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
     </record>
 
     <record model="ir.ui.view" id="view_project_kanban">
@@ -362,7 +405,7 @@
         <field name="res_model">project.project</field>
         <field name="view_type">form</field>
         <field name="domain">[]</field>
-        <field name="view_mode">kanban,form,tree,graph</field>
+        <field name="view_mode">kanban,form,tree,graph,pivot</field>
         <field name="search_view_id" ref="view_project_project_filter"/>
         <field name="target">main</field>
         <field name="context">{'search_default_percent': 1,'search_default_site':1}</field>
@@ -804,6 +847,12 @@
         action="project.action_project_task_user_tree"
         parent="menu_project_report"
         sequence="10"/>
+
+    <menuitem id="menu_project_report_analysis"
+        name="프로젝트 보고서"
+        action="project.action_project_analysis"
+        parent="menu_project_report"
+        sequence="5"/>
 
     <record model="ir.ui.view" id="project_chart_graph_view">
         <field name="name">project.timeline.graph</field>

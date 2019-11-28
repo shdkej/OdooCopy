@@ -88,16 +88,16 @@
                     <field name="next_check" invisible="1"/>
                     <field name="check_confirm" invisible="1"/>
                     <field name="check_all" invisible="1"/>
-                    <div class="oe_button_box" name="button_box">
-                            <h3>전결 : <field name="check_all"/></h3>
-                    </div>
                     <group>
                         <div class="oe_title">
                             <label for="sign" class="oe_edit_only" string="결재문서명"/>
                             <h1><field name="sign" options="{'no_create_edit':True,'no_create':True}"/></h1>
                         </div>
+                        <div class="oe_button_box" name="button_box">
+                                <h3>전결 : <field name="check_all"/></h3>
+                        </div>
+                        <h1><span style="font-weight:bold" attrs="{'invisible':[('state','!=','cancel')]}"> (반려) </span></h1>
                     </group>
-                    <h1><span style="font-weight:bold" attrs="{'invisible':[('state','!=','cancel')]}"> (반려) </span></h1>
                     <group string="결재라인">
                         <p><field name="sign_line">
                             <tree editable="bottom">
@@ -110,10 +110,14 @@
                         </field></p>
                     </group>
                     <group string="기본정보">
-                        <field name="user_id" string="이름"/>
-                        <field name="dep_ids" string="부서"/>
-                        <field name="job_ids" string="직급"/>
-                        <field name="project" string="프로젝트"/>
+                        <group>
+                            <field name="user_id" string="이름"/>
+                            <field name="project" string="프로젝트"/>
+                        </group>
+                        <group>
+                            <field name="dep_ids" string="부서"/>
+                            <field name="job_ids" string="직급"/>
+                        </group>
                     </group>
                         <span attrs="{'invisible':[('sign_ids','!=',1)]}"> (남은 연차개수 : <span id="red_text"><field name="holiday_count"/></span> 일)</span>
 

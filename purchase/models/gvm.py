@@ -280,7 +280,27 @@ class GvmProduct(models.Model):
 
     @api.multi
     def purchase_project_view(self):
-        cc = {'active_id':'21'}
+        analytic = self.env['account.analytic.line'].search([])
+        for a in analytic:
+          if a.date_to and a.date_from:
+           fmt = '%Y-%m-%d %H:%M:%S'
+           td = timedelta(hours=9)
+           d1 = datetime.strptime(a.date_to,fmt) + td #퇴근
+           d2 = datetime.strptime(a.date_from,fmt) + td #출근
+           a.work_time = (d1 - d2).total_seconds() / 3600
+        for record in self.env['project.project'].search([]):
+          total_work_time = 0
+          for line_id in record.line_ids:
+            total_work_time += line_id.work_time
+          record.work_time = total_work_time
+          total_product_cost = 0
+          for pd in record.product:
+            total_product_cost += pd.total_price
+          record.product_cost = total_product_cost
+          total_sign_cost = 0
+          for sign in record.sign:
+            total_sign_cost += sign.finally_cost
+          record.user_cost = total_sign_cost
         return {
             'domain': ['id','=',21],
             'name': _('Project Manage'),

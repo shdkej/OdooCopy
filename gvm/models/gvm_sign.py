@@ -580,6 +580,9 @@ class GvmSignContent(models.Model):
     @api.multi
     def button_confirm(self):
         check_id_list = self.get_check_list(self, 'request_check')
+        for sl in self.sign_line:
+            self.next_check = sl.name.name
+            break
         # 중복 검사
         for check in check_id_list:
             if len(check_id_list) > len(filter(lambda x:x!=check, check_id_list))+1:
@@ -751,6 +754,6 @@ class GvmSignLine(models.Model):
     @api.depends('state')
     def _compute_next_check(self):
         for record in self:
-          last = record.search([('state','=','0'),('sign','=',record.sign.id)],limit=1).name
+          last = record.sign.next_check
           _logger.warning('last user = %s' % last)
           record.next_check = last
