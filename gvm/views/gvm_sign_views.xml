@@ -87,44 +87,110 @@
                     <field name="user_department" invisible="1"/>
                     <field name="next_check" invisible="1"/>
                     <field name="check_confirm" invisible="1"/>
-                    <field name="check_all" invisible="1"/>
-                    <div class="oe_button_box" name="button_box">
-                            <h3>전결 : <field name="check_all"/></h3>
-                    </div>
-                    <group>
-                        <div class="oe_title">
-                            <label for="sign" class="oe_edit_only" string="결재문서명"/>
-                            <h1><field name="sign" options="{'no_create_edit':True,'no_create':True}"/></h1>
-                        </div>
-                    </group>
-                    <h1><span style="font-weight:bold" attrs="{'invisible':[('state','!=','cancel')]}"> (반려) </span></h1>
-                    <group string="결재라인">
-                        <p><field name="sign_line">
-                            <tree editable="bottom">
-                                <field name="check"/>
-                                <field name="sequence" widget="handle"/>
-                                <field name="name"/>
-                                <field name="state"/>
-                                <field name="check_date"/>
-                            </tree>
-                        </field></p>
-                    </group>
-                    <group string="기본정보">
-                        <field name="user_id" string="이름"/>
-                        <field name="dep_ids" string="부서"/>
-                        <field name="job_ids" string="직급"/>
-                        <field name="project" string="프로젝트"/>
-                    </group>
-                        <span attrs="{'invisible':[('sign_ids','!=',1)]}"> (남은 연차개수 : <span id="red_text"><field name="holiday_count"/></span> 일)</span>
-
-                        <!--문서속성 -->
-                        <group string="상세내용">
-                        </group>
+                    <div class="gvm_sign" id="gvm_sign">
+                        <span><input type="button" id="add_check" name="0" class="check_button" value="추가" attrs="{'invisible':[('state','!=','temp')]}"/></span>
                         <table width="100%">
+                            <tbody>
+                                <tr height="30" class="tr_head">
+                                    <!-- 결재문서 입력부분-->
+                                    <td rowspan="5" width="550" align="center">
+                                        <h1>
+                                            <field name="sign" options="{'no_create_edit':True,'no_create':True}"/>
+                                            <span style="font-weight:bold" attrs="{'invisible':[('state','!=','cancel')]}"> (반려) </span>
+                                        </h1>
+                                        전결 : <field name="check_all"/><br/>
+                                    </td>
+
+                                    <!--결재라인 헤더 -->
+                                    <td class="tdcolor" attrs="{'invisible':[('sign_ids','!=',10)]}"></td> 
+                                    <td class="tdcolor">기안</td>
+                                    <td class="tdcolor check_hidden" attrs="{'invisible':[('request_check1','=',False),('check1','=',False)]}">결재</td>
+                                    <td class="tdcolor check_hidden" attrs="{'invisible':[('request_check2','=',False),('check2','=',False)]}">결재</td>
+                                    <td class="tdcolor">결재</td>
+                                </tr>
+
+                                <!--결재라인 바디 -->
+                                <tr height="80" class="tr_body">
+                                    <td class="td_check" attrs="{'invisible':[('sign_ids','!=',10)]}"></td> 
+                                    <td class="td_check"><field name="writer" readonly="1"/></td>
+                                    <td class="td_check check_hidden" attrs="{'invisible':[('request_check1','=',False),('check1','=',False)]}">
+                                        <field name="check1" readonly="1"/>
+                                        <span style="font-size:5px"><field name="check1_date" readonly="1"/></span>
+                                        <span attrs="{'invisible':[('request_check1','=',False)]}"> 결재예정 : </span>
+                                        <field name="request_check1" domain="[('job_id.no_of_hired_employee','>',3)]" attrs="{'invisible':[('check1','!=',False)]}" options="{'no_create_edit':True,'no_create':True}"/>
+                                    </td>
+                                    <td class="td_check check_hidden" attrs="{'invisible':[('request_check2','=',False),('check2','=',False)]}">
+                                        <field name="check2" readonly="1"/>
+                                        <span style="font-size:5px"><field name="check2_date" readonly="1"/></span>
+                                        <span attrs="{'invisible':[('request_check2','=',False)]}"> 결재예정 : </span>
+                                        <field name="request_check2" domain="['|',('job_id.no_of_hired_employee','>',3),('department_id','=',10)]" attrs="{'invisible':[('check2','!=',False)]}" options="{'no_create_edit':True,'no_create':True}"/>
+                                    </td>
+                                    <td class="td_check">
+                                        <field name="check3" readonly="1"/>
+                                        <span style="font-size:5px"><field name="check3_date" readonly="1"/></span>
+                                        <span style="font-weight:bold" attrs="{'invisible':['|',('state','!=','done'),('check_all','=',False)]}"> 전결 </span>
+                                        <span attrs="{'invisible':[('request_check3','=',False)]}"> 결재예정 : </span>
+                                        <field name="request_check3" domain="[('job_id.no_of_hired_employee','>',3)]" attrs="{'invisible':[('check3','!=',False)]}" options="{'no_create_edit':True,'no_create':True}"/>
+                                    </td>
+                                </tr>
+
+                                <!--합의라인 헤더 -->
+                                <tr height="30" attrs="{'invisible':[('sign_ids','not in',[2,3,5,10])]}">
+                                    <td class="td_check check_hidden" attrs="{'invisible':[('request_check1','=',False),('check1','=',False)]}"></td>
+                                    <td class="td_check check_hidden" attrs="{'invisible':[('request_check2','=',False),('check2','=',False)]}"></td>
+                                    <td class="tdcolor" attrs="{'invisible':[('sign_ids','not in',[2,3,5,10])]}">합의</td>
+                                    <td class="tdcolor" attrs="{'invisible':[('sign_ids','not in',[2,3,5,10])]}">합의</td>
+                                    <td class="tdcolor check_hidden" attrs="{'invisible':['|','&amp;',('request_check6','=',False),('check6','=',False),('sign_ids','=',10)]}">합의</td>
+                                    <td class="tdcolor check_hidden" attrs="{'invisible':[('sign_ids','!=',10)]}">업무담당자</td>
+                                </tr>
+                                <!--합의라인 바디 -->
+                                <tr height="80" attrs="{'invisible':[('sign_ids','not in',[2,3,5,10])]}">
+                                    <td class="td_check check_hidden" attrs="{'invisible':[('request_check1','=',False),('check1','=',False)]}"></td>
+                                    <td class="td_check check_hidden" attrs="{'invisible':[('request_check2','=',False),('check2','=',False)]}"></td>
+                                    <td attrs="{'invisible':[('sign_ids','=',1)]}">
+                                        <field name="check4" readonly="1"/>
+                                        <span style="font-size:5px"><field name="check4_date" readonly="1"/></span>
+                                        <span attrs="{'invisible':[('request_check4','=',False)]}"> 결재예정 : </span>
+                                        <field name="request_check4" attrs="{'invisible':[('check4','!=',False)]}" options="{'no_create_edit':True,'no_create':True}"/>
+                                    </td>
+                                    <td attrs="{'invisible':[('sign_ids','=',1)]}">
+                                        <field name="check5" readonly="1"/>
+                                        <span style="font-size:5px"><field name="check5_date" readonly="1"/></span>
+                                        <span attrs="{'invisible':[('request_check5','=',False)]}"> 결재예정 : </span>
+                                        <field name="request_check5" attrs="{'invisible':[('check5','!=',False)]}" options="{'no_create_edit':True,'no_create':True}"/>
+                                    </td>
+                                    <td class="td_check check_hidden" attrs="{'invisible':[('request_check6','=',False),('check6','=',False)]}">
+                                        <field name="check6" readonly="1"/>
+                                        <span style="font-size:5px"><field name="check6_date" readonly="1"/></span>
+                                        <span attrs="{'invisible':[('request_check6','=',False)]}"> 결재예정 : </span>
+                                        <field name="request_check6" attrs="{'invisible':[('check6','!=',False)]}" options="{'no_create_edit':True,'no_create':True}"/>
+                                    </td>
+                                </tr>
+
+                                <!--참조라인-->
+                                <tr height="30" class="no_excel">
+                                    <td colspan='4'>참조 : <field name="reference" widget="many2many_tags" option="{'no_create_edit':True,'no_create':True}"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!--문서속성 -->
+                        <table width="100%">
+                            <tr>
+                                <td class="tdcolor">부서</td>
+                                <td width="40%"><field name="dep_ids"/></td>
+                                <td class="tdcolor">이름</td>
+                                <td width="40%"><field name="user_id" readonly="1"/>
+                                    <span attrs="{'invisible':[('sign_ids','!=',1)]}"> (남은 연차개수 : <span id="red_text"><field name="holiday_count"/></span> 일)</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="tdcolor">직급</td>
+                                <td width="40%"><field name="job_ids"/></td>
+                                <td class="tdcolor">기간</td>
+                                <td width="40%"><field name="date_from"/> 부터 <field name="date_to"/></td>
+                            </tr>
                             <!--리프레시휴가-->
                            <tr attrs="{'invisible':['|',('sign_ids','!=', 1),('rest1','!=', 'refresh')]}"> 
-                               <td class="tdcolor">기간</td>
-                               <td width="40%"><field name="date_from"/> 부터 <field name="date_to"/></td>
                                <td class="tdcolor">출장기간</td> 
                                <td width="40%"><field name="refresh_date_to"/> 부터 <field name="refresh_date_from"/></td>
                                <td class="tdcolor">리프레시 개수</td> 
@@ -144,6 +210,27 @@
                                <td class="tdcolor">개인/업무</td>
                                <td width="90%" colspan="3"><field name="item"/></td>    
                            </tr>
+                           <!--  외근확인서
+                        <tr attrs="{'invisible':[('sign_ids','!=', 9)]}">
+                               <td class = "tdcolor">외근 동행자</td>
+                               <td width="40%"><field name='out_of_work_companion'/></td>    
+                               <td class = "tdcolor">이동 수단</td>
+                               <td width="40%"><field name='out_of_work_transport'/></td>    
+                           </tr>
+                           <tr attrs="{'invisible':[('sign_ids','!=', 9)]}">
+                               <td class = "tdcolor" width="10%">외근 목적</td>
+                               <td width = "40%"><field name='out_of_work_purpose'/></td>    
+                               <td class = "tdcolor" width="10%">외근 지역</td>
+                               <td width = "40%"><field name='out_of_work_area'/></td>    
+                           </tr>
+                           <tr attrs="{'invisible':[('sign_ids','!=', 9)]}">
+                               <td class = "tdcolor">주요 업무<br/>(내용)</td>
+                               <td width="90%" height="400" colspan="6"><field name="out_of_work_content"/></td>
+                           </tr>        
+                           <tr attrs="{'invisible':[('sign_ids','!=', 9)]}">
+                               <td class = "tdcolor">기타</td>
+                               <td width="90%" height="400" colspan="6"><field name="out_of_work_content2"/></td>    
+                            </tr>-->
                             <tr attrs="{'invisible':[('sign_ids','!=',3)]}">
                                 <td class="tdcolor">지급 된 비용</td>
                                 <td width="40%"><field name="had_cost"/></td>
@@ -152,6 +239,10 @@
                                     출장계획서 : <field name="relate_sign2" options="{'no_create_edit':True,'no_create':True}" domain="[('user_id','=',user_id),('sign_ids','=',6)]" attrs="{'required':[('sign_ids','=',3),('check_confirm','=',True)]}"/><br/>
                                     출장완료서 : <field name="relate_sign1" options="{'no_create_edit':True,'no_create':True}" domain="[('user_id','=',user_id),('sign_ids','=',4)]" attrs="{'required':[('sign_ids','=',3),('check_confirm','=',True)]}"/>
                                 </td>
+                            </tr>
+                            <tr attrs="{'invisible':[('sign_ids','in',[1,2,5,9,10])]}">
+                                <td class="tdcolor">프로젝트</td>
+                                <td width="90%" colspan="3"><field name="project"/></td>
                             </tr>
                             <tr attrs="{'invisible':[('sign_ids','!=',1)]}">
                                 <td class="tdcolor">분류</td>
@@ -163,14 +254,23 @@
                             </tr>
 
                             <!--문서 내용 -->
-                            <tr>
+                            <tr attrs="{'invisible':[('sign_ids','=',9)]}"><!--외근계획서 전용-->
                                 <td class="tdcolor" attrs="{'invisible':[('sign_ids','=',6)]}">내용</td><td class="tdcolor" attrs="{'invisible':[('sign_ids','!=',6)]}">출장목적</td>
-                                <td width="90%" colspan="6" attrs="{'invisible':[('sign_ids','in',[2,3,5,9])]}" class="tdleft">
+                                <td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','in',[2,3,5,9])]}" class="tdleft">
                                     <field name="content"/></td>
-                                <td width="90%" colspan="6" attrs="{'invisible':[('sign_ids','!=',6)]}">
+                                <td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','!=',6)]}">
+                                    <!--가지급신청 :
+                                        <field name="cost2">
+                                            <tree editable="1">
+                                                <field name="name" string="항목명"/>
+                                                <field name="cost" string="금액" widget="monet"/>
+                                                <field name="currency"/>
+                                                <field name="description" string="세부사항"/>
+                                            </tree>
+                                        </field>-->
                                 </td>
                                 <!-- 비용 정산 -->
-                                <td width="90%" colspan="6" attrs="{'invisible':[('sign_ids','not in',[3,5])]}">
+                                <td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','not in',[3,5])]}">
                                     <div id="exceltable">
                                         <group>
                                             <group>
@@ -194,7 +294,7 @@
                                         <h3>최종 결산 금액 : <field name="finally_cost" widget="monet"/>원</h3>
                                     </span>
                                 </td>
-                                <td width="90%" colspan="6" attrs="{'invisible':[('sign_ids','!=',2)]}">
+                                <td width="90%" height="400" colspan="6" attrs="{'invisible':[('sign_ids','!=',2)]}">
                                     <div id="exceltable2">
                                         <field name="timesheet">
                                             <tree editable="1" decoration-info='weekend==True' decoration-bf='weekend==True'>
@@ -208,15 +308,30 @@
                                 </td>
                             </tr>
                         </table>
-                        <group string="코멘트">
-                            <field name="reason" readonly="1"/>
-                        </group>
+                        <table height="250" width="100%">
+                            <tr>
+                                <td><field name="reason" readonly="1"/></td>
+                            </tr>
+                            <tr>
+                                <td align="center" valign="bottom"><h2>
+                                        위와 같이 제출 하오니 재가 바랍니다.<br /><br />GVM.ltd
+                                </h2></td>
+                            </tr>
+                        </table>
+                    </div>
                     <script>
                         $("#print").click(function(){
                         window.print();
                         });
                         $("#toexcel").click(function(){
                         console.log('excel');
+                        });
+                        $(document).ready(function(){
+                        var value = $("#red_text");
+                        if (!value[0].innerText.indexOf('-')){
+                        console.log(value[0].innerText);
+                        value.css("color","red");
+                        }
                         });
                     </script>
                 </sheet>

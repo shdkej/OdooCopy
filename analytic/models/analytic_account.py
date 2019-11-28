@@ -123,6 +123,7 @@ class AccountAnalyticLine(models.Model):
     weekend = fields.Boolean('weekend',compute='_compute_basic_cost')
     lunch = fields.Selection([('0','0'),('1','1'),('2','2'),('3','3')],string='식사횟수', default='2')
     holiday = fields.Boolean('공휴일')
+    work_time = fields.Float('작업시간', default=0.0,compute='_compute_basic_cost', store=True)
 
 
 
@@ -134,6 +135,9 @@ class AccountAnalyticLine(models.Model):
            td = timedelta(hours=9)
            d1 = datetime.strptime(record.date_to,fmt) + td #퇴근
            d2 = datetime.strptime(record.date_from,fmt) + td #출근
+
+           record.work_time = (d1 - d2).total_seconds() / 3600
+
            day_end_standard = d2.replace(hour=19, minute=00)
 	   if d2.year <= 2019 and d2.month < 4:
              day_end_standard = d2.replace(hour=18, minute=00)

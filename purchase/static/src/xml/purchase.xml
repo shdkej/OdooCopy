@@ -11,10 +11,7 @@
 	</div>
 	<div>
           프로젝트 : <input type="text" autocomplete="off" id="gvm_search_product" width="100px" placeholder="Select" class="bom_search"/>
-          유닛 : <select id="gvm_search_product_unit" width="100px">
-	    <option></option>
-	  </select>
-          파트 : <select id="gvm_search_product_part" width="100px">
+          유닛 : <select id="gvm_search_product_part" width="100px">
 	    <option></option>
 	  </select>
 	</div>  

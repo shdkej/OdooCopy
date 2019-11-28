@@ -260,7 +260,7 @@ class GvmSignContent(models.Model):
     @api.model
     def _check_name(self):
         for record in self:
-          if record.writer != self.env.user.name \
+          if record.name != self.env.user.name \
           and record.check1.id != self.env.uid \
           and record.check2.id != self.env.uid \
           and record.check3.id != self.env.uid \
@@ -295,8 +295,10 @@ class GvmSignContent(models.Model):
 	  record.next_check = record.writer
 	  return False
 
-          # sign_line에서 다음 결재자를 찾는다
-          record.next_check = record.sign_line.next_check
+        for i in index:
+	  if record[i]:
+            record.next_check = record[i].name
+	    break
 
     @api.depends('user_id')
     def _compute_holiday_count(self):
@@ -389,37 +391,37 @@ class GvmSignContent(models.Model):
 	  management_manager = management[0]
 
 	  # 중복 결재라인 없애기
-	  #if ceo == boss and record.sign_ids in [4,6]:
-	  #  boss = False
+	  if ceo == boss and record.sign_ids in [4,6]:
+	    boss = False
 	  if management_manager == boss:
 	    management_manager = False
 
+	  record.request_check1 = False
+	  record.request_check2 = False
+	  record.request_check4 = False
+	  record.request_check5 = False
+	  record.request_check6 = False
           if record.sign_ids in [2,3]:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign'}),
-                                (0, 0, {'name':management[1].id, 'check':'2'}),
-                                (0, 0, {'name':management_manager.id, 'check':'2'}),
-                               ]
+            record.request_check3 = boss
+            record.request_check4 = management[1]
+            record.request_check5 = management_manager
           elif record.sign_ids == 4:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign'}),
-                                (0, 0, {'name':ceo.id, 'check':'sign'}),
-                               ]
+            record.request_check2 = boss
+            record.request_check3 = ceo
           elif record.sign_ids == 5:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign'}),
-                                (0, 0, {'name':management[2].id, 'check':'2'}),
-                               ]
+            record.request_check3 = boss
+            record.request_check5 = management[2]
 	  elif record.sign_ids == 6:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign'}),
-                                (0, 0, {'name':ceo.id, 'check':'sign'}),
-                               ]
+	    record.request_check2 = boss
+	    record.request_check3 = ceo
           #sh_20191119
           #업무요청확인서
 	  elif record.sign_ids == 10:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign'}),
-                                (0, 0, {'name':boss.id, 'check':'2'}),
-                               ]
+            record.request_check3 = boss 
+            record.request_check6 = boss
           else:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign'}),
-                               ]
+            record.request_check3 = boss 
+	    record.reference = False
 
     @api.depends('date_from','date_to')
     def _onchange_timesheet(self):  
@@ -738,19 +740,11 @@ class GvmSignContentWork(models.Model):
     
 class GvmSignLine(models.Model):
     _name = "gvm.signcontent.line"
-    _order = 'sequence, check_date'
+    _order = ''
 
-    name = fields.Many2one ('hr.employee' ,string = 'name', required=True)
+    name = fields.Many2one ( ' hr.employee ' ,string = ' name ' )
     sequence = fields.Integer ( ' 순번 ' )
-    check = fields.Selection ([( 'sign' , '결재' ), ( '2' , '합의' ), ( '3' , '참조' ), ( '4' , '열람' )], default='sign')
-    state = fields.Selection ([('0', '대기'),( '1' , '결재' ), ( '2' , '합의' ), ( '3' , '반려' ), ( '4' , '전결' )], default='0', readonly=True)
-    sign = fields.Many2one ('gvm.signcontent' , 'sign')
-    check_date = fields.Datetime('check_date', readonly=True)
-    next_check = fields.Char(string='결재예정', compute='_compute_next_check',store=True)
+    state = fields.Selection ([( ' sign ' , ' 결재 ' ), ( ' 2 ' , ' 합의 ' ), ( ' 3 ' , ' 참조 ' ), ( ' 4 ' , ' 열람 ' )])
+    sign = fields.Many2one ( ' gvm.signcontent ' , ' sign ' )
 
-    @api.depends('state')
-    def _compute_next_check(self):
-        for record in self:
-          last = record.search([('state','=','0'),('sign','=',record.sign.id)],limit=1).name
-          _logger.warning('last user = %s' % last)
-          record.next_check = last
+
