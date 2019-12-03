@@ -243,6 +243,7 @@ class Project(models.Model):
         ('finish', '완료')
         ], string='Status', default='ready', )
     project_rate = fields.Integer(string='계층',default='1')
+    work_time = fields.Float('업무시간', compute='_compute_work_time', store=True)
 
     _sql_constraints = [
         ('project_date_greater', 'check(date >= date_start)', 'Error! project start-date must be lower than project end-date.')
@@ -259,6 +260,15 @@ class Project(models.Model):
       state = ['ready','po','in_production','setup','balance','finish']
       for record in self:
         record.color = state.index(record.state)
+
+    @api.depends('line_ids')
+    def _compute_work_time(self):
+      _logger.warning("compute work time")
+      for record in self:
+        total_work_time = 0
+        for line_id in record.line_ids:
+          total_work_time += line_id.work_time
+        record.work_time = total_work_time
 
     @api.multi
     def on_change_issue(self):
