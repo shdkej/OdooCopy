@@ -243,6 +243,7 @@ var PivotView = View.extend({
             return;
         }
         this.data_loaded = this.load_data(false);
+        console.log("do_search");
         return this.do_show();
     },
     do_show: function () {

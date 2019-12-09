@@ -324,7 +324,7 @@ return Widget.extend({
             $('.o_facet_remove').trigger('click');
         }
 
-        for (var i=0; i<2; i++){
+        //for (var i=0; i<2; i++){
             $('.o_facet_remove').trigger('click');
             if (this.searchview.model == 'gvm.product'){
               this.gvm_commit_search('product');
@@ -333,7 +333,7 @@ return Widget.extend({
               this.gvm_commit_search('project');
             }
             else{this.gvm_commit_search();}
-        }
+        //}
 
         this.gvm_search_part();
         $('#gvm_search_export').show();
@@ -366,6 +366,7 @@ return Widget.extend({
     },
     gvm_commit_search: function (state) {
         var self = this;
+        console.log('##commit_search##')
         var filters = _.invoke(self.propositions, 'get_filter');
         var filters_widgets = _.map(filters, function (filter) {
                return new search_inputs.Filter(filter, self);
@@ -389,7 +390,6 @@ return Widget.extend({
                 }
                 return filter_group.make_facet([filter_group.make_value(filter)]);
             });
-
         filter_group.insertBefore(self.$add_filter);
         $('<li class="divider">').insertBefore(self.$add_filter);
         self.searchview.query.add(facets, {silent: true});
@@ -447,6 +447,7 @@ return Widget.extend({
     },
     append_proposition: function () {
         var self = this;
+        console.log('append_proposition');
         return this.get_fields().then(function (fields) {
             var prop = new search_filters.ExtendedSearchProposition(self, fields);
             self.propositions.push(prop);
@@ -463,6 +464,7 @@ return Widget.extend({
         prop.destroy();
     },
     commit_search: function () {
+        console.log('##main_commit_search##')
         var filters = _.invoke(this.propositions, 'get_filter'),
             filters_widgets = _.map(filters, function (filter) {
                 return new search_inputs.Filter(filter, this);

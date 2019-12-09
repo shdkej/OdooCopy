@@ -37,7 +37,7 @@
         <field name="inherit_id" ref="project.view_project"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='name']" position="after">
-                <field name="user_cost" string="비용정산" groups="purchase.group_purchase_manager"/>
+                <field name="user_cost" string="비용정산" widget="integer" groups="purchase.group_purchase_manager"/>
             </xpath>
         </field>
     </record>

@@ -1010,6 +1010,7 @@ class DataSet(http.Controller):
 
         records = Model.search_read(domain, fields,
                                     offset=offset or 0, limit=limit or False, order=sort or False)
+        _logger.warning(model)
         if not records:
             return {
                 'length': 0,

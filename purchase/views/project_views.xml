@@ -57,7 +57,7 @@
         <field name="inherit_id" ref="project.view_project_project_pivot"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='name']" position="after">
-                <field name="product_cost" type="measure"/>
+                <field name="product_cost" widget="integer" type="measure"/>
             </xpath>
         </field>
     </record>
