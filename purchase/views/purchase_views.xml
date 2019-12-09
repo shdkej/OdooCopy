@@ -338,7 +338,7 @@
                         <group>
                             <field name="partner_id" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" domain="[('supplier','=',True)]" string="업체명"/>
                             <field name="partner_ref"/>
-                            <field name="date_order"/>
+                            <field name="permit_date"/>
                             <field name="drawing_man"/>
                             <field name="order_man"/>
                             <field name="permit_man"/>

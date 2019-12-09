@@ -712,6 +712,15 @@ class GvmSignContentCost(models.Model):
     ratio = fields.Float('환율',default='1')
     card = fields.Selection([('personal','개인'),('corporation','법인')],default='personal')
 
+    @api.onchange('cost')
+    def get_currency(self):
+      if self.cost > 100000:
+        self.currency = 'dong'
+      elif self.cost > 1000:
+        self.currency = 'won'
+      elif self.cost <= 1000:
+        self.currency = 'yuan'
+
 class GvmSignContentCost2(models.Model):
     _name = "gvm.signcontent.cost2"
     _description = "signcontent cost2"
