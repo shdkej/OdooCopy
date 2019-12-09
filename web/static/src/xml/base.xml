@@ -299,7 +299,8 @@
 
 <div t-name="ListView" class="table-responsive">
     <table class="o_list_view table table-condensed table-striped">
-        <t t-set="columns_count" t-value="visible_columns.length + (options.selectable ? 1 : 0) + (options.deletable ? 1 : 0)"/>
+        <!--<t t-set="columns_count" t-value="visible_columns.length + (options.selectable ? 1 : 0) + (options.deletable ? 1 : 0)"/>-->
+        <t t-set="columns_count" t-value="visible_columns.length"/>
         <thead>
             <tr t-if="options.header">
                 <t t-foreach="columns" t-as="column">

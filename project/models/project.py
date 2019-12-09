@@ -195,7 +195,7 @@ class Project(models.Model):
     is_favorite = fields.Boolean(compute='_compute_is_favorite', string='Show Project on dashboard',
         help="Whether this project should be displayed on the dashboard or not")
     label_tasks = fields.Char(string='Use Tasks as', default='Tasks', help="Gives label to tasks on project's kanban view.")
-    tasks = fields.One2many('project.task', 'project_id', string="Task Activities")
+    tasks = fields.One2many('project.task', 'project_id', string="Task Activities", domain=[('check_department','=',True)])
     resource_calendar_id = fields.Many2one('resource.calendar', string='Working Time',
         help="Timetable working hours to adjust the gantt diagram report")
     type_ids = fields.Many2many('project.task.type', 'project_task_type_rel', 'project_id', 'type_id', string='Tasks Stages')
@@ -472,7 +472,8 @@ class Task(models.Model):
     checklist4 = fields.Many2many('project.checklist4', string='설계')
     checklist5 = fields.Many2one('project.checklist5', string='유닛')
     overlap = fields.Char('check',default='check')
-
+    department_id = fields.Many2one('hr.department', string='부서', store=True)
+    check_department = fields.Boolean('동일부서확인', compute='_compute_check_department', search='_search_department')
 
     @api.multi
     def name_get(self):
@@ -483,6 +484,15 @@ class Task(models.Model):
            name = '['+str(record.checklist5.name)+']' + record.name
           result.append((record.id, name))
          return result
+
+    @api.depends('department_id')
+    def _compute_check_department(self):
+        _logger.warning('check user.department_id == task.department_id')
+
+    @api.multi
+    def _search_department(self, operator, value):
+        user_dep = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).department_id.id
+        return [('department_id','=',user_dep)]
 
     @api.onchange('project_id')
     def _onchange_project(self):
@@ -603,6 +613,8 @@ class Task(models.Model):
         if vals.get('user_id'):
             vals['date_assign'] = fields.Datetime.now()
         task = super(Task, self.with_context(context)).create(vals)
+        user_dep = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).department_id.id
+        task.department_id = user_dep
         return task
 
     @api.multi
