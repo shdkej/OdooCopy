@@ -188,22 +188,24 @@
                     <sheet string="Analytic Entry">
                         <group>
                             <group>
-                                <field name="name"/>
+                                <field name="name" string="상세설명"/>
                                 <field name="account_id" invisible="1"/>
-                                <field name="date" string="세콤기록 불러오기"/>
-			    </group>
-				<span class="mobile_invisible">
+                                <field name="location"/>
+                                <field name="date" string="출퇴근기록 불러오기"/>
+                                </group>
+                				<span class="mobile_invisible">
                                 <h3>시작시간 : </h3><field name="date_from"/>
                                 <h3>종료시간 : </h3><field name="date_to"/>
-				</span>
-				<span class="mobile_visible">
+                                </span>
+                                <span class="mobile_visible">
                                 <h3>시작시간 : </h3><field name="mobile_date_from" widget="datetimecustom"/>
                                 <h3>종료시간 : </h3><field name="mobile_date_to" widget="datetimecustom"/>
-				</span>
-			    <group>
-				<field name="test_date_from" invisible="1"/>
+                                </span>
+                                <group>
+                                <field name="test_date_from" invisible="1"/>
                                 <field name="company_id" groups="base.group_multi_company" invisible="1"/>
                                 <field name="amount" invisible="1"/>
+                                <field name="work_time" string="업무시간"/>
                                 <field name="unit_amount" string="잔업시간"/>
                                 <field name="currency_id" invisible="1"/>
                                 <field name="lunch"/>
@@ -272,8 +274,8 @@
             <field name="arch" type="xml">
                 <pivot string="Analytic Entries" >
                     <field name="user_id" type="row"/>
-		    <field name="date" interval="month" type="col"/>
-                    <field name="unit_amount" type="measure" string="잔업시간"/>
+		            <field name="date" interval="month" type="col"/>
+                    <field name="unit_amount" type="measure"/>
                 </pivot>
             </field>
         </record>

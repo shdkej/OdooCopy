@@ -293,8 +293,8 @@ class GvmSignContent(models.Model):
 	  })
 	  #다음 결제권한을  작성자에게 넘긴다. 
 	  record.next_check = record.writer
-	  return False
-
+	  return False  
+    
         for i in index:
 	  if record[i]:
             record.next_check = record[i].name

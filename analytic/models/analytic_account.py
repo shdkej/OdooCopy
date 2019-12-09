@@ -124,6 +124,8 @@ class AccountAnalyticLine(models.Model):
     lunch = fields.Selection([('0','0'),('1','1'),('2','2'),('3','3')],string='식사횟수', default='2')
     holiday = fields.Boolean('공휴일')
     work_time = fields.Float('작업시간', default=0.0,compute='_compute_basic_cost', store=True)
+    location = fields.Selection([('1','사내'),('2','사외'),('3','해외출장')],string='업무장소', default='1')
+
 
 
 

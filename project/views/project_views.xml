@@ -114,9 +114,9 @@
                         <page name="settings" string="Settings">
                             <group name="part">
                                 <group>
-                                    <field name="tasks" string="유닛">
+                                    <field name="tasks" string="작업">
                                         <tree editable="true">
-                                            <field name="name" string="유닛명"/>
+                                            <field name="name" string="작업명"/>
                                             <field name="checklist5" string="설비명"/>
                                         </tree>
                                     </field>

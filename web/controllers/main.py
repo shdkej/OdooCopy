@@ -924,6 +924,30 @@ class DataSet(http.Controller):
           #결제완료
           if len(index_list) < 3:
              state = 'done'
+
+             #결재완료시, 업무담당자에게 메일을 보낸다.
+             post = request.env['gvm.signcontent'].search([('id','=',sign_id.id)])
+             sender = request.env.user.name
+             receiver = post.request_check6         
+             #제목
+             #gvm/model/sendmail.py에 양식이있음. 같이변경해야함.
+             post = '결재가 완료 되었습니다.업무를 진행해주세요.'
+             #메타데이터 id
+             post_id = sign_id.id
+             #문서번호(S0001)
+             po_num = str(sign_id.name)
+             #사용모델위치
+             model_name = 'gvm.signcontent'
+             #링크에서 찾아서 쓰면됨.
+             #현재페이지 위치 찾는 용도(리스트)
+             menu_id = "316"
+             #링크에서 찾아서 쓰면됨.
+             #현재페이지 위치 찾는 용도(폼)
+             action_id = "423"
+             #결재완료일경우
+             Flag = 2
+             send_mail = gvm_mail().gvm_send_mail(sender, receiver, post, post_id, po_num, model_name, menu_id, action_id,Flag)
+
           #업무진행완료
           if len(index_list) == 1:
              state = 'workdone'
@@ -931,12 +955,14 @@ class DataSet(http.Controller):
           state = check
           if len(index_list) < 2:
              state = 'done'
-      Flag = True
       #sh_20191119
+      Flag = True
       if state == 'cancel':
           #반려시, 기안자에게 메일을 보낸다.
+          post = request.env['gvm.signcontent'].search([('id','=',sign_id.id)])
           sender = request.env.user.name
-          receiver = request.env['hr.employee'].search([('name','=',name)])
+          receiver = request.env['hr.employee'].search([('name','=',post.writer)])
+
           #제목
           #gvm/model/sendmail.py에 양식이있음. 같이변경해야함.
           post = '님에 의하여 반려되었습니다. 결재문서를 확인하세요.'      
@@ -948,13 +974,38 @@ class DataSet(http.Controller):
           model_name = 'gvm.signcontent'
           #링크에서 찾아서 쓰면됨.
           #현재페이지 위치 찾는 용도(리스트)
-          menu_id = "320"
+          menu_id = "316"
           #링크에서 찾아서 쓰면됨.
           #현재페이지 위치 찾는 용도(폼)    
-          action_id = ""
-          Flag = False
-       
+          action_id = "423"
+          Flag = False 
           send_mail = gvm_mail().gvm_send_mail(sender, receiver, post, post_id, po_num, model_name, menu_id, action_id,Flag)
+
+          #sh_20191122
+          #업무요청확인서, 반려시 업무담당자,합의자,결재자에게 메일을 보낸다.
+          if sign_id.sign_ids == 10:
+            post = request.env['gvm.signcontent'].search([('id','=',sign_id.id)])
+            sender = request.env.user.name
+            receiver = (post.request_check3 + post.request_check4 + post.request_check5 + post.request_check6)
+          
+            #제목
+            #gvm/model/sendmail.py에 양식이있음. 같이변경해야함.
+            post = '님에 의하여 반려되었습니다. 결재문서를 확인하세요.'
+            #메타데이터 id
+            post_id = sign_id.id
+            #문서번호(S0001)
+            po_num = str(sign_id.name)
+            #사용모델위치
+            model_name = 'gvm.signcontent'
+            #링크에서 찾아서 쓰면됨.
+            #현재페이지 위치 찾는 용도(리스트)
+            menu_id = "316"
+            #링크에서 찾아서 쓰면됨.
+            #현재페이지 위치 찾는 용도(폼)
+            action_id = "423"
+            #반려일경우
+            Flag = False
+            send_mail = gvm_mail().gvm_send_mail(sender, receiver, post, post_id, po_num, model_name, menu_id, action_id,Flag)
 
       if sign_id.reason and comment:
         _logger.warning("test_sh")
