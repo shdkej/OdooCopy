@@ -246,13 +246,15 @@
                 <field name="specification"/>
                 <field name="create_uid"/>
                 <field name="partner_id"/>
-                <filter name="current_month" string="Current Month" domain="[('create_date','&lt;',(context_today()+relativedelta(months=1)).strftime('%%Y-%%m-01')),('create_date','&gt;=',time.strftime('%%Y-%%m-01'))]"/>
-                <filter name="prev_month" string="Prev Month" domain="[('create_date','&gt;=',(context_today()-relativedelta(months=1)).strftime('%%Y-%%m-01')),('create_date','&lt;',time.strftime('%%Y-%%m-01'))]"/>
+                <filter name="current_month" string="이번 달" domain="[('create_date','&lt;',(context_today()+relativedelta(months=1)).strftime('%%Y-%%m-01')),('create_date','&gt;=',time.strftime('%%Y-%%m-01'))]"/>
+                <filter name="prev_month" string="저번 달" domain="[('create_date','&gt;=',(context_today()-relativedelta(months=1)).strftime('%%Y-%%m-01')),('create_date','&lt;',time.strftime('%%Y-%%m-01'))]"/>
+                <filter name="prev_month" string="작년" domain="[('create_date','&gt;=',(context_today()-relativedelta(years=1)).strftime('%%Y-01-01')),('create_date','&lt;',(context_today()-relativedelta(years=1)).strftime('%%Y-12-01'))]"/>
+                <filter name="prev_month" string="올해" domain="[('create_date','&gt;=',(context_today()).strftime('%%Y-01-01')),('create_date','&lt;',time.strftime('%%Y-12-01'))]"/>
+                <separator/>
                 <filter name="cate_1" string="기구/가공품" domain="[('category','=',1)]"/>
                 <filter name="cate_2" string="기구/표준품" domain="[('category','=',2)]"/>
                 <filter name="cate_3" string="전장/가공품" domain="[('category','=',3)]"/>
                 <filter name="cate_4" string="전장/표준품" domain="[('category','=',4)]"/>
-                <separator/>
                 <group expand="0" string="Group By">
                     <filter string="프로젝트" domain="[]" context="{'group_by':'project_id'}"/>
                     <filter string="업체별" domain="[]" context="{'group_by':'partner_id'}"/>

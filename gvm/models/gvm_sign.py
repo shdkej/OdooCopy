@@ -443,8 +443,8 @@ class GvmSignContent(models.Model):
          #sh_20191119
 	 #잔업특근기간수정
          date_from = datetime.strptime(record.date_from, '%Y-%m-%d')
-         date_from = date_from + dt.timedelta(days=-1)
-         worktime = self.env['account.analytic.line'].search([('date_from','>=',str(date_from)),('date_to','<=',record.date_to),('user_id','=',record.user_id.id)])  #,('unit_amount','>=',1)])
+         date_from = date_from + dt.timedelta(hours=-9)
+         worktime = self.env['account.analytic.line'].search([('date_from','>=',str(date_from)),('date_to','<=',record.date_to),('user_id','=',record.user_id.id),('unit_amount','>=',1)])
          record.timesheet = worktime
 
     @api.model
@@ -613,6 +613,93 @@ class GvmSignContent(models.Model):
 		    'confirm_date':datetime.today()
 	})
 
+    def gvm_sign_comment(ids, comment, state=None):
+      index = ['request_check1','request_check2','request_check3','request_check4','request_check5','request_check6']
+
+      Model = request.env['gvm.signcontent']
+      sign_id = Model.search([('id','=',ids.id)],limit=1)
+      index_list = []
+      for i in index:
+	if sign_id[i]:
+	  index_list.append(i)
+      state_id = index.index(index_list[0]) + 1
+      name = request.env.user.name
+      uid = request.env['res.users'].search([('name','=',name)]).id
+      check = 'check'+str(state_id)
+      check_date = 'check'+str(state_id)+'_date'
+      request_check = 'request_check'+str(state_id)
+      # state 입력을 안받으면
+      if not state:
+        #sh_20191119
+        #업무요청확인서
+        if sign_id.sign_ids == 10:
+          state = check
+          #결제완료
+          if len(index_list) < 3:
+             state = 'done'
+          #업무진행완료
+          if len(index_list) == 1:
+             state = 'workdone'
+        else:
+          state = check
+          if len(index_list) < 2:
+             state = 'done'
+      #sh_20191119
+      #반려시, 기안자에게 메일을 보낸다.
+      sender = request.env.user.name
+      receiver = request.env['hr.employee'].search([('name','=',name)])
+      #제목
+      #gvm/model/sendmail.py에 양식이있음. 같이변경해야함.
+      post = '님에 의하여 반려되었습니다. 결재문서를 확인하세요.'      
+      #메타데이터 id
+      post_id = sign_id.id
+      #문서번호(S0001)
+      po_num = str(sign_id.name)
+      #사용모델위치
+      model_name = 'gvm.signcontent'
+      #링크에서 찾아서 쓰면됨.
+      #현재페이지 위치 찾는 용도(리스트)
+      menu_id = "320"
+      #링크에서 찾아서 쓰면됨.
+      #현재페이지 위치 찾는 용도(리스트)
+      menu_id = "320"
+      #링크에서 찾아서 쓰면됨.
+      #현재페이지 위치 찾는 용도(폼)
+      action_id = ""
+      #반려일경우 
+      Flag = True
+      if state == 'cancel':
+         Flag = False
+       
+      _logger.warning('send mail')
+      send_mail = gvm_mail().gvm_send_mail(sender, receiver, post, post_id, po_num, model_name, menu_id, action_id,Flag)
+
+      if sign_id.reason and comment:
+        _logger.warning("test_sh")
+        if state == 'cancel':
+          comment = '* ' + comment + ' *'
+        comment = sign_id.reason + "\n" + comment
+
+      if sign_id[request_check].name == name:
+        #sh_20191119
+        #업무요청확인서
+        #코멘트가 없을경우 작성하지않는다.
+        if comment == '':
+           comment = comment
+        else :
+            comment = "\n" + comment + '_' + name
+        sign_id.sudo(1).write({
+           #sh_20191119
+           #업무요청확인서
+           #코멘트작성
+           'reason':comment,
+           'state':state,
+	   check:uid,
+	   check_date:datetime.now(),
+	   request_check:False,
+        })
+        _logger.warning('write complete')
+      _logger.warning('comment complete')
 
     def check_holiday_count(self, rest1=None, date_to=None, date_from=None):
         count = 0
@@ -661,8 +748,8 @@ class GvmSignContent(models.Model):
 	    else:
 	      #sh
 	      #삭제되었을경우 연차 갯수 복귀
-	      #근태신청서
-	      if record.sign.num == 1:
+	      #근태신청서. 상신 시 개수 조정 되므로 상신 안되었을 때, 반려일 때 안깎음
+	      if record.sign.num == 1 and record.state not in ['temp','cancel']:
 	        #연차갯수
 	        count = self.check_holiday_count()
 	        #로그인한 유저정보

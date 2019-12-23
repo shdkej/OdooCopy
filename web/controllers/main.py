@@ -851,53 +851,6 @@ class DataSet(http.Controller):
 
       return http.local_redirect('/web', query=request.params, keep_hash=True)
 
-    @http.route('/web/dataset/change_purchase', type='json', auth="user",csrf=False)
-    def gvm_onchange(self, ids, new_record, state='draft'):
-      Model = request.env['gvm.product']
-      purchase_id = request.env['purchase.order'].search([('id','=',new_record)],limit=1)
-      purchase_id.state = state
-      att = purchase_id.attachment
-      for record in ids:
-         product_id = Model.search([('id','=',record)],limit=1)
-         product_id.purchase = new_record
-         for at in att:
-            if at.name.find(product_id.name) == -1:
-               purchase_id.write({'attachment':[(3, at.id)]})
-      receivers = request.env['hr.employee'].search([('department_id','=',6)])
-
-      model_name = "gvm.purchase_product"
-      menu_id = "357"
-      action_id = "471"
-      po_num = str(purchase_id.name)
-      name = request.env.user.name.encode('utf-8')
-      post = '견적요청서'
-      post_id = request.env['purchase.order'].search([('name','=',po_num)])
-      if post_id:
-        post_id = str(post_id.id)
-      else:
-        post_id = '1'
-
-      send_mail = gvm_mail().gvm_send_mail(name, receivers, post, new_record, po_num, model_name, menu_id, action_id)
-
-    @http.route('/web/dataset/state', type='json', auth="user",csrf=False)
-    def gvm_onchange_state(self, ids, state, name):
-      Model = request.env['gvm.product']
-      for record in ids:
-         product_id = Model.search([('id','=',record)],limit=1)
-         product_id.state = state
-	 if state == 'destination':
-	   product_id.destination_date = datetime.datetime.today()
-	   if name:
-	     product_id.destination_man = name
-	   else:
-	     product_id.destination_man = request.env.user.name
-	 if state == 'done':
-	   product_id.receiving_date = datetime.datetime.today()
-	   if name:
-	     product_id.receiving_man = name
-	   else:
-	     product_id.receiving_man = request.env.user.name
-
     @http.route('/web/dataset/comment', type='json', auth="user",csrf=False)
     def gvm_comment(self, ids, comment, state=None):
       index = ['request_check1','request_check2','request_check3','request_check4','request_check5','request_check6']
@@ -1010,7 +963,6 @@ class DataSet(http.Controller):
 
         records = Model.search_read(domain, fields,
                                     offset=offset or 0, limit=limit or False, order=sort or False)
-        _logger.warning(model)
         if not records:
             return {
                 'length': 0,

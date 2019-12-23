@@ -175,6 +175,11 @@ class GvmPurchaseProduct(models.Model):
                 comment += product.etc
             product.etc = comment
 
+    @api.onchange('category')
+    def onchange_category(self):
+        for product in self.product:
+            product.category = self.category
+
     @api.depends('project_ids')
     def _compute_project_issue(self):
       for record in self:

@@ -61,7 +61,6 @@ class GvmProjectProject(models.Model):
 
     @api.depends('product')
     def _compute_product_cost(self):
-      _logger.warning('compute product cost')
       for record in self:
         total_product_cost = 0
         for pd in record.product:

@@ -95,7 +95,6 @@ class GvmMrpContent(models.Model):
     def _compute_attachment(self):
       for record in self:
         attachment_list = record.sub_mrp.attachment
-	_logger.warning(attachment_list)
         if attachment_list:
 	  at_list = []
           for att in attachment_list:
