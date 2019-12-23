@@ -15,15 +15,17 @@ gvm_mail_id = config.get('MAIL','MAIL_ID')
 gvm_mail_pw = config.get('MAIL','MAIL_PW')
 
 class gvm_mail():
-  def gvm_send_mail(self, uname, receiver, post, postId, po_num, model_name, menu_id, action_id,Flag=True):
+  def gvm_send_mail(self, uname, receiver, post, postId, po_num, model_name, menu_id, action_id,Flag=0):
      sender = 'nohsh@gvmltd.com'
      receivers = []
      name = uname.encode('utf-8')
      url = "https://erp.gvmltd.com/"
-     if Flag == True:
+     if Flag == 0:
          subject = "[GVM]["+str(po_num)+"]"+ name + " 님이 "+ post +" 를 올렸습니다."
-     else :
+     elif Flag == 1:
          subject = "[GVM]["+str(po_num)+"]"+ name + post
+     elif Flag == 2:
+         subject = "[GVM]["+str(po_num)+"]"+ post
 
      if is_test == 'True':#True
        subject = '[TEST]' + subject
@@ -31,15 +33,14 @@ class gvm_mail():
        if receiver:
          for rc in receiver:
 	   if rc.work_email:
-            _logger.warning(receivers)
+             _logger.warning(receivers)
      else:#Blank
        if receiver:
          for rc in receiver:
 	   if rc.work_email:
              receivers.append(str(rc.work_email))
        
-     receivers.append('nohsh@gvmltd.com')
-     _logger.warning(receivers)
+     receivers.append('parksh@gvmltd.com')
 
      post_id = str(postId)
      html = str('<a href="' + url + 

@@ -1068,6 +1068,7 @@ var FormView = View.extend(common.FieldManagerMixin, {
          this.gvm_on_button_duplicate(state);
     },
     gvm_sign_button: function(state){
+        console.log(state)
 	    var self = this;
 	    var comment = prompt('의견이 있으시면 적어주시기 바랍니다.');
 	    var url = '/web/dataset/comment'
@@ -1076,9 +1077,8 @@ var FormView = View.extend(common.FieldManagerMixin, {
               self.rpc(url,{
 	         ids: ids,
 	         comment: comment,
-		 state: state,
+    		 state: state,
 	      });
-	      location.reload();
 	    }
     },
     on_action: function(action){

@@ -54,44 +54,46 @@ class GvmSignContent(models.Model):
     content = fields.Text(string='내용',store=True)
     content2 = fields.Text(string='출장목적',store=True)
     content3 = fields.Text(string='비고',store=True)
-
-    check = fields.Boolean(string='check',compute='_compute_check')
-    request_check1 = fields.Many2one('hr.employee',string='request_check1',store=True)
-    request_check2 = fields.Many2one('hr.employee',string='request_check2',store=True)
-    request_check3 = fields.Many2one('hr.employee',string='request_check3',store=True)
-    request_check4 = fields.Many2one('hr.employee',string='request_check4',store=True)
-    request_check5 = fields.Many2one('hr.employee',string='request_check5',store=True)
-    #업무담당자
-    request_check6 = fields.Many2one('hr.employee',string='request_check6',store=True)
     
-    check1 = fields.Many2one('res.users',string='check1',store=True)
-    check2 = fields.Many2one('res.users',string='check2',store=True)
-    check3 = fields.Many2one('res.users',string='check3',store=True)
-    check4 = fields.Many2one('res.users',string='check4',store=True)
-    check5 = fields.Many2one('res.users',string='check5',store=True)    
-    #업무담당자
-    check6 = fields.Many2one('res.users',string='check6',store=True)
-    
-    check1_date = fields.Datetime('check1_date')
-    check2_date = fields.Datetime('check2_date')
-    check3_date = fields.Datetime('check3_date')
-    check4_date = fields.Datetime('check4_date')
-    check5_date = fields.Datetime('check5_date')
-    #업무담당자
-    check6_date = fields.Datetime('check6_date') 
+    #메일을보냈는지확인
+    check_mail = fields.Boolean(default=False)
+    #출장비완료보고서 확인 후 출장비정산서 작성가능 
+    check_confirm = fields.Boolean('상신확인', default=False)
+    #참조문서
     reference = fields.Many2many('hr.employee',string='참조')
+    #결재자 유무 확인
+    check_checkname = fields.Char(string='결재자확인')
+    #통보자 유무 확인
+    check_reference = fields.Char(string='통보자확인')
+    #상신일 
+    confirm_date = fields.Date('confirm_date')
+    #결재와 반려버튼 제어
+    check = fields.Boolean(string='check',compute='_compute_check')
+    #권한검사
+    check_inspection = fields.Boolean(default = True)
+    check_all = fields.Boolean('전결')
+    #다음결재자확인
+    next_check = fields.Char(string='next_check',compute='_compute_next_check', store=True)
+    #현재문서 결재상태
+    state = fields.Selection([
+        ('temp', '임시저장'),
+        ('write', '상신'),
+        ('ing', '진행중'),
+        ('cancel', '반려'),
+        ('remove', '취소'), 
+        ('done', '결재완료')],string='Status', readonly=True, index=True, copy=False, default='temp', track_visibility='onchange')
+    #연차개수
+    holiday_count = fields.Char('holiday_count', compute='_compute_holiday_count')
 
     my_doc_count = fields.Integer('my_doc', compute='_compute_my_check_count')
     my_check_count = fields.Integer('my_check', compute='_compute_my_check_count')
     my_ref_count = fields.Integer('my_ref', compute='_compute_my_check_count')
     create_date = fields.Date('create_date',default=fields.Datetime.now)
 
-    #sh
-    #달력외 표시 금지
+    #달력
     date_from = fields.Date('start',required=True, default=fields.Datetime.now)
     date_to = fields.Date('end', default=fields.Datetime.now)
 
-    #sh
     #근태신청서_리프레시확인 
     refresh_date_to = fields.Date('start',default=fields.Datetime.now)
     refresh_date_from = fields.Date('end',default=fields.Datetime.now)
@@ -99,23 +101,21 @@ class GvmSignContent(models.Model):
     refresh_use_num = fields.Integer(store=True,compute='_refresh_check')
     refresh_days = fields.Integer(store=True,compute='_refresh_check')
 
-    #sh_20191119
     #업무요청확인서
     item = fields.Selection([('individual','개인'),('business','업무')],default='individual')
     etc = fields.Text(string='기타',store=True)
     price = fields.Char(string='발생비용',store=True)
     request = fields.Text(string='요청사유',store=True)  
 
-
-    project = fields.Many2one('project.project',string='name')
+    #view
+    project = fields.Many2many('project.project',string='name')
     sign = fields.Many2one('gvm.sign', string='sign',required=True)
     cost = fields.One2many('gvm.signcontent.cost','sign', string='cost')
     cost2 = fields.One2many('gvm.signcontent.cost2','sign', string='cost2')
     work = fields.One2many('gvm.signcontent.work','sign', string='work')
     timesheet = fields.Many2many('account.analytic.line','sign','timesheet',domain="[('user_id','=',uid)]",store=True,compute='_onchange_timesheet')
-    reason = fields.Text('reason')
+    reason = fields.Text('reason',store=True)
     rest1 = fields.Selection([('day','연차'),
-      #sh
       #오전반차 오후반차 구분
       ('half','오전반차'),
       ('half_2','오후반차'),
@@ -135,46 +135,26 @@ class GvmSignContent(models.Model):
     attachment = fields.Many2many('ir.attachment', domain="[('res_model','=','gvm.signcontent')]", string='도면')
     relate_sign1 = fields.Many2one('gvm.signcontent',string='출장완료서')
     relate_sign2 = fields.Many2one('gvm.signcontent',string='출장계획서')
+    #결재라인
     sign_line = fields.One2many('gvm.signcontent.line','sign','sign_line')
+    #출장신청서
+    companion = fields.Char('동행자')
+    material1 = fields.Selection([('no','없음'), ('material','자재'), ('tool','공구'), ('etc','기타')], default ='no')
+    material2 = fields.Char('출장자재항목')
+    request = fields.Char('고객사담당자')
+    request_phone = fields.Char('고객사연락처')
+    education = fields.Selection([('need','필요'), ('needless','불필요')], default='need')
+    education_date = fields.Date('교육날짜',default=fields.Datetime.now)
+    visit = fields.Selection([('confirm','승인완료'), ('no','미신청'), ('ing','승인대기')], default='confirm')
+    category = fields.Selection([('survey','설계실측'),
+        ('setup','셋업'),
+        ('gratisAS','무상A/S'),
+        ('lactealAS','유상A/S'),
+        ('oncall','OnCall'),
+        ('breakup','해체'),
+        ('etc','기타')], default='survey')
+    category_etc = fields.Char('출장 업무')
 
-    check_all = fields.Boolean('전결')
-    next_check = fields.Char(string='next_check',compute='_compute_next_check', store=True)
-
-    state = fields.Selection([
-        ('temp', '임시저장'),
-        ('write', '상신'),
-        ('check1', '검토'),
-        ('check2', '결재1'),
-        ('check3', '결재2'),
-        ('check4', '합의1'),
-        ('check5', '합의2'),
-        ('done', '결재완료'),
-        ('cancel', '반려'),
-        ('remove', '취소'), 
-        ('workdone', '업무진행완료')],string='Status', readonly=True, index=True, copy=False, default='temp', track_visibility='onchange')
-    holiday_count = fields.Char('holiday_count', compute='_compute_holiday_count')
-    confirm_date = fields.Date('confirm_date')
-
-    #sh
-    #외근계획서
-    out_of_work_purpose = fields.Selection([
-            ('meeting','미팅'),
-            ('education','교육'),
-            ('exposition', '박람회'),
-            ('etc','기타(주요업무란에 상세기재)')])
-    out_of_work_area = fields.Char(string='외근장소')
-    out_of_work_companion = fields.Char(string='외근동행자')
-    out_of_work_transport = fields.Selection([
-    	('car','자가용'),
-	('publictransport','대중교통'),
-       	('taxi','택시'),
-	('companycar','법인차량')])
-    out_of_work_content = fields.Text(string='content',store=True)
-    out_of_work_content2 = fields.Text(string='content2',store=True)
-    out_of_work_date_to = fields.Datetime(default = datetime.today())
-    out_of_work_date_from = fields.Datetime(default = datetime.today())
-    check_confirm = fields.Boolean('상신확인', default=False)
-	
     @api.depends('date_from','date_to','job_ids')
     def _compute_basic_cost(self):
         for record in self:
@@ -249,55 +229,51 @@ class GvmSignContent(models.Model):
            record.user_department = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).department_id.id
            record.writer = record.user_id.name
 
+    
+    #현재결재자와 로그인한 사람이 일치 하는지 파악
+    @api.model
+    def _check_me(self):
+        for record in self: 
+          #현재결재자와 로그인한 사람이 일치 하는지 파악
+          if record.next_check == self.env.user.name: return True
+
+    #_check_me 수행후, 실행되는함수
     @api.model
     def _compute_check(self):
         for record in self:
-          check_name = self._check_name()
-          check_me = self._check_me()
-          if check_name and check_me:
-            record.check = True
-
-    @api.model
-    def _check_name(self):
-        for record in self:
-          if record.writer != self.env.user.name \
-          and record.check1.id != self.env.uid \
-          and record.check2.id != self.env.uid \
-          and record.check3.id != self.env.uid \
-          and record.check4.id != self.env.uid \
-          and record.check5.id != self.env.uid \
-          and record.check6.id != self.env.uid:
-            return True
-
-    @api.model
-    def _check_me(self):
-        for record in self:
-          if record.next_check == self.env.user.name :return True
+          #True 상태일경우
+          if record._check_me():
+             #상신, 진행중일때
+             if record.state == 'write' or record.state == 'ing':
+                 #결재버튼을 보여준다.
+                 record.check = True
 
     @api.depends('state')
     def _compute_next_check(self):
-      index = ['request_check1','request_check2','request_check3','request_check4','request_check5','request_check6']
-      for record in self:
-        if record.state == 'cancel':
-	  #sh
-	  #현재 서버 페이지의 정보를 가져온다.
-	  rest1 = record.rest1
-	  date_to = record.date_to
-	  date_from = record.date_from
-	  #연차의 갯수를 상신 전상태로 돌린다.
-	  count = self.check_holiday_count(rest1,date_to,date_from)
-	  hr_name = self.env['hr.employee'].search([('name','=',record.user_id.name)])
-	  h_count = float(hr_name.holiday_count) +  float(count)
-	  hr_name.write({
+     if self.state != 'temp':
+       for record in self:
+         #다음 결재자를 찾는다.
+         check_id_list = record.get_check_list()
+        
+         #반려되었을경우
+         if record.state == 'cancel': 
+           #결재버튼을 숨긴다.
+           record.check = False
+	   #현재 서버 페이지의 정보를 가져온다.
+	   rest1 = record.rest1
+	   date_to = record.date_to
+	   date_from = record.date_from
+	   #연차의 갯수를 상신 전상태로 돌린다.
+	   count = record.check_holiday_count(rest1,date_to,date_from)
+	   hr_name = record.env['hr.employee'].search([('name','=',record.user_id.name)])
+	   h_count = float(hr_name.holiday_count) +  float(count)
+	   hr_name.write({
 	            'holiday_count': h_count
-	  })
-	  #다음 결제권한을  작성자에게 넘긴다. 
-	  record.next_check = record.writer
-	  return False
-
-          # sign_line에서 다음 결재자를 찾는다
-          record.next_check = record.sign_line.next_check
-
+	   })
+	   #다음 결제권한을 작성자에게 넘긴다. 
+	   record.next_check = record.writer
+	   return False 
+    
     @api.depends('user_id')
     def _compute_holiday_count(self):
       for record in self:
@@ -323,7 +299,6 @@ class GvmSignContent(models.Model):
         record.my_check_count = len(my_check_doc)
         record.my_ref_count = len(my_ref_doc)
    
-    #sh
     @api.depends('rest1','refresh_date_to','refresh_date_from')
     def _refresh_check(self):
       for record in self:
@@ -375,9 +350,8 @@ class GvmSignContent(models.Model):
              record.refresh_use_num = int(self_num) + 1
           else: 
              record.refresh_use_num = 1
-          _logger.warning(record.refresh_use_num)
 
-
+    #기본 결재자 선택
     @api.onchange('sign_ids')
     def _default_check1(self):
         for record in self:
@@ -388,42 +362,36 @@ class GvmSignContent(models.Model):
           ceo = self.env['hr.employee'].search([('id','=',126)])
 	  management_manager = management[0]
 
-	  # 중복 결재라인 없애기
-	  #if ceo == boss and record.sign_ids in [4,6]:
-	  #  boss = False
 	  if management_manager == boss:
 	    management_manager = False
 
           if record.sign_ids in [2,3]:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign'}),
-                                (0, 0, {'name':management[1].id, 'check':'2'}),
-                                (0, 0, {'name':management_manager.id, 'check':'2'}),
+            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequnce':'0'}),
+                                (0, 0, {'name':management[1].id, 'check':'2','state':'0','sequnce':'1'}),
+                                (0, 0, {'name':management_manager.id, 'check':'2','state':'0','sequnce':'2'}),
                                ]
           elif record.sign_ids == 4:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign'}),
-                                (0, 0, {'name':ceo.id, 'check':'sign'}),
+            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequnce':'0'}),
+                                (0, 0, {'name':ceo.id, 'check':'sign','state':'0','sequnce':'1'}),
                                ]
           elif record.sign_ids == 5:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign'}),
-                                (0, 0, {'name':management[2].id, 'check':'2'}),
+            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequnce':'0'}),
+                                (0, 0, {'name':management[2].id, 'check':'2','state':'0','sequnce':'1'}),
                                ]
 	  elif record.sign_ids == 6:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign'}),
-                                (0, 0, {'name':ceo.id, 'check':'sign'}),
+            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequnce':'0'}),
+                                (0, 0, {'name':ceo.id, 'check':'sign','state':'0','sequnce':'1'}),
                                ]
-          #sh_20191119
-          #업무요청확인서
-	  elif record.sign_ids == 10:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign'}),
-                                (0, 0, {'name':boss.id, 'check':'2'}),
+	  elif record.sign_ids == 1:
+            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequnce':'0'}),
+                                (0, 0, {'name':management[1].id, 'check':'2','state':'0','sequnce':'1'}),
                                ]
           else:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign'}),
+            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequnce':'0'}),
                                ]
 
     @api.depends('date_from','date_to')
     def _onchange_timesheet(self):  
-      #sh
       #리프레시_날짜를변경할경우
       self_dateto = datetime.strptime(self.date_from, '%Y-%m-%d')
       self_datefrom = datetime.strptime(self.date_to, '%Y-%m-%d') 
@@ -431,6 +399,7 @@ class GvmSignContent(models.Model):
       self_num = str(self_num)  
       self_num = self_num.split(' day')
       self_num = self_num[0]
+
       if self_num not in '00:00:00':
         self.refresh_use_num = int(self_num) + 1
       else: 
@@ -438,11 +407,10 @@ class GvmSignContent(models.Model):
 
       for record in self:
         if record.sign_ids == 2:
-         #sh_20191119
 	 #잔업특근기간수정
          date_from = datetime.strptime(record.date_from, '%Y-%m-%d')
          date_from = date_from + dt.timedelta(days=-1)
-         worktime = self.env['account.analytic.line'].search([('date_from','>=',str(date_from)),('date_to','<=',record.date_to),('user_id','=',record.user_id.id)])  #,('unit_amount','>=',1)])
+         worktime = self.env['account.analytic.line'].search([('date_from','>=',str(date_from)),('date_to','<=',record.date_to),('user_id','=',record.user_id.id)])
          record.timesheet = worktime
 
     @api.model
@@ -450,53 +418,22 @@ class GvmSignContent(models.Model):
         for record in self:
           if record.user_job_id.no_of_hired_employee >= 4 and record.job_ids.no_of_hired_employee < record.user_job_id.no_of_hired_employee:return True
 
-    @api.multi
-    def button_check_all(self):
-        #sh_20191119
-        #업무담당자
-        if slef.sign_ids != 10:
-            self.sudo(self.user_id.id).write({'state':'done', 'check3': self.env.uid, 'next_check':self.request_check4.id or 'done', 'check3_date': datetime.now()})
-        else:
-            if self.state == 'done':
-              self.sudo(self.user_id.id).write({'state':'workdone', 'check6': self.env.uid, 'next_check':self.request_check4.id or 'workdone', 'check6_date': datetime.now()})
-            else:
-              self.sudo(self.user_id.id).write({'state':'done', 'check3': self.env.uid, 'next_check':self.request_check6.id or 'workdone', 'check3_date': datetime.now()})
-	return {}
-    
-    @api.multi
     def button_reorder(self):
+        #상신으로 상태변경
         sign = self.env['gvm.signcontent'].search([('id','=',self.id)])
-	check1,check2,check3,check4,check5 = 0,0,0,0,0
-	if sign.check1:
-          check1 = self.env['hr.employee'].search([('user_id','=',sign.check1.id)]).id
-	if sign.check2:
-          check2 = self.env['hr.employee'].search([('user_id','=',sign.check2.id)]).id
-	if sign.check3:
-          check3 = self.env['hr.employee'].search([('user_id','=',sign.check3.id)]).id
-	if sign.check4:
-          check4 = self.env['hr.employee'].search([('user_id','=',sign.check4.id)]).id
-	if sign.check5:
-          check5 = self.env['hr.employee'].search([('user_id','=',sign.check5.id)]).id
-
-        self.sudo(self.user_id.id).write({'state': 'write',
-	                                  'check1':False,
-					  'check2':False,
-					  'check3':False,
-					  'check4':False,
-					  'check5':False,
-					  'reason':False,
-	                                  'check1_date':False,
-	                                  'check2_date':False,
-	                                  'check3_date':False,
-	                                  'check4_date':False,
-	                                  'check5_date':False,
-					  'request_check1':check1 or self.request_check1.id,
-					  'request_check2':check2 or self.request_check2.id,
-					  'request_check3':check3 or self.request_check3.id,
-					  'request_check4':check4 or self.request_check4.id,
-					  'request_check5':check5 or self.request_check5.id,
-                                          })
-        #sh
+        self.sudo(self.user_id.id).write({'state': 'write'})   
+        #결재 초기화
+        for value in sign.sign_line:
+            value.write({
+                 'check_date':None,
+                 'state':'0',
+                 'check_checkname':'',
+                 'check_mail':False
+            })
+        #결재정보를 다시 얻어 결재순서를 유지한다.
+        self.get_check_list()
+        self.sendmail()
+    
 	#근태신청서
         if self.sign.num == 1:
 	 #현재 연차 갯수
@@ -508,12 +445,31 @@ class GvmSignContent(models.Model):
 	 #적용
          hr_name.holiday_count = float(h_count)
         return {}
+    
+    #결재된문서
+    @api.multi
+    def After_sign_view(self):
+        uname = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).id
+        username = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).name
+        domain = [('sign_line','in',username),('sign_line.check_checkname','=',username)]
+        return {
+            'name': _('Sign'),
+            'domain': domain,
+            'res_model': 'gvm.signcontent',
+            'type': 'ir.actions.act_window',
+            'view_id': False,
+            'view_mode': 'tree,form',
+            'view_type': 'form',
+            'limit': 80,
+            'context': "{}"
+        }
 
+    #결재할문서
     @api.multi
     def sign_view(self):
         uname = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).id
         username = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).name
-        domain = [('next_check','=',username),('state','not in',['temp','cancel'])]
+        domain = [('next_check','=',username),('state','not in',['temp','cancel','remove'])]
         return {
             'name': _('Sign'),
             'domain': domain,
@@ -526,11 +482,12 @@ class GvmSignContent(models.Model):
             'context': "{}"
         }
 
+    #참조문서
     @api.multi
     def sign_reference_view(self):
         uname = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).id
         username = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).name
-        domain = [('reference','in',uname)]
+        domain = [('sign_line','in',username),('sign_line.check_reference','=',username),('state','not in',['temp','cancel','remove'])]
         return {
             'name': _('Sign'),
             'domain': domain,
@@ -542,7 +499,7 @@ class GvmSignContent(models.Model):
             'limit': 80,
             'context': "{}"
         }
-    #sh
+
     def return_holiday_count(self):
          #근태신청서
 	 if self.sign.num == 1:
@@ -555,12 +512,10 @@ class GvmSignContent(models.Model):
 	  # 적용
 	  hr_name.holiday_count = float(h_count)
 
-
-    #sh
     #취소버튼
     def button_remove(self):
-	#근태신청서
-    	if self.sign.num == 1:
+      #근태신청서
+      if self.sign.num == 1:
 	 #연차갯수
 	 count = self.check_holiday_count()
 	 #로그인한 유저정보
@@ -569,51 +524,48 @@ class GvmSignContent(models.Model):
 	 h_count = float(hr_name.holiday_count) + float(count)
 	 # 적용
          hr_name.holiday_count = float(h_count)
-	 #상태 정보: 취소상태
-         self.write({'state':'remove'})
 
-        #근태신청서를 제외한 모든 문서
-	else:
-	 #상태 정보: 취소상태
-	 self.write({'state':'remove'})
+      #상태 정보: 취소상태
+      self.write({'state':'remove'})
 
-    @api.multi
+    #상신버튼 눌렀을경우 동작함수
     def button_confirm(self):
-        check_id_list = self.get_check_list(self, 'request_check')
-        # 중복 검사
-        for check in check_id_list:
-            if len(check_id_list) > len(filter(lambda x:x!=check, check_id_list))+1:
-                raise UserError(_('결재라인은 중복되면 안됩니다.'))
+       for record in self:
+         #결재정보를 얻는다.
+         check_id_list = record.get_check_list()
 
-        # 연차 개수 조절
-	if self.sign.num == 1:
-	  count = self.check_holiday_count()
-	  hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
-	  h_count = float(hr_name.holiday_count) - float(count)
-	  _logger.warning(h_count)
+         #중복검사
+         for check in check_id_list:
+           if len(check_id_list) > len(filter(lambda x:x[1]!=check[1], check_id_list))+1:
+             raise UserError(_('결재라인은 중복되면 안됩니다.'))
+           #권한검사Flag     
+           if "sign" in check:
+             record.check_inspection = False
 
-	  #if h_count < -7:
-          # raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
-	  hr_name.holiday_count = float(h_count)
-	  _logger.warning(hr_name.holiday_count)
+         #권한검사
+         #결재자가 없을경우 상신할 수 없다.
+         if record.check_inspection == True:
+            raise UserError(_('결재자가 없습니다. 결재라인을 확인하세요.'))
+ 
+       #연차 개수
+       if self.sign.num == 1:
+         count = self.check_holiday_count()
+	 hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
+	 h_count = float(hr_name.holiday_count) - float(count) 
+         hr_name.holiday_count = float(h_count)
 
-        # 메일 발송
-        a = gvm_mail()
-	model_name = 'gvm.signcontent'
-	postId = self.id
-        po_num = self.env[model_name].search([('id','=',postId)]).name
-
-        receivers = self.env['hr.employee'].search([('id','in',check_id_list)])
-        menu_id = "320"
-	action_id = ""
-	a.gvm_send_mail(self.env.user.name, receivers, '결재문서', postId, po_num, model_name, menu_id, action_id)
-	self.write({'state':'write',
-		    'confirm_date':datetime.today()
-	})
-
+         #if h_count < -7:
+         # raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
+       
+       self.sendmail()
+       #처음 결재자에게 메일을 보낸다.
+       self.write({'state':'write',
+                   'confirm_date':datetime.today()
+       })
 
     def check_holiday_count(self, rest1=None, date_to=None, date_from=None):
         count = 0
+        #포상연차인지 아닌지 구분
 	if rest1 != None:
 	   rest = rest1
 	   date_to = date_to
@@ -622,10 +574,11 @@ class GvmSignContent(models.Model):
 	   rest = self.rest1
 	   date_to = self.date_to
 	   date_from = self.date_from
-
+        
+        #포상연차일경우    
 	if rest in ['refresh','publicvacation','special']:
 	  return count
-	#sh 
+    
 	#오전반차 오후반차 구분  
 	if rest == 'half':
 	  count = 0.5
@@ -636,11 +589,43 @@ class GvmSignContent(models.Model):
 	elif rest == 'quarter':
 	  count = 0.25
 	  return count
-	#연차일경우 갯수 파악  
+	
+        #연차일경우 갯수 파악  
         fmt = '%Y-%m-%d'
         d1 = datetime.strptime(date_to,fmt)
         d2 = datetime.strptime(date_from,fmt)
-        count = (d1-d2).days+1
+        days = (d1-d2).days + 1
+
+        """ weekday : 0->월, 1->화, 2->수, 3-> 목, 4->금, 5->토 6->금 """
+        #시작일 요일 파악
+        week_start = d2.weekday()
+        week_end = d1.weekday()
+        
+        """ 주단위로 계산하여, 주말을 구함 """
+        #일주일이 넘었을경우
+        if days > 6:
+          #주 계산
+          week = days / 7
+          #예외)만약 시작일이 일요일인 경우, 마지막일이 토요일인 경우
+          if week_start == 6 or week_end == 5:
+            days = days - 1
+          #주말계산
+          count = days - (week * 2)
+        else:
+          #시작일을 저장
+          date_from = d2
+          #기간(마지막일 - 시작일)만큼 for문을 돌린다.
+          for i in range(days):
+            #증가된 날짜를 가져오기 위해 한번더 저장
+            date_from = date_from 
+            #각각의 날짜 별로 요일을 구한다.
+            weekday = date_from.weekday()
+            #주말이 아닐경우
+            if weekday != 5 and weekday != 6:
+                count = count + 1
+            #요일을 구하기위해 날짜를 증가시킨다.
+            date_from = date_from + dt.timedelta(days=1)
+
 	return count
 
     @api.model
@@ -651,13 +636,13 @@ class GvmSignContent(models.Model):
         res.check_confirm = True
 	return res
 
+    #삭제되었을경우
     @api.multi
     def unlink(self):        
         for record in self:
             if not record.user_id.name == self.env.user.name:
                 raise UserError(_('본인 외 삭제 불가'))
-	    else:
-	      #sh
+	    elif record.state != 'temp':
 	      #삭제되었을경우 연차 갯수 복귀
 	      #근태신청서
 	      if record.sign.num == 1:
@@ -673,7 +658,6 @@ class GvmSignContent(models.Model):
 
     @api.multi
     def write(self, vals):
-        #sh
         #[취소권한부여] 294: 유예진, 295: 이승현, 258: 김진우, 316: 조나래
         allower = [1,294,295,258,316]
         for record in self:
@@ -686,14 +670,77 @@ class GvmSignContent(models.Model):
                     raise UserError(_('이미 결재가 진행 중인 문서는 수정이 불가합니다.'))
         return super(GvmSignContent, self).write(vals)
 
-    # request_check 또는 check 로 입력된값들을 불러온다
-    def get_check_list(self, model, field):
-    	check_list = [str(field)+str(b) for b in range(1,7)]
+    #결재 정보를 가져온다.(통보자제외)
+    def get_check_list(self):
+        #결재 정보
+    	check_list = self.sign_line
         check_id_list = []
-        for check in check_list:
-            if model[check]:
-              check_id_list.append(model[check].id)
+
+        for record in self:
+          for value in check_list:
+            #결재권한이 없는 통보는 제외
+            if value.check != '3':
+              #결재 완료자 제외
+              if value.check_date == False:
+                #결재 정보 추가
+                check_id_list.append([value.check,value.name.name])
+            #통보일경우
+            elif value.check == '3':
+                value.write({'check_reference':value.name.name})
+        
+          #for문을 두번 돌린이유: 위-> 정보추가/ 아래-> 조건문생성
+          for value in check_id_list:
+            #첫번쩨 결재자
+            record.next_check = check_id_list[0][1]
+          if not check_id_list:    
+            #다음 결재자가 없을경우
+            record.next_check = ''
+          #결재가 완료되었을경우
+          if record.next_check == '':
+            #결재버튼을 숨긴다.
+            record.check = False
         return check_id_list
+    
+    #처음 결재자,통보자에게만 메일을 보낸다.
+    #결재가 진행된 후에는 controllers 에서 관리
+    def sendmail(self):
+        check_id_list = self.sign_line
+        count = len(check_id_list)
+        receiver=[]
+
+        if count < 2:
+          if check_id_list.check != '3':
+            receiver.append(check_id_list.name)
+            check_id_list.write({'check_mail':True})
+        
+        #결재자와 통보자를 찾을때까지 돌려야함
+        else: 
+            check = False
+            for value in check_id_list:
+             if check == False:
+               if value.check != '3':
+                  receiver.append(value.name)
+                  value.write({'check_mail':True})
+             else:
+               if value.check == 'sign' or value.check == '2':
+                  break
+               else:
+                 receiver.append(value.name)
+                 value.write({'check_mail':True})
+             check = True
+              
+        gvm = gvm_mail()
+        #메타데이터 id
+        post_id = self.id
+        #문서번호(S0001)
+        po_num = str(self.name)
+        #사용모델위치
+        model_name = 'gvm.signcontent'
+        #링크에서 찾아서 쓰면됨
+        #현재페이지 위치 찾는 용도(리스트)
+        menu_id = "316"
+        action_id = "423"
+        gvm.gvm_send_mail(self.env.user.name, receiver, '결재문서', post_id, po_num, model_name, menu_id, action_id)
 
 class GvmSignContentCost(models.Model):
     _name = "gvm.signcontent.cost"
@@ -738,19 +785,21 @@ class GvmSignContentWork(models.Model):
     
 class GvmSignLine(models.Model):
     _name = "gvm.signcontent.line"
-    _order = 'sequence, check_date'
+    _order = 'sequence'
 
+    @api.model
+    def default_sequence(self):
+        _logger.warning("sequence%s"%self.env['ir.sequence'].next_by_code('gvm.signline.number'))
+        return  self.env['ir.sequence'].next_by_code('gvm.signline.number')
+    
     name = fields.Many2one ('hr.employee' ,string = 'name', required=True)
-    sequence = fields.Integer ( ' 순번 ' )
-    check = fields.Selection ([( 'sign' , '결재' ), ( '2' , '합의' ), ( '3' , '참조' ), ( '4' , '열람' )], default='sign')
-    state = fields.Selection ([('0', '대기'),( '1' , '결재' ), ( '2' , '합의' ), ( '3' , '반려' ), ( '4' , '전결' )], default='0', readonly=True)
+    sequence = fields.Integer (' 순번 ', default=default_sequence)
+    check_mail = fields.Boolean(default=False) 
+    check = fields.Selection ([( 'sign' , '결재' ), ( '2' , '합의' ), ( '3' , '통보' )], default='sign')
+    state = fields.Selection ([('0', '대기' ),( '1' , '결재' ), ( '2' , '합의' ), ( '3' , '통보' ), ( '4' , '반려' )], default='0', readonly=True)
     sign = fields.Many2one ('gvm.signcontent' , 'sign')
     check_date = fields.Datetime('check_date', readonly=True)
     next_check = fields.Char(string='결재예정', compute='_compute_next_check',store=True)
-
-    @api.depends('state')
-    def _compute_next_check(self):
-        for record in self:
-          last = record.search([('state','=','0'),('sign','=',record.sign.id)],limit=1).name
-          _logger.warning('last user = %s' % last)
-          record.next_check = last
+    reason = fields.Text('reason', readonly=True)
+    check_reference = fields.Char(string='통보자확인')
+    check_checkname = fields.Char(string='결재자확인')

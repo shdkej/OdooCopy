@@ -7,6 +7,7 @@ from dateutil.relativedelta import relativedelta
 from odoo.exceptions import UserError
 from odoo import models, fields, api, exceptions, _, SUPERUSER_ID
 from datetime import datetime
+from odoo.http import content_disposition, dispatch_rpc, request
 import requests
 import logging
 import sys
@@ -39,6 +40,7 @@ class HrEmployee(models.Model):
 
     @api.multi
     def _compute_manual_attendance(self):
+        hr_attendance = self.env['hr.attendance'].search([])
         for employee in self:
             employee.manual_attendance = employee.user_id.has_group('hr.group_hr_attendance') if employee.user_id else False
 
@@ -104,14 +106,16 @@ class HrEmployee(models.Model):
             modified_attendance = self.sudo().attendance_action_change()
         action_message['attendance'] = modified_attendance.read()[0]
         return {'action': action_message}
-   
-    #sh
-    def button_leavework(self): 
-       """ 출근과 퇴근을 사용자가 지정하여 사용할 수 있다. 사무실에서 찍은경우 사무실의 기록을 가져온다."""
-       """현재사용자 퇴근버튼을 눌렀을경우"""
-       #현재사용자의 출근시간을 찾는다.
-       gotowork = self.env['hr.timeattendance'].search([('user_id','=',self.env.uid)]).gotowork
-       _logger.warning("gotowork")
+
+    @api.multi
+    def get_outing_list(self,destination,reason):
+        hr_attendance = self.env['hr.attendance']
+#        if self.attendance_state == 'check_out':
+        hr_attendance.write({'reason':reason})
+#        elif self.attendance_state == 'check_out':
+#           hr_attendance.write({'outing_end':datetime.today()})
+        _logger.warning("1")
+        return destination,reason
 
     #sh
     def _Check_check_out_time(self):
@@ -202,7 +206,6 @@ class HrEmployee(models.Model):
 	   if attendance:
 	    #출퇴근 기준시간 보다 현재의 시간이 클경우
      	    if present_date > check_out_cut_line:
-	      #서버에 생성
               attendance.check_out = present_date
 	      attendance.check_out_place = location
 	    #출퇴근 기준시간 보다 현쟈시간이 작을경우

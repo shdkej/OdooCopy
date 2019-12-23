@@ -54,12 +54,7 @@ class GvmPurchaseProduct(models.Model):
     origin = fields.Char('Source Document', copy=False,\
         help="Reference of the document that generated this purchase order "
              "request (e.g. a sale order or an internal procurement request)")
-    partner_ref = fields.Char('Vendor Reference', copy=False,\
-        help="Reference of the sales order or bid sent by the vendor. "
-             "It's used to do the matching when you receive the "
-             "products as this reference is usually written on the "
-             "delivery order sent by your vendor.")
-    date_order = fields.Datetime('Order Date', required=True, states=READONLY_STATES, index=True, copy=False, default=fields.Datetime.now,\
+    date_order = fields.Datetime('요청일자', required=True, states=READONLY_STATES, index=True, copy=False, default=fields.Datetime.now,\
         help="Depicts the date where the Quotation should be validated and converted into a purchase order.")
     date_approve = fields.Date('Approval Date', readonly=1, index=True, copy=False)
     partner_id = fields.Many2one('res.partner', string='Vendor', required=True, states=READONLY_STATES, change_default=True, track_visibility='onchange')
@@ -70,13 +65,13 @@ class GvmPurchaseProduct(models.Model):
         default=lambda self: self.env.user.company_id.currency_id.id)
     state = fields.Selection([
         ('write', '작성'),
-        ('draft', '발주검토완료'),
+        ('draft', '발주진행'),
         ('sent', 'RFQ Sent'),
-        ('modify', '수정됨'),
         ('to approve', 'To Approve'),
         ('purchase', 'Purchase Order'),
-        ('done', '완료'),
-        ('cancel', '취소')
+        ('done', '발주진행완료'),
+        ('cancel', '발주취소'),
+        ('order_cancel','결재취소')
         ], string='Status', readonly=True, index=True, copy=False, default='write', track_visibility='onchange')
     notes = fields.Text('Terms and Conditions')
 
@@ -125,16 +120,9 @@ class GvmPurchaseProduct(models.Model):
     drawing_man = fields.Many2one('res.users','설계자')
     order_man = fields.Many2one('res.users','발주자',default=lambda self:self.env.uid)
     permit_man = fields.Many2one('res.users','검토자')
-    category = fields.Selection([('1','기구/가공품'),('2','기구/요소품'),('3','전장/가공품'),('4','전장/요소품'),('5','기타')])
-
     product = fields.One2many('gvm.product','purchase_by_maker',string='발주', index=True,track_visibility="onchange")
     purchase_product = fields.Many2many('gvm.product',string='product')
-    release_place = fields.Many2one('gvm.product.release',string='출고지')
-
-    #sh
-    request = fields.Char(string='재발주 요청 사유', index=True, track_visibility="onchange")
-    charge = fields.Char(string='출고 담당자', index=True)
-
+    
     @api.depends('order_man')
     def _compute_department(self):
       for record in self:
@@ -195,18 +183,16 @@ class GvmPurchaseProduct(models.Model):
         args = args or []
         domain = []
         if name:
-            domain = ['|', ('name', operator, name), ('partner_ref', operator, name)]
+            domain = [('name', operator, name)]
         pos = self.search(domain + args, limit=limit)
         return pos.name_get()
 
     @api.multi
-    @api.depends('name', 'partner_ref')
+    @api.depends('name')
     def name_get(self):
         result = []
         for po in self:
             name = po.name
-            if po.partner_ref:
-                name += ' ('+po.partner_ref+')'
             if po.amount_total:
                 name += ': ' + formatLang(self.env, po.amount_total, currency_obj=po.currency_id)
             result.append((po.id, name))
@@ -214,6 +200,7 @@ class GvmPurchaseProduct(models.Model):
 
     @api.model
     def create(self, vals):
+        _logger.warning("test")
         if vals.get('name', 'New') == 'New':
             vals['name'] = self.env['ir.sequence'].next_by_code('purchase.order') or '/'
         res = super(GvmPurchaseProduct, self).create(vals)
@@ -256,7 +243,7 @@ class GvmPurchaseProduct(models.Model):
 
     @api.multi
     def unlink(self):
-        state = ['write','cancel']
+        state = ['write','cancel','order_cancel']
         for order in self:
 	    if order.product:
 	      for pd in order.product:
@@ -334,11 +321,6 @@ class GvmPurchaseProduct(models.Model):
         if self.picking_type_id.default_location_dest_id.usage != 'customer':
             self.dest_address_id = False
 
-    @api.onchange('release_place')
-    def _onchange_release_place(self):
-      for record in self.product:
-          record.release_place = self.release_place.id
-
     @api.multi
     def action_rfq_send(self):
         '''
@@ -386,15 +368,10 @@ class GvmPurchaseProduct(models.Model):
     def button_send_quotation(self): 
         if self.product:
 	  for product in self.product:
-	    product.write({'state':'purchase'
-	    })
-
+	    product.write({'state':'purchase'})
             # Find Stock
             stock = self.env['product.product'].search([('model','ilike',product.name),
                                                         ('stock','>=',1)],limit=1)
-            if not stock:
-              stock = self.env['product.product'].search([('model','ilike',product.specification),
-                                                          ('stock','>=',1)],limit=1)
 
             if stock:
               #sh
@@ -462,7 +439,20 @@ class GvmPurchaseProduct(models.Model):
         return {}
 
     @api.multi
+    def button_reorder(self):
+        for order in self:
+	    if order.product:
+	      for pd in order.product:
+	        pd.state = 'no'
+        self.write({'state': 'write'})
+        return {}
+
+    @api.multi
     def button_draft(self):
+        for order in self:
+	    if order.product:
+	      for pd in order.product:
+	        pd.state = 'purchaseing'
         self.write({'state': 'draft'})
         return {}
 
@@ -518,6 +508,10 @@ class GvmPurchaseProduct(models.Model):
 
     @api.multi
     def button_done(self):
+        for order in self:
+	    if order.product:
+	      for pd in order.product:
+	        pd.state = 'purchase_complete'
         self.write({'state': 'done'})
 
     @api.multi

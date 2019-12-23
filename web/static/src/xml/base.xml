@@ -299,7 +299,8 @@
 
 <div t-name="ListView" class="table-responsive">
     <table class="o_list_view table table-condensed table-striped">
-        <t t-set="columns_count" t-value="visible_columns.length + (options.selectable ? 1 : 0) + (options.deletable ? 1 : 0)"/>
+        <!--<t t-set="columns_count" t-value="visible_columns.length + (options.selectable ? 1 : 0) + (options.deletable ? 1 : 0)"/>-->
+        <t t-set="columns_count" t-value="visible_columns.length"/>  
         <thead>
             <tr t-if="options.header">
                 <t t-foreach="columns" t-as="column">
@@ -307,7 +308,8 @@
                         <t t-esc="column.string"/>
                     </th>
                 </t>
-		<th t-if="options.selectable || columns_count>6" class="o_list_record_selector" width="1">
+		<!--<th t-if="options.selectable || columns_count>6" class="o_list_record_selector" width="1">-->
+		<th class="o_list_record_selector" width="1">
                     <div class="o_checkbox">
                         <input type="checkbox"/>
                     </div>
@@ -315,7 +317,7 @@
                 <t t-foreach="columns" t-as="column">
                     <th t-if="!column.meta and column.invisible !== '1'" t-att-data-id="column.id"
                         t-attf-class="#{((options.sortable and column.sortable and column.tag !== 'button') ? 'o_column_sortable' : '')}"
-                            t-att-width="150">
+                        t-att-width="150">
                         <t t-if="column.tag !== 'button'"><t t-raw="column.heading()"/></t>
                     </th>
                 </t>
@@ -324,7 +326,8 @@
         </thead>
         <tfoot>
             <tr>
-                <td t-if="options.selectable || columns_count>5"/>
+                <!--<td t-if="options.selectable || columns_count>5"/>-->
+                <td />
                 <td t-foreach="aggregate_columns" t-as="column" t-att-data-field="column.id" t-att-title="column.label">
                 </td>
                 <td t-if="options.deletable" class="o_list_record_delete"/>
@@ -365,7 +368,8 @@
     <t t-foreach="columns" t-as="column">
         <td t-if="column.meta"> </td>
     </t>
-    <td t-if="options.selectable || columns.length>5" class="o_list_record_selector">
+    <!--<td t-if="options.selectable || columns.length>5" class="o_list_record_selector">-->
+    <td class="o_list_record_selector">
         <t t-set="checked" t-value="options.select_view_id == record.get('id') ? 'checked' : null"/>
         <input t-if="options.radio" type="radio" name="radiogroup" t-att-checked="checked"/>
         <div t-if="!options.radio" class="o_checkbox">

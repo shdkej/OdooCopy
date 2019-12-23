@@ -896,94 +896,101 @@ class DataSet(http.Controller):
 	   if name:
 	     product_id.receiving_man = name
 	   else:
-	     product_id.receiving_man = request.env.user.name
+	     product_id.receiving_man = request.env.user.namei
 
     @http.route('/web/dataset/comment', type='json', auth="user",csrf=False)
     def gvm_comment(self, ids, comment, state=None):
-      index = ['request_check1','request_check2','request_check3','request_check4','request_check5','request_check6']
-
-      _logger.warning('start comment')
+      _logger.warning('comment start')
+      #현재페이지의 결재문서 번호를 가져온다.
       Model = request.env['gvm.signcontent']
       sign_id = Model.search([('id','=',ids)],limit=1)
-      index_list = []
-      for i in index:
-	if sign_id[i]:
-	  index_list.append(i)
-      state_id = index.index(index_list[0]) + 1
       name = request.env.user.name
-      uid = request.env['res.users'].search([('name','=',name)]).id
-      check = 'check'+str(state_id)
-      check_date = 'check'+str(state_id)+'_date'
-      request_check = 'request_check'+str(state_id)
-      # state 입력을 안받으면
+      receiver = []
+
+#_______________결재라인관리
+      #결재버튼 클릭시
       if not state:
-        #sh_20191119
-        #업무요청확인서
-        if sign_id.sign_ids == 10:
-          state = check
-          #결제완료
-          if len(index_list) < 3:
-             state = 'done'
-          #업무진행완료
-          if len(index_list) == 1:
-             state = 'workdone'
-        else:
-          state = check
-          if len(index_list) < 2:
-             state = 'done'
-      #sh_20191119
-      #반려시, 기안자에게 메일을 보낸다.
+        _logger.warning('click permit')
+        #결재(결재자가 결재시 통보자도 같이 결재된다)
+        for record in sign_id.sign_line:
+          if record.check_mail == True and record.check_date == False:
+            #결재자
+            if record.check == 'sign' or record.check == '2':
+               record.sudo(1).write({
+                    'check_date':datetime.datetime.now(),
+                    'check_checkname':name,
+                    'state':'1',
+                    'reason':comment
+               })
+            #통보자
+            else:
+               record.sudo(1).write({
+                    'check_date':datetime.datetime.now(),
+                    'check_checkname':name,
+                    'state':'1',
+               })
+          if record.check_date == False:
+            #진행상태: 진행중
+            if record.state == '0':
+              state = 'ing'
+            #sign_line 결재 상태일떄
+          if record.state == '1':
+              state = 'done'
+      #반려버튼 클릭시
+      else:
+        _logger.warning('click deny')
+        if state == 'cancel':
+          for record in sign_id.sign_line:
+            #결재시간이없고 자기자신일경우
+            if record.check_date == False:
+              if record.name.name == name:
+                    record.write({
+                        'state':'4',
+                        'reason':comment,
+                        'check_checkname':name,
+                        'check_date':datetime.datetime.now()
+                    })
+      sign_id.sudo(1).write({'state':state})
+
+#_____________________메일보내기
+      check = False
+      post = '결재문서'
+      Flag = 0
+      for record in sign_id.sign_line:
+        #결재라인: 다음 결재자에게 메일보내기
+        if record.check_date == False:
+          if (record.check == 'sign' or record.check == '2') and check != True:
+             receiver.append(record.name)
+             _logger.warning("record%s"%record)
+             record.write({'check_mail':True})
+             check = True
+          elif record.check == '3':
+             receiver.append(record.name)
+             _logger.warning("record%s"%record)
+             record.write({'check_mail':True})
+          else:
+             break
+          #반려시 메일보내기
+          if record.check != '3' and state == 'cancel':
+            post = '님에 의하여 반려되었습니다. 결재문서를 확인하세요.'
+            receiver.append(record.name)
+            Flag = 1
+
+      _logger.warning('send mail')
       sender = request.env.user.name
-      receiver = request.env['hr.employee'].search([('name','=',name)])
-      #제목
-      #gvm/model/sendmail.py에 양식이있음. 같이변경해야함.
-      post = '님에 의하여 반려되었습니다. 결재문서를 확인하세요.'      
       #메타데이터 id
       post_id = sign_id.id
       #문서번호(S0001)
       po_num = str(sign_id.name)
       #사용모델위치
       model_name = 'gvm.signcontent'
-      #링크에서 찾아서 쓰면됨.
+      #링크에서 찾아서 쓰면됨
       #현재페이지 위치 찾는 용도(리스트)
-      menu_id = "320"
-      #링크에서 찾아서 쓰면됨.
-      #현재페이지 위치 찾는 용도(폼)
-      action_id = ""
-      #반려일경우 
-      Flag = True
-      if state == 'cancel':
-         Flag = False
-       
-      _logger.warning('send mail')
+      menu_id = "316"
+      action_id = "423"
       send_mail = gvm_mail().gvm_send_mail(sender, receiver, post, post_id, po_num, model_name, menu_id, action_id,Flag)
-
-      if sign_id.reason and comment:
-        _logger.warning("test_sh")
-        if state == 'cancel':
-          comment = '* ' + comment + ' *'
-        comment = sign_id.reason + "\n" + comment
-
-      if sign_id[request_check].name == name:
-        #sh_20191119
-        #업무요청확인서
-        #코멘트가 없을경우 작성하지않는다.
-        if comment == '':
-           comment = comment
-        else :
-            comment = "\n" + comment + '_' + name
-        sign_id.sudo(1).write({
-           #sh_20191119
-           #업무요청확인서
-           #코멘트작성
-           'reason':comment,
-           'state':state,
-	   check:uid,
-	   check_date:datetime.datetime.now(),
-	   request_check:False,
-        })
-        _logger.warning('write complete')
-      _logger.warning('comment complete')
+      _logger.warning('comment finish')
+        
 
     @http.route('/web/dataset/search_read', type='json', auth="user")
     def search_read(self, model, fields=False, offset=0, limit=False, domain=None, sort=None):
