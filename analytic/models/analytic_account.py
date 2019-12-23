@@ -126,6 +126,19 @@ class AccountAnalyticLine(models.Model):
     work_time = fields.Float('작업시간', default=0.0,compute='_compute_basic_cost', search='_search_work_time')
     location = fields.Selection([('1','사내'),('2','사외'),('3','해외출장')],string='업무장소', default='1')
 
+    @api.multi
+    def write(self, vals):
+        if vals.get('project_id'):
+            project = self.env['project.project'].browse(vals.get('project_id'))
+            vals['account_id'] = project.analytic_account_id.id
+        for record in self:
+	     if self.env.user.name != record.user_id.name and self.env.uid != 1:
+               raise UserError(_('본인 외 수정 불가'))
+        res = super(AccountAnalyticLine, self).write(vals)
+        res.id.write({'lunch':self.get_lunch_count()})
+        self.calculate_work_time()
+        _logger.warning("write")
+        return res
 
     @api.depends('date_from','date_to','holiday')
     def _compute_basic_cost(self):
@@ -139,7 +152,7 @@ class AccountAnalyticLine(models.Model):
 
            record.write({'lunch':record.get_lunch_count()})
            record.work_time = (d1 - d2).total_seconds()/3600 - int(record.lunch)
-           self.calculate_work_time()
+           #self.calculate_work_time()
 
            day_end_standard = d2.replace(hour=19, minute=00)
 	   if d2.year <= 2019 and d2.month < 4:
@@ -226,7 +239,7 @@ class AccountAnalyticLine(models.Model):
     @api.onchange('date_from','date_to')
     def _onchange_lunch(self):
         _logger.warning('onchange_lunch %s' % self.lunch)
-        #self.write({'lunch':self.get_lunch_count()})
+        self.write({'lunch':self.get_lunch_count()})
 
     def get_lunch_count(self):
          if self.date_to and self.date_from:
@@ -331,4 +344,4 @@ class AccountAnalyticLine(models.Model):
           self.date_to = same_day
 	#sh
 	#세콤기록시간을 입력하지 않을경우, 현재 입력날짜로 변환
-	self.date = self.date_to
+	#self.date = self.date_to
