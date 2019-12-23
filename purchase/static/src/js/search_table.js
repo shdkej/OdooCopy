@@ -80,7 +80,6 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
                     return true;
                 }
             })
-            //4
             if (child_project.length != 0){
                 //child_project.map(c=>c.rate = item.id+0.1);
                 child_project.map(function(c){
@@ -167,7 +166,6 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
                         item.bad_state,             //7
                         item.purchase_by_maker[1],  //8
                         ]);
-                    self.data_id.push(item.id);
                 }
             })
         }).then(function(){self.loading();});
@@ -294,10 +292,11 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         var selected_part = $('#gvm_search_product_part option:selected');
         if (project_selected != false){
             $.each(self.data, function(id, row){
-                row[0] = self.data_id[id]; 
-                row[9] = project_selected;
+                //발주서 생성 시 필요한 정보 입력
+                row[0] = self.data_id[id];
+                row[9] = project_selected; // 0, 9, 10 에 할당된 게 없어 id, project_id, unit_id 입력
                 row[10] = selected_part.text();
-                if (row[8] == false){
+                if (row[8] == false){ // 발주서이름이 없는 항목들 모두 발주 내도록 한다
                     purchase_list.push(row);
                 }
             })
@@ -361,7 +360,6 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
                     target: 'new',
                     view_type: 'form',
                     context: ctx,
-                    view_id: "project_project_view_form_simplified", 
                     views: [[view_id,'form']],
                 };
                 self.do_action(action);

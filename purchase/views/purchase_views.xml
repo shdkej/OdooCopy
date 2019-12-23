@@ -396,6 +396,7 @@
                                     <field name="emergency"/>
                                     <field name="stock_item"/>
                                     <field name="release_place" invisible="1"/>
+                                    <field name="category" invisible="1"/>
                                     <button name="button_destination" type="object" string="입고" class="oe_highlight" attrs="{'invisible' :[('destination_date','!=',False)]}" confirm="입고되었습니까?"/>
                                     <button name="button_receiving" type="object" string="출고" class="oe_highlight" attrs="{'invisible' :[('state','!=','request_receiving')]}" confirm="출고 승인 하시겠습니까?" groups="purchase.group_purchase_manager"/>
                                 </tree>

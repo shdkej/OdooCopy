@@ -135,7 +135,7 @@ class ProductProduct(models.Model):
     maker = fields.Char(string = '제조사', index=True, track_visibility='alaways')
     explain = fields.Char(string = '설명', index=True, track_visibility='alaways')
     storage_location = fields.Char(string = '보관위치',index=True, track_visibility='alaways')
-    stock = fields.Char(string = '재고', index=True, default=1.0, track_visibility='alaways')
+    stock = fields.Integer(string = '재고', index=True, default=1, track_visibility='alaways')
     meterial = fields.Char(string = '재질', index=True, track_visibility='alaways')
     reason = fields.Char(string = '재고 사유', index=True, track_visibility='alaways')
     team = fields.Selection([('total','전체'),
@@ -174,7 +174,6 @@ class ProductProduct(models.Model):
         "Medium-sized image", compute='_compute_images', inverse='_set_image_medium',
         help="Image of the product variant (Medium-sized image of product template if false).")
 
-    stock = fields.Integer('stock')
     standard_price = fields.Float(
         'Cost', company_dependent=True,
         digits=dp.get_precision('Product Price'),

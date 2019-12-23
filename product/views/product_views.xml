@@ -151,6 +151,8 @@
             <field name="inherit_id" ref="product.product_template_search_view"/>
             <field name="arch" type="xml">
                 <field name="attribute_line_ids" position="replace">
+                    <field name="ponum"/>
+                    <filter name="ponum" string="사용된 재고" domain="[('ponum','!=',False)]"/>
                     <field name="attribute_value_ids" groups="product.group_product_variant"/>
                     <field name="product_tmpl_id" string="Product Template"/>
                 </field>

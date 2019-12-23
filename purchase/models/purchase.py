@@ -373,7 +373,6 @@ class PurchaseOrder(models.Model):
             if self.env.context.get('send_rfq', False):
                 template_id = ir_model_data.get_object_reference('purchase', 'email_template_edi_purchase')[1]
             elif self.env.context.get('prepayment', True):
-	        _logger.warning("test")
                 template_id = ir_model_data.get_object_reference('purchase', 'email_template_edi_purchase_prepayment')[1]
             elif self.env.context.get('send_rfq', True):
                 template_id = ir_model_data.get_object_reference('purchase', 'email_template_edi_purchase_done')[1]

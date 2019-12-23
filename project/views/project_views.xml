@@ -101,7 +101,7 @@
                     <div class="oe_title">
                         <label for="name" class="oe_edit_only" string="프로젝트명"/>
                         <h1><field name="name" placeholder="Project Name" required="True"/></h1>
-                        <label for="site" class="oe_edit_only"/>
+                        <label for="sites" class="oe_edit_only"/>
                         <h1><field name="sites" placeholder="Site" required="True"/></h1>
                         <div name="options_active" class="oe_edit_only">
                             <div>
@@ -124,15 +124,14 @@
                         </page>
                         <page name="manage" string="관리" groups="project.group_project_manager">
                             <group name="work">
-                                <group>
-                                    <field name="line_ids" string="공수">
-                                        <tree editable="true">
-                                            <field name="name" string="작업명"/>
-                                            <field name="work_time" string="업무시간" sum="Total amount"/>
-                                            <field name="unit_amount" string="잔업시간" sum="Total amount"/>
-                                        </tree>
-                                    </field>
-                                </group>
+                                <field name="line_ids" string="공수">
+                                    <tree>
+                                        <field name="user_id"/>
+                                        <field name="name" string="작업명"/>
+                                        <field name="work_time" string="업무시간" sum="Total amount"/>
+                                        <field name="unit_amount" string="잔업시간" sum="Total amount"/>
+                                    </tree>
+                                </field>
                             </group>
                         </page>
                         <page name="emails" string="기타" attrs="{'invisible': [('alias_domain', '=', False)]}">
@@ -207,7 +206,7 @@
                 <field name="sequence" widget="handle"/>
                 <field name="message_needaction" invisible="1"/>
                 <field name="active" invisible="1"/>
-                <field name="site" string="Site"/>
+                <field name="sites" string="Site"/>
                 <field name="name" string="Project Name"/>
                 <field name="work_time" string="업무시간"/>
                 <field name="user_id" string="Project Manager"/>
@@ -267,14 +266,13 @@
                     <group>
                         <group>
                             <field name="code" class="o_project_name oe_inline" string="프로젝트 코드" required="True"/>
-                            <field name="site" class="o_project_name oe_inline" string="사이트"/>
-                            <field name="sites" class="o_project_name oe_inline" string="사이트"/>
                             <field name="name" class="o_project_name oe_inline"
                                 string="Project Name" placeholder="e.g. Office Party"/>
+                            <field name="sites" class="o_project_name oe_inline" string="사이트"/>
                             <field name="world" string="해외 프로젝트"/>
                         </group>
                         <group name='options' invisible="1">
-                            <field name="tasks" string="작업">
+                            <field name="tasks" string="작업" invisible="1">
                                 <tree editable="true">
                                     <field name="name" string="작업명"/>
                                 </tree>
@@ -309,7 +307,7 @@
         <field name="res_model">project.project</field>
         <field name="view_type">form</field>
         <field name="view_mode">form</field>
-        <field name="view_id" ref="project_product_view_form_simplified"/>
+        <field name="view_id" ref="project_project_view_form_simplified"/>
         <field name="target">new</field>
     </record>
 
