@@ -638,7 +638,7 @@ class GvmSignContent(models.Model):
       _logger.warning('comment start')
       #현재페이지의 결재문서 번호를 가져온다.
       Model = request.env['gvm.signcontent']
-      sign_id = Model.search([('id','=',ids)],limit=1)
+      sign_id = Model.search([('id','=',ids.id)],limit=1)
       name = request.env.user.name
       receiver = []
 
@@ -652,7 +652,7 @@ class GvmSignContent(models.Model):
             #결재자
             if record.check == 'sign' or record.check == '2':
                record.sudo(1).write({
-                    'check_date':datetime.datetime.now(),
+                    'check_date':datetime.now(),
                     'check_checkname':name,
                     'state':'1',
                     'reason':comment
@@ -660,7 +660,7 @@ class GvmSignContent(models.Model):
             #통보자
             else:
                record.sudo(1).write({
-                    'check_date':datetime.datetime.now(),
+                    'check_date':datetime.now(),
                     'check_checkname':name,
                     'state':'1',
                })
@@ -683,7 +683,7 @@ class GvmSignContent(models.Model):
                         'state':'4',
                         'reason':comment,
                         'check_checkname':name,
-                        'check_date':datetime.datetime.now()
+                        'check_date':datetime.now()
                     })
       sign_id.sudo(1).write({'state':state})
 
