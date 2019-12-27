@@ -1,24 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-        <record id="project_form_sign_inherited" model="ir.ui.view">
-            <field name="name">project inherited sign</field>
-            <field name="model">project.project</field>
-            <field name="inherit_id" ref="project.edit_project"/>
-            <field name="priority" eval="14"/>
-            <field name="arch" type="xml">
-                 <xpath expr="//page[@name='manage']" position="inside">
-		      <group string='sign' name='sign'>
-                      <field name="sign" domain="[('sign_ids','=',3)]">
-		        <tree>
-			  <field name="user_id"/>
-			  <field name="date_from"/>
-			  <field name="date_to"/>
-			  <field name="had_cost"/>
-			  <field name="finally_cost"/>
-			</tree>
-		      </field>
-		      </group>
-                </xpath>
-            </field>
-        </record>
+    <record id="project_form_sign_inherited" model="ir.ui.view">
+        <field name="name">project inherited sign</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="priority" eval="14"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='manage']" position="inside">
+                <group string='비용정산' name='sign'>
+                    <field name="sign" domain="[('sign_ids','=',3)]" string="결재문서">
+                        <tree>
+                            <field name="user_id" string="이름"/>
+                            <field name="date_from" string="시작시간"/>
+                            <field name="date_to" string="종료시간"/>
+                            <field name="had_cost"/>
+                            <field name="finally_cost" string="총 비용" sum="Total amount"/>
+                        </tree>
+                    </field>
+                </group>
+            </xpath>
+        </field>
+    </record>
+    <record id="project_pivot_sign_inherited" model="ir.ui.view">
+        <field name="name">project inherited sign</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_project_pivot"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="user_cost" type="measure"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="project_tree_sign_inherited" model="ir.ui.view">
+        <field name="name">project inherited sign</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="user_cost" string="비용정산" widget="integer" groups="purchase.group_purchase_manager"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>

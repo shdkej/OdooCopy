@@ -44,6 +44,7 @@ class GvmProjectProject(models.Model):
     _inherit = 'project.project'
 
     product = fields.One2many('gvm.product', 'project_ids',string='product')
+    product_cost = fields.Float('자재비용', compute='_compute_product_cost', store=True)
 
     @api.depends('name')
     def _compute_percent(self):
@@ -58,3 +59,10 @@ class GvmProjectProject(models.Model):
         #if cal:
         #  record.percent = float(a)/float(total)*100
 
+    @api.depends('product')
+    def _compute_product_cost(self):
+      for record in self:
+        total_product_cost = 0
+        for pd in record.product:
+          total_product_cost += pd.total_price
+        record.product_cost = total_product_cost

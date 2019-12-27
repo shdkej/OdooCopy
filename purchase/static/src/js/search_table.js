@@ -80,7 +80,6 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
                     return true;
                 }
             })
-            //4
             if (child_project.length != 0){
                 //child_project.map(c=>c.rate = item.id+0.1);
                 child_project.map(function(c){
@@ -294,10 +293,11 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         var selected_part = $('#gvm_search_product_part option:selected');
         if (project_selected != false){
             $.each(self.data, function(id, row){
-                row[0] = self.data_id[id]; 
-                row[9] = project_selected;
+                //발주서 생성 시 필요한 정보 입력
+                row[0] = self.data_id[id];
+                row[9] = project_selected; // 0, 9, 10 에 할당된 게 없어 id, project_id, unit_id 입력
                 row[10] = selected_part.text();
-                if (row[8] == false){
+                if (row[8] == false){ // 발주서이름이 없는 항목들 모두 발주 내도록 한다
                     purchase_list.push(row);
                 }
             })
@@ -346,17 +346,25 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         var project_selected = $('#gvm_search_product.comboTreeInputBox').val();
         var Project = new Model('project.project');
         var project_id = Project.query(['id']).filter([['name','=',project_selected]]).all().then(function(id){
-            var prj_id = id[0].id
-            var action = {
-                type: 'ir.actions.act_window',
-                res_model: 'project.project',
-                res_id: prj_id,
-                view_mode: 'form',
-                target: 'new',
-                view_type: 'form',
-                views: [[false, 'form']],
-            };
-            self.do_action(action);
+            var prj_id = id[0].id;
+            var model_obj = new Model('ir.model.data');
+            model_obj.call('get_object_reference', ['project','project_product_view_form_simplified']).then(function(result){
+                var view_id = result[1];
+                var ctx = {
+                    'view_product_menu':0
+                }
+                var action = {
+                    type: 'ir.actions.act_window',
+                    res_model: 'project.project',
+                    res_id: prj_id,
+                    view_mode: 'form',
+                    target: 'new',
+                    view_type: 'form',
+                    context: ctx,
+                    views: [[view_id,'form']],
+                };
+                self.do_action(action);
+            });
         })
         //new data.DataSet(this, model, undefined)
         //        .create({'name':name,'project_id':project_id,'user_id':1,'stage_id':18}, undefined);

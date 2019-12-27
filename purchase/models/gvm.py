@@ -150,6 +150,10 @@ class GvmProduct(models.Model):
     partner_id = fields.Char('업체명',store=True, compute='_compute_partner')
     partner_ids = fields.Many2one('res.partner','업체',domain='[("supplier","=",True)]')
     sequence_num = fields.Char('번호')
+<<<<<<< HEAD
+=======
+    category = fields.Selection([('1','기구/가공품'),('2','기구/요소품'),('3','전장/가공품'),('4','전장/요소품'),('5','기타')], string="분류")
+>>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
     purchase_order_new = fields.Boolean('new_purchase')
     attachment = fields.Many2many('ir.attachment', domain="[('res_model','=','gvm.product')]", string='도면', compute='_compute_attachment')
     title = fields.Boolean('invisible')
@@ -172,11 +176,11 @@ class GvmProduct(models.Model):
 	], string='불량유형', default='A')
     release_place = fields.Many2one('gvm.delivery.release',string='출고지')
     sub_id = fields.Char('sub_id')
+    image = fields.Binary("image")
 
     def _generate_order_by(self, order_spec, query):
 	my_order = "case when substring(sequence_num from '^P') IS NULL then substring(sequence_num from '^\d+$')::int end, sequence_num"
 	if order_spec:
-	   _logger.warning(order_spec)
 	   return super(GvmProduct,self)._generate_order_by(order_spec,query) + "," + my_order
 	return " order by " + my_order
 
@@ -255,7 +259,11 @@ class GvmProduct(models.Model):
       else:
        record.order_man = record.purchase_by_maker.create_uid.name
        record.drawing_man = record.purchase_by_maker.create_uid.name
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
     @api.depends('purchase_by_maker.line_count','original_count')
     def _compute_total_count(self):
      for record in self:
@@ -279,9 +287,9 @@ class GvmProduct(models.Model):
 
     @api.multi
     def button_destination(self):
-        self.write({'destination_date': datetime.today(), 
-	            'destination_man': self.env.user.name,
-		    'state': 'destination'})
+        record.write({'destination_date': datetime.today(), 
+                      'destination_man': self.env.user.name,
+                      'state': 'destination'})
         return {}
 
     @api.multi
@@ -327,7 +335,27 @@ class GvmProduct(models.Model):
 
     @api.multi
     def purchase_project_view(self):
-        cc = {'active_id':'21'}
+        analytic = self.env['account.analytic.line'].search([])
+        for a in analytic:
+          if a.date_to and a.date_from:
+           fmt = '%Y-%m-%d %H:%M:%S'
+           td = timedelta(hours=9)
+           d1 = datetime.strptime(a.date_to,fmt) + td #퇴근
+           d2 = datetime.strptime(a.date_from,fmt) + td #출근
+           a.work_time = (d1 - d2).total_seconds() / 3600
+        for record in self.env['project.project'].search([]):
+          total_work_time = 0
+          for line_id in record.line_ids:
+            total_work_time += line_id.work_time
+          record.work_time = total_work_time
+          total_product_cost = 0
+          for pd in record.product:
+            total_product_cost += pd.total_price
+          record.product_cost = total_product_cost
+          total_sign_cost = 0
+          for sign in record.sign:
+            total_sign_cost += sign.finally_cost
+          record.user_cost = total_sign_cost
         return {
             'domain': ['id','=',21],
             'name': _('Project Manage'),
@@ -460,6 +488,39 @@ class GvmProduct(models.Model):
                   })
           for np in vals:
 	    newPo.write({'product':[(4, int(repr(np[0]).encode('utf-8')))]})
+
+    def gvm_onchange_state(ids, state, name):
+        Model = request.env['gvm.product']
+        for record in ids:
+           product_id = Model.search([('id','=',record.id)],limit=1)
+           product_id.state = state
+           if state == 'destination':
+             product_id.destination_date = datetime.today()
+             if name:
+               product_id.destination_man = name
+             else:
+               product_id.destination_man = request.env.user.name
+           if state == 'done':
+             product_id.receiving_date = datetime.today()
+             if name:
+               product_id.receiving_man = name
+             else:
+               product_id.receiving_man = request.env.user.name
+
+    def gvm_change_purchase(ids, record_id, state='draft'):
+        if record_id == "":
+            record_id = request.env['purchase.order'].create({})
+        Model = request.env['gvm.product']
+        purchase_id = request.env['purchase.order'].search([('id','=',record_id)],limit=1)
+        purchase_id.state = state
+        att = purchase_id.attachment
+        for record in ids:
+           product_id = Model.search([('id','=',record.id)],limit=1)
+           product_id.purchase = record_id
+           if att:
+                for at in att:
+                    if at.name.find(product_id.name) == -1:
+                        purchase_id.write({'attachment':[(3, at.id)]})
 
 class GvmProductReleasePlace(models.Model):
     _name = "gvm.product.release"

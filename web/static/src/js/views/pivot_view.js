@@ -165,6 +165,50 @@ var PivotView = View.extend({
             this.sidebar.appendTo($node);
         }
     },
+    gvm_search: function(){
+        var self = this;
+        var Project = new Model('project.project');
+        Project.query(['name'],['id']).all().then(function(id){
+              var tree_data = [];
+              $.each(id, function(index, item){
+                tree_data[index] = ({'id':item.id,'title':item.name, 'rate':1});
+              });
+              return tree_data;
+           }).then(function(ar){
+            var sort_array = self.sort_tree(ar);
+            var combotree = $('#gvm_search').comboTree({
+                source: sort_array
+            });
+        });
+    },
+    // 이름을 기준으로 tree 정렬(ex. ssm ak > ssm ak #1)
+    sort_tree: function(project_dic) {
+        var second_array = [];
+        // id, title, subs, rate
+        $.each(project_dic, function(index, item){
+            // 자신과 이름이 같은게 있으면 리스트 따로 저장
+            var child_project = project_dic.filter(function(c){
+                if (c.title != item.title && c.title.indexOf(item.title) != -1){
+                    return true;
+                }
+            })
+            //4
+            if (child_project.length != 0){
+                //child_project.map(c=>c.rate = item.id+0.1);
+                child_project.map(function(c){
+                    c.rate = item.id+0.1;
+                })
+                item.subs = child_project;
+            }
+        });
+
+        // rate가 높은것은 project_dic에서 제거
+        var tree_array = project_dic.filter(function(c){
+            return c.rate == 1;
+        });
+
+        return tree_array;
+    },
     prepare_fields: function (fields) {
         var self = this,
             groupable_types = ['many2one', 'char', 'boolean', 
@@ -416,6 +460,7 @@ var PivotView = View.extend({
         })).then(function () {
             var data = Array.prototype.slice.call(arguments);
             self.prepare_data(data, should_update);
+            self.gvm_search();
         });
     },
     prepare_data: function (data, should_update) {
@@ -674,12 +719,14 @@ var PivotView = View.extend({
             $header.appendTo($row);
             for (j = 0; j < length; j++) {
                 value = formats.format_value(rows[i].values[j], {type: measure_types[j % nbr_measures], widget: widgets[j % nbr_measures]});
+                console.log(rows[i]);
                 $cell = $('<td>')
                             .data('id', rows[i].id)
                             .data('col_id', rows[i].col_ids[Math.floor(j / nbr_measures)])
                             .toggleClass('o_empty', !value)
                             .text(value)
-                            .addClass('o_pivot_cell_value text-right');
+                            .addClass('o_pivot_cell_value text-right')
+                            .attr('title',value);
                 if (((j >= length - this.active_measures.length) && display_total) || i === 0){
                     $cell.css('font-weight', 'bold');
                 }

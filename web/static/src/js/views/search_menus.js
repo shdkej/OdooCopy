@@ -300,16 +300,7 @@ return Widget.extend({
             }
         },
         'change #gvm_search': 'change_project',
-        'change #gvm_search_part': function(){
-            var part = $('#gvm_search_part option:selected').text();
-            if (this.tmp_part_name != false){
-              var remove_facet = $('.o_facet_values span:contains("'+this.tmp_part_name+'")');
-              $(remove_facet).parent().siblings('.o_facet_remove').trigger('click');
-            }
-
-            this.gvm_commit_search('1');
-            this.tmp_part_name = part;
-        },
+        'change #gvm_search_part': 'change_part',
         'click #gvm_search_export': function(){
             var project_id = $('#gvm_search.comboTreeInputBox').val();
             var url = window.location.origin;
@@ -323,19 +314,36 @@ return Widget.extend({
         this.propositions = [];
         this.custom_filters_open = false;
         this.tmp_part_name = '';
+        this.gvm_commit_search();
     },
     change_project: function(){
         var search = $('#gvm_search.comboTreeInputBox').val();
         if (search == ''){return false};//빈값일 경우 넘어가기
-        for (var i=0; i<2; i++){
-           $('.o_facet_remove').trigger('click');
-           if (this.searchview.model == 'gvm.product'){
-             this.gvm_commit_search('product');
-           }
-           else{this.gvm_commit_search();}
+
+        var remove_button = $('.o_facet_remove');
+        for (var i=0; i<remove_button.length; i++){
+            $('.o_facet_remove').trigger('click');
         }
+        if (this.searchview.model == 'gvm.product'){
+          this.gvm_commit_search('product');
+        }
+        else if (this.searchview.model == 'project.project'){
+          this.gvm_commit_search('project');
+        }
+        else{this.gvm_commit_search();}
+
         this.gvm_search_part();
         $('#gvm_search_export').show();
+    },
+    change_part: function(){
+        var part = $('#gvm_search_part option:selected').text();
+        if (this.tmp_part_name != false){
+            var remove_facet = $('.o_facet_values span:contains("'+this.tmp_part_name+'")');
+            $(remove_facet).parent().siblings('.o_facet_remove').trigger('click');
+        }
+
+        this.gvm_commit_search('1');
+        this.tmp_part_name = part;
     },
     gvm_search_part: function(){
         var Part = new Model('project.issue');
@@ -354,38 +362,43 @@ return Widget.extend({
         }
     },
     gvm_commit_search: function (state) {
-        var search = $('#gvm_search.comboTreeInputBox').val();
-        var search_part = $('#gvm_search_part option:selected').text()
         var self = this;
-        var filters = _.invoke(this.propositions, 'get_filter'),
-               filters_widgets = _.map(filters, function (filter) {
-               return new search_inputs.Filter(filter, this);
-               }),
-            filter_group = new search_inputs.FilterGroup(filters_widgets, this.searchview),
-            facets = filters_widgets.map(function (filter) {
-             if (state == 1){
-                         filter.attrs.domain[0] = ['issue','ilike', search_part];
-                         filter.attrs.string = search_part;
-             }else if(state == 'product'){
-                         filter.attrs.domain[0] = ['project_set','ilike', search];
-                         filter.attrs.string = search;
-             }else{
-                         filter.attrs.domain[0] = ['project_id','ilike', search];
-                         filter.attrs.string = search;
-             }
-             return filter_group.make_facet([filter_group.make_value(filter)]);
+        setTimeout(function(){
+        var filters = _.invoke(self.propositions, 'get_filter');
+        console.log(filters);
+        var filters_widgets = _.map(filters, function (filter) {
+               return new search_inputs.Filter(filter, self);
             });
-         filter_group.insertBefore(this.$add_filter);
-         $('<li class="divider">').insertBefore(this.$add_filter);
-         this.searchview.query.add(facets, {silent: true});
-         this.searchview.query.trigger('reset');
+        var filter_group = new search_inputs.FilterGroup(filters_widgets, self.searchview),
+            facets = filters_widgets.map(function (filter) {
+                var search = $('#gvm_search.comboTreeInputBox').val();
+                var search_part = $('#gvm_search_part option:selected').text();
+                if (state == 1){
+                            filter.attrs.domain[0] = ['issue','ilike', search_part];
+                            filter.attrs.string = search_part;
+                }else if(state == 'product'){
+                            filter.attrs.domain[0] = ['project_set','ilike', search];
+                            filter.attrs.string = search;
+                }else if(state == 'project'){
+                            filter.attrs.domain[0] = ['name','ilike', search];
+                            filter.attrs.string = search;
+                }else{
+                            filter.attrs.domain[0] = ['project_id','ilike', search];
+                            filter.attrs.string = search;
+                }
+                return filter_group.make_facet([filter_group.make_value(filter)]);
+            });
+        filter_group.insertBefore(self.$add_filter);
+        $('<li class="divider">').insertBefore(self.$add_filter);
+        self.searchview.query.add(facets, {silent: true});
+        self.searchview.query.trigger('reset');
 
-         _.invoke(this.propositions, 'destroy');
-         this.propositions = [];
-         this.append_proposition();
-         this.toggle_custom_filter_menu(false);
-         this.remove_proposition(this.$add_filter);
-
+        _.invoke(self.propositions, 'destroy');
+        self.propositions = [];
+        self.append_proposition();
+        self.toggle_custom_filter_menu(false);
+        self.remove_proposition(self.$add_filter);
+        },300);
     },
     start: function () {
         var self = this;
@@ -451,12 +464,14 @@ return Widget.extend({
     commit_search: function () {
         var filters = _.invoke(this.propositions, 'get_filter'),
             filters_widgets = _.map(filters, function (filter) {
+                console.log(filter);
                 return new search_inputs.Filter(filter, this);
             }),
             filter_group = new search_inputs.FilterGroup(filters_widgets, this.searchview),
             facets = filters_widgets.map(function (filter) {
                 return filter_group.make_facet([filter_group.make_value(filter)]);
             });
+        console.log(filters_widgets);
         filter_group.insertBefore(this.$add_filter);
         $('<li class="divider">').insertBefore(this.$add_filter);
         this.searchview.query.add(facets, {silent: true});

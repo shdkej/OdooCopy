@@ -67,7 +67,12 @@ class GvmPurchaseProduct(models.Model):
         ('write', '작성'),
         ('draft', '발주진행'),
         ('sent', 'RFQ Sent'),
+<<<<<<< HEAD
         ('to approve', 'To Approve'),
+=======
+        ('modify', '수정됨'),
+        ('to approve', '입금확인'),
+>>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
         ('purchase', 'Purchase Order'),
         ('done', '발주진행완료'),
         ('cancel', '발주취소'),
@@ -120,6 +125,12 @@ class GvmPurchaseProduct(models.Model):
     drawing_man = fields.Many2one('res.users','설계자')
     order_man = fields.Many2one('res.users','발주자',default=lambda self:self.env.uid)
     permit_man = fields.Many2one('res.users','검토자')
+<<<<<<< HEAD
+=======
+    permit_date = fields.Datetime(string='검토일자')
+    category = fields.Selection([('1','기구/가공품'),('2','기구/요소품'),('3','전장/가공품'),('4','전장/요소품'),('5','기타')])
+
+>>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
     product = fields.One2many('gvm.product','purchase_by_maker',string='발주', index=True,track_visibility="onchange")
     purchase_product = fields.Many2many('gvm.product',string='product')
     
@@ -161,6 +172,11 @@ class GvmPurchaseProduct(models.Model):
             if product.etc:
                 comment += product.etc
             product.etc = comment
+
+    @api.onchange('category')
+    def onchange_category(self):
+        for product in self.product:
+            product.category = self.category
 
     @api.depends('project_ids')
     def _compute_project_issue(self):
@@ -427,6 +443,7 @@ class GvmPurchaseProduct(models.Model):
         partner_ids = [254, 296, 298, 329, 330]
         self.sudo().write({'state': "draft",
                            'permit_man': self.env.uid,
+                           'permit_date': datetime.today(),
         })
         self.message_subscribe_users(user_ids=partner_ids)
 
@@ -518,6 +535,7 @@ class GvmPurchaseProduct(models.Model):
     def button_create_bill(self):
         bill = self.env['account.invoice']
 	invoice_line_list = []
+        self.write({'state': 'to approve'})
 	for product in self.product:
 	  invoice_line_ids = self.env['account.invoice.line'].create({'account_id':28,
 			    'name':product.product_name,

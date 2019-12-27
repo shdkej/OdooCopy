@@ -57,6 +57,10 @@ class ProjectSite(models.Model):
     sequence = fields.Integer(default=1)
     project_ids = fields.Many2many('project.project', 'project_task_type_rel', 'type_id', 'project_id', string='Projects')
 
+    _sql_constraints = [
+        ('project_site_unique', 'unique (name)', '이미 등록된 이름입니다.')
+    ]
+
 class Project(models.Model):
     _name = "project.project"
     _description = "Project"
@@ -195,7 +199,7 @@ class Project(models.Model):
     is_favorite = fields.Boolean(compute='_compute_is_favorite', string='Show Project on dashboard',
         help="Whether this project should be displayed on the dashboard or not")
     label_tasks = fields.Char(string='Use Tasks as', default='Tasks', help="Gives label to tasks on project's kanban view.")
-    tasks = fields.One2many('project.task', 'project_id', string="Task Activities")
+    tasks = fields.One2many('project.task', 'project_id', string="Task Activities", domain=[('check_department','=',True)])
     resource_calendar_id = fields.Many2one('resource.calendar', string='Working Time',
         help="Timetable working hours to adjust the gantt diagram report")
     type_ids = fields.Many2many('project.task.type', 'project_task_type_rel', 'project_id', 'type_id', string='Tasks Stages')
@@ -233,7 +237,6 @@ class Project(models.Model):
     world = fields.Boolean(string='Show Project on dashboard')
     crm = fields.Many2one('crm.lead','crm')
     timeline = fields.One2many('project.timeline','project','일정표')
-#    sign = fields.One2many('gvm.signcontent','project','sign')
     state = fields.Selection([
         ('ready','준비'),
         ('po', '발주'),
@@ -243,6 +246,8 @@ class Project(models.Model):
         ('finish', '완료')
         ], string='Status', default='ready', )
     project_rate = fields.Integer(string='계층',default='1')
+    work_time = fields.Float('업무시간', compute='_compute_work_time', store=True)
+    work_tasks = fields.Many2many('project.task','project','work_tasks',string="업무",compute='_compute_work_tasks')
 
     _sql_constraints = [
         ('project_date_greater', 'check(date >= date_start)', 'Error! project start-date must be lower than project end-date.')
@@ -251,7 +256,9 @@ class Project(models.Model):
 
     @api.multi
     def button_project_complete(self):
-        self.write({'is_finish':True})
+        self.write({'is_finish':True,
+                    'state':'finish'
+                    })
         return {}
 
     @api.depends('state')
@@ -259,6 +266,22 @@ class Project(models.Model):
       state = ['ready','po','in_production','setup','balance','finish']
       for record in self:
         record.color = state.index(record.state)
+
+    @api.depends('line_ids')
+    def _compute_work_time(self):
+      for record in self:
+        total_work_time = 0
+        for line_id in record.line_ids:
+          total_work_time += line_id.work_time
+        record.work_time = total_work_time
+
+    def _compute_work_tasks(self):
+        for record in self:
+           worksheet = self.env['account.analytic.line'].search([('project_id','=',record.id)])
+           work_ids = []
+           for w in worksheet:
+            work_ids.append(w.task_id.id)
+           record.work_tasks = work_ids
 
     @api.multi
     def on_change_issue(self):
@@ -462,7 +485,8 @@ class Task(models.Model):
     checklist4 = fields.Many2many('project.checklist4', string='설계')
     checklist5 = fields.Many2one('project.checklist5', string='유닛')
     overlap = fields.Char('check',default='check')
-
+    department_id = fields.Many2one('hr.department', string='부서', store=True)
+    check_department = fields.Boolean('동일부서확인', compute='_compute_check_department', search='_search_department')
 
     @api.multi
     def name_get(self):
@@ -473,6 +497,15 @@ class Task(models.Model):
            name = '['+str(record.checklist5.name)+']' + record.name
           result.append((record.id, name))
          return result
+
+    @api.depends('department_id')
+    def _compute_check_department(self):
+        _logger.warning('check user.department_id == task.department_id')
+
+    @api.multi
+    def _search_department(self, operator, value):
+        user_dep = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).department_id.id
+        return [('department_id','=',user_dep)]
 
     @api.onchange('project_id')
     def _onchange_project(self):
@@ -593,6 +626,8 @@ class Task(models.Model):
         if vals.get('user_id'):
             vals['date_assign'] = fields.Datetime.now()
         task = super(Task, self.with_context(context)).create(vals)
+        user_dep = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).department_id.id
+        task.department_id = user_dep
         return task
 
     @api.multi

@@ -268,7 +268,6 @@ class ProductTemplate(models.Model):
 
     @api.onchange('uom_id')
     def _onchange_uom_id(self):
-    	_logger.warning("test")
         if self.uom_id:
             self.uom_po_id = self.uom_id.id
 

@@ -123,17 +123,36 @@ class AccountAnalyticLine(models.Model):
     weekend = fields.Boolean('weekend',compute='_compute_basic_cost')
     lunch = fields.Selection([('0','0'),('1','1'),('2','2'),('3','3')],string='식사횟수', default='2')
     holiday = fields.Boolean('공휴일')
+    work_time = fields.Float('작업시간', default=0.0,compute='_compute_basic_cost', search='_search_work_time')
+    location = fields.Selection([('1','사내'),('2','사외'),('3','해외출장')],string='업무장소', default='1')
 
+    @api.multi
+    def write(self, vals):
+        if vals.get('project_id'):
+            project = self.env['project.project'].browse(vals.get('project_id'))
+            vals['account_id'] = project.analytic_account_id.id
+        for record in self:
+	     if self.env.user.name != record.user_id.name and self.env.uid != 1:
+               raise UserError(_('본인 외 수정 불가'))
+        res = super(AccountAnalyticLine, self).write(vals)
+        self.calculate_work_time()
+        _logger.warning("write")
+        return res
 
-
-    @api.depends('date_from','date_to','lunch','holiday')
+    @api.depends('date_from','date_to','holiday')
     def _compute_basic_cost(self):
         for record in self:
+         _logger.warning('compute_basic_cost %s' % record.lunch)
          if record.date_to and record.date_from:
            fmt = '%Y-%m-%d %H:%M:%S'
            td = timedelta(hours=9)
            d1 = datetime.strptime(record.date_to,fmt) + td #퇴근
            d2 = datetime.strptime(record.date_from,fmt) + td #출근
+
+           record.write({'lunch':record.get_lunch_count()})
+           record.work_time = (d1 - d2).total_seconds()/3600 - int(record.lunch)
+           #self.calculate_work_time()
+
            day_end_standard = d2.replace(hour=19, minute=00)
 	   if d2.year <= 2019 and d2.month < 4:
              day_end_standard = d2.replace(hour=18, minute=00)
@@ -163,8 +182,65 @@ class AccountAnalyticLine(models.Model):
              record.unit_amount = count
            #record.sudo(1).write({'date':d2.date()})
 
+    @api.multi
+    def _search_work_time(self, operator, value):
+        return [()]
+
+    def calculate_work_time(self):
+        for record in self:
+            _logger.warning('calculate_work_time %s' % record.lunch)
+            fmt = '%Y-%m-%d %H:%M:%S'
+            td = timedelta(hours=9)
+            # 겹치는 시간 발생 확인
+            overlap_record = self.env['account.analytic.line'].search([('date','=',record.date),('user_id','=',self.env.uid)],order='date_from asc')
+            if len(overlap_record) < 2: # 겹치지 않으면
+                break
+            # 겹치는 시간 중 나중시작 시간에서 먼저 종료  시간을 뺀다
+            date_from_temp = []
+            date_to_temp = []
+            difference = 0
+            for c in overlap_record:
+                date_from_temp.append(c.date_from)
+                date_to_temp.append(c.date_to)
+
+            _logger.warning(date_from_temp)
+
+            for i, c in enumerate(overlap_record):
+                if len(overlap_record) == i+1:
+                    break
+                present_df = datetime.strptime(date_from_temp[i],fmt) + td   #먼저시작
+                present_dt = datetime.strptime(date_to_temp[i],fmt) + td     #먼저종료
+                next_df = datetime.strptime(date_from_temp[i+1],fmt) + td #나중시작
+                next_dt = datetime.strptime(date_to_temp[i+1],fmt) + td   #나중종료
+                # 나중 시작시간 < 먼저 종료시간일 경우 겹치는 부분 발생
+                if next_df < present_dt:
+                    work_time = (present_dt - present_df).total_seconds()/3600 - int(c.lunch)
+                    # 차이값만큼 먼저 시간의 작업시간을 뺀다
+                    difference = (next_df - present_dt).total_seconds()/3600
+                    # 나중 종료시간 < 먼저 종료시간일 경우 나중이 모두 겹침
+                    if next_dt < present_dt:
+                        difference = (next_df - next_dt).total_seconds()/3600
+
+                    _logger.warning('lunch = %s'%c.lunch)
+                    result = work_time + difference
+                    if result < 0:
+                        result = 0
+
+                    # 19/12/11 동작 로그 확인을 위해 잠시 남겨놓음
+                    _logger.warning(c.name)
+                    _logger.warning('나중시작 %s' % next_df)
+                    _logger.warning('먼저시작 %s, 먼저종료 %s' % (present_df, present_dt))
+                    _logger.warning(difference)
+                    _logger.warning('work_time = %s, change = %s' % (work_time, result))
+
+                    c.work_time = result
+
     @api.onchange('date_from','date_to')
-    def _onchage_lunch(self):
+    def _onchange_lunch(self):
+        _logger.warning('onchange_lunch %s' % self.lunch)
+        self.write({'lunch':self.get_lunch_count()})
+
+    def get_lunch_count(self):
          if self.date_to and self.date_from:
            fmt = '%Y-%m-%d %H:%M:%S'
            td = timedelta(hours=9)
@@ -175,9 +251,7 @@ class AccountAnalyticLine(models.Model):
 	     lunch_count += 1
 	   if d2.hour < 19 and d1.hour > 18 or d1.hour < 9:
 	     lunch_count += 1
-	   lunch_count = str(lunch_count)
-	   _logger.warning(lunch_count)
-	   self.lunch = lunch_count
+	   return str(lunch_count)
 
     @api.onchange('date_from')
     def _compute_holiday(self):
@@ -259,7 +333,7 @@ class AccountAnalyticLine(models.Model):
 
     @api.onchange('date_from')
     def _onchange_date_from(self):
-      if self.date_from:
+      if self.date_from and self.date_to:
         fmt = '%Y-%m-%d %H:%M:%S'
         td = timedelta(hours=9)
         d1 = datetime.strptime(self.date_from,fmt) + td
@@ -269,4 +343,4 @@ class AccountAnalyticLine(models.Model):
           self.date_to = same_day
 	#sh
 	#세콤기록시간을 입력하지 않을경우, 현재 입력날짜로 변환
-	self.date = self.date_to
+	#self.date = self.date_to

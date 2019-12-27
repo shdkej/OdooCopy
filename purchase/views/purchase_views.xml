@@ -338,7 +338,12 @@
                     <group>
                         <group>
                             <field name="partner_id" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" domain="[('supplier','=',True)]" string="업체명"/>
+<<<<<<< HEAD
                             <field name="date_order"/>
+=======
+                            <field name="partner_ref"/>
+                            <field name="permit_date"/>
+>>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
                             <field name="drawing_man"/>
                             <field name="order_man"/>
                             <field name="permit_man"/>
@@ -390,7 +395,12 @@
                                     <field name="state"/>
                                     <field name="emergency"/>
                                     <field name="stock_item"/>
+<<<<<<< HEAD
                                     <field name="de_num"/>
+=======
+                                    <field name="release_place" invisible="1"/>
+                                    <field name="category" invisible="1"/>
+>>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
                                     <button name="button_destination" type="object" string="입고" class="oe_highlight" attrs="{'invisible' :[('destination_date','!=',False)]}" confirm="입고되었습니까?"/>
                                 </tree>
                             </field>
