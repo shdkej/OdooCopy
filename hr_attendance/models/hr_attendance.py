@@ -25,8 +25,8 @@ class HrAttendance(models.Model):
     check_out = fields.Datetime(string="츌장_퇴근시간")
     check_out_place = fields.Char('퇴근장소')
     worked_hours = fields.Float(string='Worked Hours', compute='_compute_worked_hours', store=True, readonly=True)
-    outing_start = fields.Datetime(string="외근_출발시간", required=True)
-    outing_end = fields.Datetime(string="외근_복귀/퇴근시간", required=True)
+    outing_start = fields.Datetime(string="외근_출발시간")
+    outing_end = fields.Datetime(string="외근_복귀/퇴근시간")
     reason = fields.Char('외근사유', index=True, store=True)
     destination = fields.Char('목적지', index=True, store=True)
 

@@ -9,10 +9,8 @@
                 <field name="product">
                     <tree editable="bottom" decoration-danger="emergency==True" decoration-bf="emergency==True" decoration-info="destination_date!=False">
                         <field name="sequence_num"/>
-                        <field name="product_ids" string="기존자재"/>
-                        <field name="name" string="도면번호"/>
+                        <field name="name" string="도면번호/규격"/>
                         <field name="product_name" required="1"/>
-                        <field name="specification"/>
                         <field name="material"/>
                         <field name="order_man"/>
                         <field name="request_date"/>
@@ -42,33 +40,10 @@
             <xpath expr="//page[@name='manage']" position="inside">
                 <group string='product'>
                     <field name="product">
-<<<<<<< HEAD
-		     <tree editable="bottom" decoration-danger="emergency==True" decoration-bf="emergency==True" decoration-info="destination_date!=False">
-                         <field name="sequence_num"/>
-                         <field name="name" string="도면번호/규격"/>
-                         <field name="product_name" required="1"/>
-                         <field name="material"/>
-                         <field name="order_man"/>
-                         <field name="request_date"/>
-                         <field name="expected_date"/>
-                         <field name="destination_date"/>
-                         <field name="receiving_date"/>
-		         <field name="reorder_num"/>
-                         <field name="original_count"/>
-                         <field name="total_count"/>
-                         <field name="etc"/>
-                         <field name="state"/>
-                         <field name="emergency"/>
-                         <button name="button_destination" type="object" string="입고" class="oe_highlight" attrs="{'invisible' :[('destination_date','!=',False)]}" groups="purchase.group_purchase_manager" confirm="입고되었습니까?"/>
-                         <button name="button_request_receiving" type="object" string="출고 요청" class="oe_highlight" attrs="{'invisible' : ['|',('receiving_date','!=',False),('destination_date','==',False)]}" confirm="출고 요청 하시겠습니까?"/>
-		         <button name="button_receiving" type="object" string="출고" class="oe_highlight" attrs="{'invisible' :[('state','=','request_receiving')]}" confirm="출고 승인 하시겠습니까?" groups="purchase.group_purchase_manager"/>
-                      </tree>
-=======
                         <tree>
                             <field name="name"/>
                             <field name="total_price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
                         </tree>
->>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
                     </field>
                 </group>
             </xpath>

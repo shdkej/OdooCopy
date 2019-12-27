@@ -18,7 +18,7 @@ var outing = Widget.extend({
             var destinaion = $('#destination').val();
             var reason = $('#reason').val();
             hr_employee.call('get_outing_list',[[1],[destinaion],[reason]]);
-            this.get_geolocation();
+            alert("OK");
         },
     },
 
@@ -26,7 +26,7 @@ var outing = Widget.extend({
         var self = this;
 
         var hr_employee = new Model('hr.employee');
-        hr_employee.query(['attendance_state', 'name'])
+        hr_employee.query(['outing_state', 'name'])
             .filter([['user_id', '=', self.session.uid]])
             .all()
             .then(function (res) {
@@ -44,7 +44,7 @@ var outing = Widget.extend({
     update_attendance: function (my_location) {
         var self = this;
         var hr_employee = new Model('hr.employee');
-        hr_employee.call('attendance_manual', [[self.employee.id], 'hr_attendance.hr_attendance_action_my_attendances', my_location])
+        hr_employee.call('attendance_manual', [[self.employee.id], 'hr_attendance.hr_attendance_action_outing', my_location])
             .then(function(result) {
                 if (result.action) {
                     self.do_action(result.action);
@@ -54,31 +54,6 @@ var outing = Widget.extend({
             });
     },
 
-    get_geolocation: function () {
-        var startPos;
-        var result;
-        var self = this;
-        var hr_employee = new Model('hr.employee');
-        var geoOptions = {
-            timeout: 10 * 1000,
-            enableHighAccuracy: true
-        }
-
-        var geoSuccess = function(position) {
-            startPos = position;
-            alert("확인되었습니다.");
-            var lat = startPos.coords.latitude;
-            var lng = startPos.coords.longitude;
-            console.log(lat + ',' + lng);
-            result = [lat, lng];
-
-            hr_employee.call('naver_geocode', [[], result])
-                .then(function(result) {
-                    self.update_attendance(result);
-                    console.log(result);
-                });
-             };
-        },
 });
 
 //출장

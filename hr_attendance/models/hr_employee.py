@@ -33,6 +33,7 @@ class HrEmployee(models.Model):
     attendance_ids = fields.One2many('hr.attendance', 'employee_id', help='list of attendances for the employee')
     last_attendance_id = fields.Many2one('hr.attendance', compute='_compute_last_attendance_id')
     attendance_state = fields.Selection(string="Attendance", compute='_compute_attendance_state', selection=[('checked_out', "Checked out"), ('checked_in', "Checked in")])
+    outing_state = fields.Selection(string="Attendance", compute='_compute_outing_state', selection=[('outing_out', "outing out"), ('outing_in', "outing in")])
     manual_attendance = fields.Boolean(string='Manual Attendance', compute='_compute_manual_attendance', inverse='_inverse_manual_attendance',
                                        help='The employee will have access to the "My Attendances" menu to check in and out from his session')
     check_today_attendance = fields.Boolean()
@@ -58,11 +59,23 @@ class HrEmployee(models.Model):
     def _compute_last_attendance_id(self):
         for employee in self:
             employee.last_attendance_id = employee.attendance_ids and employee.attendance_ids[0] or False
-
+            _logger.warning(employee.attendance_ids)
+    
     @api.depends('last_attendance_id.check_in', 'last_attendance_id.check_out', 'last_attendance_id')
     def _compute_attendance_state(self):
         for employee in self:
             employee.attendance_state = employee.last_attendance_id and not employee.last_attendance_id.check_out and 'checked_in' or 'checked_out'
+            _logger.warning("lastattendance%s"%employee.last_attendance_id.check_out)
+            _logger.warning("attendance_id%s"%employee.attendance_ids)
+            _logger.warning(employee.attendance_state)
+
+    @api.depends('last_attendance_id.outing_start', 'last_attendance_id.outing_end', 'last_attendance_id')
+    def _compute_outing_state(self):
+        for employee in self:
+            employee.outing_state = employee.last_attendance_id and not employee.last_attendance_id.outing_end and 'outing_in' or 'outing_out'
+            _logger.warning("lastattendance%s"%employee.last_attendance_id)
+            _logger.warning("attendance_id%s"%employee.attendance_ids)
+            _logger.warning(employee.outing_state)
 
     @api.constrains('pin')
     def _verify_pin(self):
@@ -113,12 +126,12 @@ class HrEmployee(models.Model):
 #        if self.attendance_state == 'check_out':
         hr_attendance.write({'reason':reason})
 #        elif self.attendance_state == 'check_out':
-#           hr_attendance.write({'outing_end':datetime.today()})
+        hr_attendance.write({'outing_end':datetime.today()})
         _logger.warning("1")
         return destination,reason
 
     #sh
-    def _Check_check_out_time(self):
+    def _Check_out_time(self):
        """ 퇴근을 하지 않았을경우, 다음날 00시 00분 00초에 자동으로  퇴근이 된다."""
        #현재시간	
        date = datetime.now()

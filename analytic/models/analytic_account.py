@@ -208,6 +208,8 @@ class AccountAnalyticLine(models.Model):
             for i, c in enumerate(overlap_record):
                 if len(overlap_record) == i+1:
                     break
+                if date_from_temp == False:    
+                    break
                 present_df = datetime.strptime(date_from_temp[i],fmt) + td   #먼저시작
                 present_dt = datetime.strptime(date_to_temp[i],fmt) + td     #먼저종료
                 next_df = datetime.strptime(date_from_temp[i+1],fmt) + td #나중시작

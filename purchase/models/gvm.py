@@ -61,18 +61,25 @@ class GvmDelivery(models.Model):
         self.write({'state': 'send'})
         return {}
 
-    @api.multi
     def button_confirm(self):
+        name = self.delivery
+        for value in name:
+           value.write({'de_num':self.de_num})
         self.write({'state': 'send_ready'})
         return {}
 
-    @api.multi
     def button_cancel(self):
+        name = self.delivery
+        for value in name:
+           value.write({'de_num':''})
         self.write({'state': 'cancel'})
         return {}
 
     @api.multi
     def button_resend(self):
+        name = self.delivery
+        for value in name:
+           value.write({'de_num':self.de_num})
         self.write({'state': 'send_ready'})
         return {}
 
@@ -145,15 +152,13 @@ class GvmProduct(models.Model):
 	('delete','삭제'),
 	('cancel','발주취소'),
         ('request_receiving', '출고요청'),
-        ('destination', '입고')
+        ('destination', '입고'),
+        ('paydone','지급완료')
         ], string='Status', default='no',track_visibility="onchange")
     partner_id = fields.Char('업체명',store=True, compute='_compute_partner')
     partner_ids = fields.Many2one('res.partner','업체',domain='[("supplier","=",True)]')
     sequence_num = fields.Char('번호')
-<<<<<<< HEAD
-=======
     category = fields.Selection([('1','기구/가공품'),('2','기구/요소품'),('3','전장/가공품'),('4','전장/요소품'),('5','기타')], string="분류")
->>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
     purchase_order_new = fields.Boolean('new_purchase')
     attachment = fields.Many2many('ir.attachment', domain="[('res_model','=','gvm.product')]", string='도면', compute='_compute_attachment')
     title = fields.Boolean('invisible')
@@ -259,11 +264,7 @@ class GvmProduct(models.Model):
       else:
        record.order_man = record.purchase_by_maker.create_uid.name
        record.drawing_man = record.purchase_by_maker.create_uid.name
-<<<<<<< HEAD
     
-=======
-
->>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
     @api.depends('purchase_by_maker.line_count','original_count')
     def _compute_total_count(self):
      for record in self:
@@ -290,6 +291,11 @@ class GvmProduct(models.Model):
         record.write({'destination_date': datetime.today(), 
                       'destination_man': self.env.user.name,
                       'state': 'destination'})
+        return {}
+
+    @api.multi
+    def button_paydone(self):
+        self.write({'state': 'paydone'})
         return {}
 
     @api.multi
@@ -376,21 +382,38 @@ class GvmProduct(models.Model):
     	Product = request.env['gvm.product']
     	Project = request.env['project.project']
 	Part = request.env['project.issue']
-	column = ['id','sequence_num','name','product_name','material','original_count', 'etc']
-	ko_column = ['id','번호','도번 및 규격','품명','재질','원수', '비고']
+	column = ['id','sequence_num','name','product_name','material','original_count', 'etc','category']
+	ko_column = ['id','번호','도번 및 규격','품명','재질','원수', '비고','분류']
 	if vals:
-	  project_id = Project.search([('name','=',vals[0][9].encode('utf-8'))]).id
-	  part_id = Part.search([('name','=',vals[0][10].encode('utf-8')),('project_id','=',project_id)]).id
+	  project_id = Project.search([('name','=',vals[0][10].encode('utf-8'))]).id
+	  part_id = Part.search([('name','=',vals[0][11].encode('utf-8')),('project_id','=',project_id)]).id
         for val in vals:
           product_id = val[0]
           product_sequence_num = val[1]
           product_main_name = val[2].encode('utf-8')
           product_name = val[3].encode('utf-8')
           product_material = val[4].encode('utf-8')
-          product_original_count = val[5]
-          product_etc = val[6].encode('utf-8')
-          product_bad_state = val[7]
-          product_project_id = val[9].encode('utf-8')
+          product_category = val[5].encode('utf-8')
+          product_original_count = val[6]
+          product_etc = val[7].encode('utf-8')
+          product_bad_state = val[8]
+          product_project_id = val[10].encode('utf-8')
+         
+          if product_category == '기구/가공품':
+             val[5] = '1'
+             product_category = '1'
+          elif product_category == '기구/요소품':
+             val[5] = '2' 
+             product_category = '2' 
+          elif product_category == '전장/가공품':
+             val[5] = '3'
+             product_category = '3'
+          elif product_category == '전장/요소품':
+             val[5] = '4'
+             product_category = '4'
+          else:
+             val[5] = '5'
+             product_category = '5'
 
           # 수정 시 표시 붙여주기
 	  if (product_bad_state == False or product_bad_state.upper().encode('utf-8') == 'FALSE'):
@@ -432,7 +455,7 @@ class GvmProduct(models.Model):
                     % ( str(unicode(ko_column[i])), Update[column[i]], val[i], str(datetime.today())[0:10]))
                 reorder_text += text
                 reorder_text += '<br><br>'
-
+              
               product_object.write({
                 column[i] : val[i],
               })
@@ -446,7 +469,8 @@ class GvmProduct(models.Model):
                          'project_ids': project_id, 
                          'project_set':[(4, project_id)], 
                          'request_date':datetime.today() + timedelta(days=7),
-                         'order_man':request.env.user.name})
+                         'order_man':request.env.user.name,
+            })
 	  else:
 	    PONum = Product.create({
 	    		'sequence_num':val[1],
@@ -461,6 +485,7 @@ class GvmProduct(models.Model):
 			'request_date':datetime.today() + timedelta(days=7),
 			'order_man':request.env.user.name,
                         'etc':product_etc,
+                        'category':product_category
 	    })
 	    PONum.write({
 			'project_set':[(4, project_id)],
@@ -476,8 +501,8 @@ class GvmProduct(models.Model):
 	part_id = ''
         newPo = ''
 	if vals:
-	  project_id = Project.search([('name','=',vals[0][9])]).id
-	  part_id = Part.search([('name','=',vals[0][10]),('project_id','=',project_id)]).id
+	  project_id = Project.search([('name','=',vals[0][10])]).id
+	  part_id = Part.search([('name','=',vals[0][11]),('project_id','=',project_id)]).id
           newPo = Purchase.create({
 	           'project_id':project_id,
                    'partner_id':1013,

@@ -66,13 +66,10 @@ class GvmPurchaseProduct(models.Model):
     state = fields.Selection([
         ('write', '작성'),
         ('draft', '발주진행'),
+        ('modify','수정됨'),
         ('sent', 'RFQ Sent'),
-<<<<<<< HEAD
-        ('to approve', 'To Approve'),
-=======
         ('modify', '수정됨'),
         ('to approve', '입금확인'),
->>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
         ('purchase', 'Purchase Order'),
         ('done', '발주진행완료'),
         ('cancel', '발주취소'),
@@ -125,12 +122,8 @@ class GvmPurchaseProduct(models.Model):
     drawing_man = fields.Many2one('res.users','설계자')
     order_man = fields.Many2one('res.users','발주자',default=lambda self:self.env.uid)
     permit_man = fields.Many2one('res.users','검토자')
-<<<<<<< HEAD
-=======
     permit_date = fields.Datetime(string='검토일자')
     category = fields.Selection([('1','기구/가공품'),('2','기구/요소품'),('3','전장/가공품'),('4','전장/요소품'),('5','기타')])
-
->>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
     product = fields.One2many('gvm.product','purchase_by_maker',string='발주', index=True,track_visibility="onchange")
     purchase_product = fields.Many2many('gvm.product',string='product')
     

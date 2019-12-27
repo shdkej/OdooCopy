@@ -108,7 +108,8 @@ class GvmSignContent(models.Model):
     request = fields.Text(string='요청사유',store=True)  
 
     #view
-    project = fields.Many2many('project.project',string='name')
+    project_many = fields.Many2many('project.project',string='프로젝트')
+    project = fields.Many2one('project.project',string='프로젝트')
     sign = fields.Many2one('gvm.sign', string='sign',required=True)
     cost = fields.One2many('gvm.signcontent.cost','sign', string='cost')
     cost2 = fields.One2many('gvm.signcontent.cost2','sign', string='cost2')
@@ -232,31 +233,10 @@ class GvmSignContent(models.Model):
     
     #현재결재자와 로그인한 사람이 일치 하는지 파악
     @api.model
-<<<<<<< HEAD
     def _check_me(self):
         for record in self: 
           #현재결재자와 로그인한 사람이 일치 하는지 파악
           if record.next_check == self.env.user.name: return True
-=======
-    def _compute_check(self):
-        for record in self:
-          check_name = self._check_name()
-          check_me = self._check_me()
-          if check_name and check_me:
-            record.check = True
-
-    @api.model
-    def _check_name(self):
-        for record in self:
-          if record.name != self.env.user.name \
-          and record.check1.id != self.env.uid \
-          and record.check2.id != self.env.uid \
-          and record.check3.id != self.env.uid \
-          and record.check4.id != self.env.uid \
-          and record.check5.id != self.env.uid \
-          and record.check6.id != self.env.uid:
-            return True
->>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
 
     #_check_me 수행후, 실행되는함수
     @api.model
@@ -290,26 +270,13 @@ class GvmSignContent(models.Model):
 	   h_count = float(hr_name.holiday_count) +  float(count)
 	   hr_name.write({
 	            'holiday_count': h_count
-<<<<<<< HEAD
 	   })
-	   #다음 결제권한을 작성자에게 넘긴다. 
+           text = str('근태 반려 %s -> %s' % (h_count+count, h_count))
+           self.env['hr.tracking'].create({'name':hr_name.id,'holiday_count':h_count,'etc':text,'sign_id':self.id})
+	   #다음 결제권한을  작성자에게 넘긴다. 
 	   record.next_check = record.writer
-	   return False 
-    
-=======
-	  })
-          text = str('근태 반려 %s -> %s' % (h_count+count, h_count))
-          self.env['hr.tracking'].create({'name':hr_name.id,'holiday_count':h_count,'etc':text,'sign_id':self.id})
-	  #다음 결제권한을  작성자에게 넘긴다. 
-	  record.next_check = record.writer
-	  return False
+	   return False
 
-        for i in index:
-	  if record[i]:
-            record.next_check = record[i].name
-	    break
-
->>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
     @api.depends('user_id')
     def _compute_holiday_count(self):
       for record in self:
@@ -397,23 +364,8 @@ class GvmSignContent(models.Model):
           management = self.env['hr.employee'].search([('department_id','=',10)])
           ceo = self.env['hr.employee'].search([('id','=',126)])
 	  management_manager = management[0]
-
-<<<<<<< HEAD
-=======
-	  # 중복 결재라인 없애기
-	  if ceo == boss and record.sign_ids in [4,6]:
-	    boss = False
->>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
-	  if management_manager == boss:
-	    management_manager = False
-
-	  record.request_check1 = False
-	  record.request_check2 = False
-	  record.request_check4 = False
-	  record.request_check5 = False
-	  record.request_check6 = False
+          #check: 결재(sign), 합의(2), 통보(3) / state : 0 (대기) / sequnce : 순번 
           if record.sign_ids in [2,3]:
-<<<<<<< HEAD
             record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequnce':'0'}),
                                 (0, 0, {'name':management[1].id, 'check':'2','state':'0','sequnce':'1'}),
                                 (0, 0, {'name':management_manager.id, 'check':'2','state':'0','sequnce':'2'}),
@@ -432,33 +384,11 @@ class GvmSignContent(models.Model):
                                ]
 	  elif record.sign_ids == 1:
             record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequnce':'0'}),
-                                (0, 0, {'name':management[1].id, 'check':'2','state':'0','sequnce':'1'}),
+                                (0, 0, {'name':management[1].id, 'check':'3','state':'0','sequnce':'1'}),
                                ]
           else:
             record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequnce':'0'}),
                                ]
-=======
-            record.request_check3 = boss
-            record.request_check4 = management[1]
-            record.request_check5 = management_manager
-          elif record.sign_ids == 4:
-            record.request_check2 = boss
-            record.request_check3 = ceo
-          elif record.sign_ids == 5:
-            record.request_check3 = boss
-            record.request_check5 = management[2]
-	  elif record.sign_ids == 6:
-	    record.request_check2 = boss
-	    record.request_check3 = ceo
-          #sh_20191119
-          #업무요청확인서
-	  elif record.sign_ids == 10:
-            record.request_check3 = boss 
-            record.request_check6 = boss
-          else:
-            record.request_check3 = boss 
-	    record.reference = False
->>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
 
     @api.depends('date_from','date_to')
     def _onchange_timesheet(self):  
@@ -479,13 +409,8 @@ class GvmSignContent(models.Model):
         if record.sign_ids == 2:
 	 #잔업특근기간수정
          date_from = datetime.strptime(record.date_from, '%Y-%m-%d')
-<<<<<<< HEAD
-         date_from = date_from + dt.timedelta(days=-1)
-         worktime = self.env['account.analytic.line'].search([('date_from','>=',str(date_from)),('date_to','<=',record.date_to),('user_id','=',record.user_id.id)])
-=======
          date_from = date_from + dt.timedelta(hours=-9)
          worktime = self.env['account.analytic.line'].search([('date_from','>=',str(date_from)),('date_to','<=',record.date_to),('user_id','=',record.user_id.id),('unit_amount','>=',1)])
->>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
          record.timesheet = worktime
 
     @api.model
@@ -601,20 +526,16 @@ class GvmSignContent(models.Model):
 	 h_count = float(hr_name.holiday_count) + float(count)
 	 # 적용
          hr_name.holiday_count = float(h_count)
-<<<<<<< HEAD
-=======
          text = str('근태 취소 %s -> %s' % (h_count+count, h_count))
          self.env['hr.tracking'].create({'name':hr_name.id,'holiday_count':h_count,'etc':text,'sign_id':self.id})
 	 #상태 정보: 취소상태
          self.write({'state':'remove'})
->>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
 
       #상태 정보: 취소상태
       self.write({'state':'remove'})
 
     #상신버튼 눌렀을경우 동작함수
     def button_confirm(self):
-<<<<<<< HEAD
        for record in self:
          #결재정보를 얻는다.
          check_id_list = record.get_check_list()
@@ -647,129 +568,6 @@ class GvmSignContent(models.Model):
        self.write({'state':'write',
                    'confirm_date':datetime.today()
        })
-=======
-        check_id_list = self.get_check_list(self, 'request_check')
-        # 중복 검사
-        for check in check_id_list:
-            if len(check_id_list) > len(filter(lambda x:x!=check, check_id_list))+1:
-                raise UserError(_('결재라인은 중복되면 안됩니다.'))
-
-        # 연차 개수 조절
-	if self.sign.num == 1:
-	  count = self.check_holiday_count()
-	  hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
-	  h_count = float(hr_name.holiday_count) - float(count)
-	  _logger.warning(h_count)
-
-	  #if h_count < -7:
-          # raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
-	  hr_name.holiday_count = float(h_count)
-          text = str('근태 사용 %s -> %s' % (h_count+count, h_count))
-          self.env['hr.tracking'].create({'name':hr_name.id,'holiday_count':h_count,'etc':text,'sign_id':self.id})
-	  _logger.warning(hr_name.holiday_count)
-
-        # 메일 발송
-        a = gvm_mail()
-	model_name = 'gvm.signcontent'
-	postId = self.id
-        po_num = self.env[model_name].search([('id','=',postId)]).name
-
-        receivers = self.env['hr.employee'].search([('id','in',check_id_list)])
-        menu_id = "320"
-	action_id = ""
-	a.gvm_send_mail(self.env.user.name, receivers, '결재문서', postId, po_num, model_name, menu_id, action_id)
-	self.write({'state':'write',
-		    'confirm_date':datetime.today()
-	})
-
-    def gvm_sign_comment(ids, comment, state=None):
-      index = ['request_check1','request_check2','request_check3','request_check4','request_check5','request_check6']
-
-      Model = request.env['gvm.signcontent']
-      sign_id = Model.search([('id','=',ids.id)],limit=1)
-      index_list = []
-      for i in index:
-	if sign_id[i]:
-	  index_list.append(i)
-      state_id = index.index(index_list[0]) + 1
-      name = request.env.user.name
-      uid = request.env['res.users'].search([('name','=',name)]).id
-      check = 'check'+str(state_id)
-      check_date = 'check'+str(state_id)+'_date'
-      request_check = 'request_check'+str(state_id)
-      # state 입력을 안받으면
-      if not state:
-        #sh_20191119
-        #업무요청확인서
-        if sign_id.sign_ids == 10:
-          state = check
-          #결제완료
-          if len(index_list) < 3:
-             state = 'done'
-          #업무진행완료
-          if len(index_list) == 1:
-             state = 'workdone'
-        else:
-          state = check
-          if len(index_list) < 2:
-             state = 'done'
-      #sh_20191119
-      #반려시, 기안자에게 메일을 보낸다.
-      sender = request.env.user.name
-      receiver = request.env['hr.employee'].search([('name','=',name)])
-      #제목
-      #gvm/model/sendmail.py에 양식이있음. 같이변경해야함.
-      post = '님에 의하여 반려되었습니다. 결재문서를 확인하세요.'      
-      #메타데이터 id
-      post_id = sign_id.id
-      #문서번호(S0001)
-      po_num = str(sign_id.name)
-      #사용모델위치
-      model_name = 'gvm.signcontent'
-      #링크에서 찾아서 쓰면됨.
-      #현재페이지 위치 찾는 용도(리스트)
-      menu_id = "320"
-      #링크에서 찾아서 쓰면됨.
-      #현재페이지 위치 찾는 용도(리스트)
-      menu_id = "320"
-      #링크에서 찾아서 쓰면됨.
-      #현재페이지 위치 찾는 용도(폼)
-      action_id = ""
-      #반려일경우 
-      Flag = True
-      if state == 'cancel':
-         Flag = False
-       
-      _logger.warning('send mail')
-      send_mail = gvm_mail().gvm_send_mail(sender, receiver, post, post_id, po_num, model_name, menu_id, action_id,Flag)
-
-      if sign_id.reason and comment:
-        _logger.warning("test_sh")
-        if state == 'cancel':
-          comment = '* ' + comment + ' *'
-        comment = sign_id.reason + "\n" + comment
-
-      if sign_id[request_check].name == name:
-        #sh_20191119
-        #업무요청확인서
-        #코멘트가 없을경우 작성하지않는다.
-        if comment == '':
-           comment = comment
-        else :
-            comment = "\n" + comment + '_' + name
-        sign_id.sudo(1).write({
-           #sh_20191119
-           #업무요청확인서
-           #코멘트작성
-           'reason':comment,
-           'state':state,
-	   check:uid,
-	   check_date:datetime.now(),
-	   request_check:False,
-        })
-        _logger.warning('write complete')
-      _logger.warning('comment complete')
->>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
 
     def check_holiday_count(self, rest1=None, date_to=None, date_from=None):
         count = 0
@@ -836,6 +634,98 @@ class GvmSignContent(models.Model):
 
 	return count
 
+    def gvm_sign_comment(ids, comment, state=None):
+      _logger.warning('comment start')
+      #현재페이지의 결재문서 번호를 가져온다.
+      Model = request.env['gvm.signcontent']
+      sign_id = Model.search([('id','=',ids)],limit=1)
+      name = request.env.user.name
+      receiver = []
+
+#_______________결재라인관리
+      #결재버튼 클릭시
+      if not state:
+        _logger.warning('click permit')
+        #결재(결재자가 결재시 통보자도 같이 결재된다)
+        for record in sign_id.sign_line:
+          if record.check_mail == True and record.check_date == False:
+            #결재자
+            if record.check == 'sign' or record.check == '2':
+               record.sudo(1).write({
+                    'check_date':datetime.datetime.now(),
+                    'check_checkname':name,
+                    'state':'1',
+                    'reason':comment
+               })
+            #통보자
+            else:
+               record.sudo(1).write({
+                    'check_date':datetime.datetime.now(),
+                    'check_checkname':name,
+                    'state':'1',
+               })
+          if record.check_date == False:
+            #진행상태: 진행중
+            if record.state == '0':
+              state = 'ing'
+            #sign_line 결재 상태일떄
+          if record.state == '1':
+              state = 'done'
+      #반려버튼 클릭시
+      else:
+        _logger.warning('click deny')
+        if state == 'cancel':
+          for record in sign_id.sign_line:
+            #결재시간이없고 자기자신일경우
+            if record.check_date == False:
+              if record.name.name == name:
+                    record.write({
+                        'state':'4',
+                        'reason':comment,
+                        'check_checkname':name,
+                        'check_date':datetime.datetime.now()
+                    })
+      sign_id.sudo(1).write({'state':state})
+
+#_____________________메일보내기
+      check = False
+      post = '결재문서'
+      Flag = 0
+      for record in sign_id.sign_line:
+        #결재라인: 다음 결재자에게 메일보내기
+        if record.check_date == False:
+          if (record.check == 'sign' or record.check == '2') and check != True:
+             receiver.append(record.name)
+             _logger.warning("record%s"%record)
+             record.write({'check_mail':True})
+             check = True
+          elif record.check == '3':
+             receiver.append(record.name)
+             _logger.warning("record%s"%record)
+             record.write({'check_mail':True})
+          else:
+             break
+          #반려시 메일보내기
+          if record.check != '3' and state == 'cancel':
+            post = '님에 의하여 반려되었습니다. 결재문서를 확인하세요.'
+            receiver.append(record.name)
+            Flag = 1
+
+      _logger.warning('send mail')
+      sender = request.env.user.name
+      #메타데이터 id
+      post_id = sign_id.id
+      #문서번호(S0001)
+      po_num = str(sign_id.name)
+      #사용모델위치
+      model_name = 'gvm.signcontent'
+      #링크에서 찾아서 쓰면됨
+      #현재페이지 위치 찾는 용도(리스트)
+      menu_id = "316"
+      action_id = "423"
+      send_mail = gvm_mail().gvm_send_mail(sender, receiver, post, post_id, po_num, model_name, menu_id, action_id,Flag)
+      _logger.warning('comment finish')
+    
     @api.model
     def create(self, vals):
         if vals.get('name','New') == 'New':
@@ -1004,7 +894,6 @@ class GvmSignContentWork(models.Model):
     
 class GvmSignLine(models.Model):
     _name = "gvm.signcontent.line"
-<<<<<<< HEAD
     _order = 'sequence'
 
     @api.model
@@ -1023,13 +912,3 @@ class GvmSignLine(models.Model):
     reason = fields.Text('reason', readonly=True)
     check_reference = fields.Char(string='통보자확인')
     check_checkname = fields.Char(string='결재자확인')
-=======
-    _order = ''
-
-    name = fields.Many2one ( ' hr.employee ' ,string = ' name ' )
-    sequence = fields.Integer ( ' 순번 ' )
-    state = fields.Selection ([( ' sign ' , ' 결재 ' ), ( ' 2 ' , ' 합의 ' ), ( ' 3 ' , ' 참조 ' ), ( ' 4 ' , ' 열람 ' )])
-    sign = fields.Many2one ( ' gvm.signcontent ' , ' sign ' )
-
-
->>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5

@@ -1052,17 +1052,6 @@ var FormView = View.extend(common.FieldManagerMixin, {
         console.log(state)
 	    var self = this;
 	    var comment = prompt('의견이 있으시면 적어주시기 바랍니다.');
-<<<<<<< HEAD
-	    var url = '/web/dataset/comment'
-	    if (comment != null){
-	      var ids = String(location.hash).split('&view_type=')[0].split('id=')[1];
-              self.rpc(url,{
-	         ids: ids,
-	         comment: comment,
-    		 state: state,
-	      });
-	    }
-=======
 	    if (comment === null){
             return;
         }
@@ -1088,7 +1077,6 @@ var FormView = View.extend(common.FieldManagerMixin, {
 
         var data_type = 'data:application/vnd.ms-excel';
         window.open(data_type + ',' + encodeURIComponent(excelFile));
->>>>>>> cdfdf19ef3fccdddc9371c4151c3d773087c5bb5
     },
 
     on_action: function(action){
