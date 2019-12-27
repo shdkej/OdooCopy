@@ -101,6 +101,14 @@
                             <page name="hr_settings" string="HR Settings" groups="hr.group_hr_user">
                                 <group>
                                     <group string='Status' name="active_group">
+                                        <field name="hr_tracking" groups="hr.group_hr_manager">
+                                            <tree>
+                                                <field name="name"/>
+                                                <field name="holiday_count"/>
+                                                <field name="etc"/>
+                                                <field name="sign_id"/>
+                                            </tree>
+                                        </field>
                                         <field name="company_id" groups="base.group_multi_company"/>
                                         <field name="user_id" string="Related User"/>
                                     </group>

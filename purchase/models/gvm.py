@@ -105,6 +105,7 @@ class GvmProduct(models.Model):
 	], string='불량유형', default='A')
     release_place = fields.Many2one('gvm.product.release',string='출고지')
     sub_id = fields.Char('sub_id')
+    image = fields.Binary("image")
 
     def _generate_order_by(self, order_spec, query):
 	my_order = "case when substring(sequence_num from '^P') IS NULL then substring(sequence_num from '^\d+$')::int end, sequence_num"
@@ -426,7 +427,6 @@ class GvmProduct(models.Model):
 		   'drawing_man':request.env.uid,
                   })
           for np in vals:
-            _logger.warning(np)
 	    newPo.write({'product':[(4, int(repr(np[0]).encode('utf-8')))]})
 
     def gvm_onchange_state(ids, state, name):

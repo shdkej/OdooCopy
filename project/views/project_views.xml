@@ -422,11 +422,11 @@
         <field name="name">Projects</field>
         <field name="res_model">project.project</field>
         <field name="view_type">form</field>
-        <field name="domain">[]</field>
+        <field name="domain">[('state','!=','finish')]</field>
         <field name="view_mode">kanban,form,tree,graph,pivot</field>
         <field name="search_view_id" ref="view_project_project_filter"/>
         <field name="target">main</field>
-        <field name="context">{'search_default_percent': 1,'search_default_site':1}</field>
+        <field name="context">{'search_default_site':1}</field>
         <field name="help" type="html">
             <p class="oe_view_nocontent_create">
                 Click to create a new project.<br/>

@@ -291,6 +291,8 @@ class GvmSignContent(models.Model):
 	  hr_name.write({
 	            'holiday_count': h_count
 	  })
+          text = str('근태 반려 %s -> %s' % (h_count+count, h_count))
+          self.env['hr.tracking'].create({'name':hr_name.id,'holiday_count':h_count,'etc':text,'sign_id':self.id})
 	  #다음 결제권한을  작성자에게 넘긴다. 
 	  record.next_check = record.writer
 	  return False
@@ -509,6 +511,8 @@ class GvmSignContent(models.Model):
          h_count = float(hr_name.holiday_count) - float(count)
 	 #적용
          hr_name.holiday_count = float(h_count)
+         text = str('근태재상신 %s -> %s' % (h_count+count, h_count))
+         self.env['hr.tracking'].create({'name':hr_name.id,'holiday_count':h_count,'etc':text,'sign_id':self.id})
         return {}
 
     @api.multi
@@ -571,6 +575,8 @@ class GvmSignContent(models.Model):
 	 h_count = float(hr_name.holiday_count) + float(count)
 	 # 적용
          hr_name.holiday_count = float(h_count)
+         text = str('근태 취소 %s -> %s' % (h_count+count, h_count))
+         self.env['hr.tracking'].create({'name':hr_name.id,'holiday_count':h_count,'etc':text,'sign_id':self.id})
 	 #상태 정보: 취소상태
          self.write({'state':'remove'})
 
@@ -597,6 +603,8 @@ class GvmSignContent(models.Model):
 	  #if h_count < -7:
           # raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
 	  hr_name.holiday_count = float(h_count)
+          text = str('근태 사용 %s -> %s' % (h_count+count, h_count))
+          self.env['hr.tracking'].create({'name':hr_name.id,'holiday_count':h_count,'etc':text,'sign_id':self.id})
 	  _logger.warning(hr_name.holiday_count)
 
         # 메일 발송
@@ -758,6 +766,8 @@ class GvmSignContent(models.Model):
 	        h_count = float(hr_name.holiday_count) + float(count)
 	        # 적용
 	        hr_name.holiday_count = float(h_count)
+                text = str('근태 삭제 %s -> %s' % (h_count+count, h_count))
+                self.env['hr.tracking'].create({'name':hr_name.id,'holiday_count':h_count,'etc':text,'sign_id':self.id})
         return super(GvmSignContent, self).unlink()
 
     @api.multi

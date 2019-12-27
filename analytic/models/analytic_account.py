@@ -135,7 +135,6 @@ class AccountAnalyticLine(models.Model):
 	     if self.env.user.name != record.user_id.name and self.env.uid != 1:
                raise UserError(_('본인 외 수정 불가'))
         res = super(AccountAnalyticLine, self).write(vals)
-        res.id.write({'lunch':self.get_lunch_count()})
         self.calculate_work_time()
         _logger.warning("write")
         return res
@@ -334,7 +333,7 @@ class AccountAnalyticLine(models.Model):
 
     @api.onchange('date_from')
     def _onchange_date_from(self):
-      if self.date_from:
+      if self.date_from and self.date_to:
         fmt = '%Y-%m-%d %H:%M:%S'
         td = timedelta(hours=9)
         d1 = datetime.strptime(self.date_from,fmt) + td

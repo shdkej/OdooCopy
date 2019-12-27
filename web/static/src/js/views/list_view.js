@@ -2000,7 +2000,8 @@ var ColumnBinary = Column.extend({
                     row_data[this.filename].value, {type: 'char'}));
             filename = row_data[this.filename].value;
         }
-        return _.template('<a download="<%-download%>" href="<%-href%>"><%-text%></a> (<%-size%>)')({
+        //return _.template('<a download="<%-download%>" href="<%-href%>"><%-text%></a> (<%-size%>)')({
+        return _.template('<img class="img img-responsive" border="1" name="image_medium" src="<%-href%>">')({
             text: text,
             href: download_url,
             size: utils.binary_to_binsize(value),

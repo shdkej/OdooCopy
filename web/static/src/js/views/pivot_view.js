@@ -719,6 +719,7 @@ var PivotView = View.extend({
             $header.appendTo($row);
             for (j = 0; j < length; j++) {
                 value = formats.format_value(rows[i].values[j], {type: measure_types[j % nbr_measures], widget: widgets[j % nbr_measures]});
+                console.log(rows[i]);
                 $cell = $('<td>')
                             .data('id', rows[i].id)
                             .data('col_id', rows[i].col_ids[Math.floor(j / nbr_measures)])

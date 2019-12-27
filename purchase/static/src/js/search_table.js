@@ -166,6 +166,7 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
                         item.bad_state,             //7
                         item.purchase_by_maker[1],  //8
                         ]);
+                    self.data_id.push(item.id);
                 }
             })
         }).then(function(){self.loading();});

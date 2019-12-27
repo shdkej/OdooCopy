@@ -73,7 +73,7 @@ class GvmPurchaseProduct(models.Model):
         ('draft', '발주검토완료'),
         ('sent', 'RFQ Sent'),
         ('modify', '수정됨'),
-        ('to approve', 'To Approve'),
+        ('to approve', '입금확인'),
         ('purchase', 'Purchase Order'),
         ('done', '완료'),
         ('cancel', '취소')
@@ -531,6 +531,7 @@ class GvmPurchaseProduct(models.Model):
     def button_create_bill(self):
         bill = self.env['account.invoice']
 	invoice_line_list = []
+        self.write({'state': 'to approve'})
 	for product in self.product:
 	  invoice_line_ids = self.env['account.invoice.line'].create({'account_id':28,
 			    'name':product.product_name,
