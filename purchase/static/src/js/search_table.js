@@ -309,9 +309,9 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
             $.each(self.data, function(id, row){
                 //발주서 생성 시 필요한 정보 입력
                 row[0] = self.data_id[id];
-                row[9] = project_selected; // 0, 9, 10 에 할당된 게 없어 id, project_id, unit_id 입력
-                row[10] = selected_part.text();
-                if (row[8] == false){ // 발주서이름이 없는 항목들 모두 발주 내도록 한다
+                row[10] = project_selected; // 0, 9, 10 에 할당된 게 없어 id, project_id, unit_id 입력
+                row[11] = selected_part.text();
+                if (row[9] == false){ // 발주서이름이 없는 항목들 모두 발주 내도록 한다
                     purchase_list.push(row);
                 }
             })

@@ -232,6 +232,7 @@
                             <field name="material"/>
                             <field name="order_man"/>
                             <field name="partner_ids"/>
+                            <field name="image" widget="image"/>
                         </group>
                         <group>
                             <field name="project_set" widget="many2many_tags"/>
@@ -239,6 +240,7 @@
                             <field name="issue" string="파트"/>
                             <field name="purchase" string="구매발주"/>
                             <field name="purchase_by_maker"/>
+                            <field name="product_id" string="재고"/>
                             <field name="etc"/>
                             <field name="attachment" widget="many2many_binary"/>
                         </group>
