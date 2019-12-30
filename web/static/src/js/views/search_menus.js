@@ -314,6 +314,7 @@ return Widget.extend({
         this.propositions = [];
         this.custom_filters_open = false;
         this.tmp_part_name = '';
+        this.gvm_commit_search();
     },
     change_project: function(){
         var search = $('#gvm_search.comboTreeInputBox').val();
@@ -323,17 +324,13 @@ return Widget.extend({
         for (var i=0; i<remove_button.length; i++){
             $('.o_facet_remove').trigger('click');
         }
-
-        for (var i=0; i<2; i++){
-            $('.o_facet_remove').trigger('click');
-            if (this.searchview.model == 'gvm.product'){
-              this.gvm_commit_search('product');
-            }
-            else if (this.searchview.model == 'project.project'){
-              this.gvm_commit_search('project');
-            }
-            else{this.gvm_commit_search();}
+        if (this.searchview.model == 'gvm.product'){
+          this.gvm_commit_search('product');
         }
+        else if (this.searchview.model == 'project.project'){
+          this.gvm_commit_search('project');
+        }
+        else{this.gvm_commit_search();}
 
         this.gvm_search_part();
         $('#gvm_search_export').show();
@@ -366,7 +363,9 @@ return Widget.extend({
     },
     gvm_commit_search: function (state) {
         var self = this;
+        setTimeout(function(){
         var filters = _.invoke(self.propositions, 'get_filter');
+        console.log(filters);
         var filters_widgets = _.map(filters, function (filter) {
                return new search_inputs.Filter(filter, self);
             });
@@ -389,7 +388,6 @@ return Widget.extend({
                 }
                 return filter_group.make_facet([filter_group.make_value(filter)]);
             });
-
         filter_group.insertBefore(self.$add_filter);
         $('<li class="divider">').insertBefore(self.$add_filter);
         self.searchview.query.add(facets, {silent: true});
@@ -400,6 +398,7 @@ return Widget.extend({
         self.append_proposition();
         self.toggle_custom_filter_menu(false);
         self.remove_proposition(self.$add_filter);
+        },300);
     },
     start: function () {
         var self = this;
@@ -465,12 +464,14 @@ return Widget.extend({
     commit_search: function () {
         var filters = _.invoke(this.propositions, 'get_filter'),
             filters_widgets = _.map(filters, function (filter) {
+                console.log(filter);
                 return new search_inputs.Filter(filter, this);
             }),
             filter_group = new search_inputs.FilterGroup(filters_widgets, this.searchview),
             facets = filters_widgets.map(function (filter) {
                 return filter_group.make_facet([filter_group.make_value(filter)]);
             });
+        console.log(filters_widgets);
         filter_group.insertBefore(this.$add_filter);
         $('<li class="divider">').insertBefore(this.$add_filter);
         this.searchview.query.add(facets, {silent: true});

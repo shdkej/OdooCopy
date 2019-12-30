@@ -66,7 +66,6 @@ var ListView = View.extend({
         },
         'change #radiogroup': 'on_change_check',
         'change .o_checkbox': 'on_change_check',
-        'paste input': 'paste_test',
     },
     icon: 'fa-list-ul',
 
@@ -346,16 +345,16 @@ var ListView = View.extend({
     },
     on_change_check: function(){
 	    if ($('#radiogroup:checked').length >0){
+	      $('#export_excel_button').show();
 	      $('#order_button').show();
-	      $('#quotation_change_button').show();
 	      $('#gvm_search_purchase').show();
 	      $('#keep_button').show();
 	      $('#unkeep_button').show();
 	      $('#destination_button').show();
 	      $('#receive_button').show();
 	    }else{
+	      $('#export_excel_button').hide();
 	      $('#order_button').hide();
-	      $('#quotation_change_button').hide();
 	      $('#gvm_search_purchase').hide();
 	      $('#keep_button').hide();
 	      $('#unkeep_button').hide();
@@ -363,84 +362,46 @@ var ListView = View.extend({
 	      $('#receive_button').hide();
 	    }
     },
-   paste_test: function(e){
-      var COLUMN_COUNT = 15;
-      setTimeout(function(){
-        var text = $(e.target).val();
-	var rowText = text.split("\n");
-	var tabText = "";
-	var index = $('input').index($(e.target));
-	$.each(rowText, function(i, row_value){
-	  tabText = row_value.split("\t");
-	  $.each(tabText, function(j, tab_value){
-	    var colIndex = index+j;
-	    console.log($('input:eq('+colIndex+')').val(tab_value));
-	  });
-	  //index += COLUMN_COUNT;
-	  //console.log($('.o_form_field_x2many_list_row_add a').trigger("click"));
-	});
-      },100);
-    },
     gvm_button_destination: function(){
-      var self = this;
-      var ids = [];
-      var confirm_people = prompt("이름을 입력해주세요(미입력 시 접속자 이름)");
-      if (confirm_people === null){
-	 return;
-      }
-      $('#radiogroup:checked').each(function(){
-        ids.push($(this).closest('tr').attr('data-id'));
-      });
-      self.rpc("/web/dataset/state",{
-        ids: ids,
-	state: 'destination',
-	name: confirm_people
-      });
+        var self = this;
+        var ids = [];
+        var confirm_people = prompt("이름을 입력해주세요(미입력 시 접속자 이름)");
+        if (confirm_people === null){
+            return;
+        }
+        $('tbody #radiogroup:checked').each(function(){
+            ids.push($(this).closest('tr').attr('data-id'));
+        });
+        var Product = new Model('gvm.product');
+        Product.call('gvm_onchange_state',[ids,'destination',confirm_people]);
+	    location.reload();
     },
     gvm_button_receiving: function(){
-      var self = this;
-      var ids = [];
-      var confirm_people = prompt("이름을 입력해주세요(미입력 시 접속자 이름)");
-      if (confirm_people === null){
-	 return;
-      }
-      $('#radiogroup:checked').each(function(){
-        ids.push($(this).closest('tr').attr('data-id'));
-      });
-      self.rpc("/web/dataset/state",{
-        ids: ids,
-	state: 'done',
-	name: confirm_people
-      });
-    },
-    gvm_change_state: function(states){
-      var self = this;
-      var ids = [];
-      var confirm_people = prompt("이름을 입력해주세요(미입력 시 접속자 이름)");
-      if (confirm_people === null){
-	 return;
-      }
-      $('#radiogroup:checked').each(function(){
-        ids.push($(this).closest('tr').attr('data-id'));
-      });
-      self.rpc("/web/dataset/state",{
-        ids: ids,
-	state: states,
-	name: confirm_people
-      });
+        var self = this;
+        var ids = [];
+        var confirm_people = prompt("이름을 입력해주세요(미입력 시 접속자 이름)");
+        if (confirm_people === null){
+            return;
+        }
+        $('tbody #radiogroup:checked').each(function(){
+            ids.push($(this).closest('tr').attr('data-id'));
+        });
+        var Product = new Model('gvm.product');
+        Product.call('gvm_onchange_state',[ids,'done',confirm_people]);
+	    location.reload();
     },
     gvm_excel: function(){
-      var excelFile = '<html xmlns:x="urn:schemas-microsoft-com:office:excel"';
-      excelFile += '<head>';
-      excelFile += '<meta http-equiv="Content-type" content="text/html;charset=utf-8"/>';
-      excelFile += '</head>';
-      excelFile += '<body><table>';
-      excelFile += $(".o_list_view").html();
-      excelFile += '</table></body>';
-      excelFile += '</html>';
+        var excelFile = '<html xmlns:x="urn:schemas-microsoft-com:office:excel"';
+        excelFile += '<head>';
+        excelFile += '<meta http-equiv="Content-type" content="text/html;charset=utf-8"/>';
+        excelFile += '</head>';
+        excelFile += '<body><table>';
+        excelFile += $(".o_list_view").html();
+        excelFile += '</table></body>';
+        excelFile += '</html>';
 
-      var data_type = 'data:application/vnd.ms-excel';
-      window.open(data_type + ',' + encodeURIComponent(excelFile));
+        var data_type = 'data:application/vnd.ms-excel';
+        window.open(data_type + ',' + encodeURIComponent(excelFile));
     },
     /**
      * Instantiate and render the sidebar.
@@ -2039,7 +2000,8 @@ var ColumnBinary = Column.extend({
                     row_data[this.filename].value, {type: 'char'}));
             filename = row_data[this.filename].value;
         }
-        return _.template('<a download="<%-download%>" href="<%-href%>"><%-text%></a> (<%-size%>)')({
+        //return _.template('<a download="<%-download%>" href="<%-href%>"><%-text%></a> (<%-size%>)')({
+        return _.template('<img class="img img-responsive" border="1" name="image_medium" src="<%-href%>">')({
             text: text,
             href: download_url,
             size: utils.binary_to_binsize(value),

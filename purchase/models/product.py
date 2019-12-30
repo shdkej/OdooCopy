@@ -52,7 +52,8 @@ class GvmProductInherit(models.Model):
 	('bad','불량'),
 	('delete','삭제'),
         ('request_receiving', '출고요청'),
-        ('destination', '입고')
+        ('destination', '입고'),
+        ('paydone','지급완료')
         ], string='Status', default='no')
     partner_id = fields.Char('업체명',store=True, compute='_compute_partner')
     partner_ids = fields.Many2one('업체', compute='_compute_partner')
@@ -150,6 +151,11 @@ class GvmProductInherit(models.Model):
         self.write({'destination_date': datetime.today(), 
 	            'destination_man': self.env.user.name,
 		    'state': 'destination'})
+        return {}
+    
+    @api.multi
+    def button_paydone(self):
+        self.write({'state': 'paydone'})
         return {}
 
     @api.multi

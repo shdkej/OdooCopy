@@ -7,9 +7,8 @@
             <tree decoration-muted="state in ('cancel','bad')" decoration-info="destination_date!=False" decoration-danger="expected_date!=False and current_date>expected_date and destination_date==False" decoration-bf="expected_date!=False and current_date>expected_date and destination_date==False" default_order="purchase_by_maker asc">
                 <field name="sequence_num"/>
                 <field name="purchase_by_maker" string="발주번호"/>
-                <field name="name" string="도면번호"/>
+                <field name="name" string="도면번호/규격"/>
                 <field name="product_name" required="1"/>
-                <field name="specification"/>
                 <field name="material"/>
                 <field name="issue" string="파트"/>
                 <field name="create_date" widget="date"/>
@@ -26,7 +25,6 @@
                 <field name="expected_date"/>
                 <field name="destination_date"/>
                 <field name="receiving_date"/>
-                <field name="category" invisible="1"/>
                 <field name="request_receiving_man"/>
                 <field name="reorder_num" string="자재상태"/>
                 <field name="state"/>
@@ -40,6 +38,110 @@
             </tree>
         </field>
     </record>
+
+    <record id="delivery_form" model="ir.ui.view">
+        <field name="name">gvm.delivery.form</field>
+        <field name="model">gvm.delivery</field>
+        <field name="arch" type="xml">
+            <form string="Deilvery Order">
+                <header>
+                    <button name="button_cancel" states="sending,send_ready"  string="발송취소" type="object"  groups="purchase.group_purchase_manager"/>
+                    <button name="button_confirm" states="write" string="상신" type="object"  groups="purchase.group_purchase_manager"/>
+                    <button name="button_done" states="sending" string="발송완료" type="object"  groups="purchase.group_purchase_manager"/>
+                    <button name="button_resend" states="cancel" string="재발송" type="object"  groups="purchase.group_purchase_manager"/>
+                    <button name="button_send" states="send_ready" string="발송" type="object"  groups="purchase.group_purchase_manager"/>
+                    <field name="state" widget="statusbar" statusbar_visible="write,send_ready,sending,send" readonly="1"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">   
+                        <label string="택배/핸드캐리"/>
+                        <h1>
+                            <field name="de_num" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="release"/>
+                            <field name="release_action"/>
+                            <field name="arrival_date"/>
+                            <field name="release_date"/>
+                            <field name="delivery_number"/>
+                            <field name="attachment" widget="many2many_binary"/>
+                        </group>
+                        <group>
+                            <field name="release_man"/>
+                            <field name="field_order_man"/>
+                            <field name="within_order_man"/>
+                            <field name="handcarry_man"/>
+                            <field name="permit_man"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Products">
+                            <field name="delivery">
+                                <tree editable="bottom">
+                                    <field name="image" widget="image"/>
+                                    <field name="purchase_num"/>
+                                    <field name="purchase_by_maker"/>
+                                    <field name="name" string="도면번호/규격"/>
+                                    <field name="product_name"/>
+                                    <field name="material"/>
+                                    <field name="order_man"/>
+                                    <field name="project_id"/>
+                                    <field name="issue" string="파트"/>
+                                    <field name="original_count"/>
+                                    <field name="destination_date"/>
+                                    <field name="etc"/>
+                                    <field name="before_weight"/>
+                                    <field name="after_weight"/>
+                                    <field name="weight_state"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="delivery_tree" model="ir.ui.view">
+        <field name="name">gvm.delivery.tree</field>
+        <field name="model">gvm.delivery</field>
+        <field name="arch" type="xml">
+            <tree default_order="de_num desc">
+                <field name="de_num"/>
+                <field name="release"/>
+                <field name="release_action"/>
+                <field name="delivery_number"/>
+                <field name="arrival_date"/>
+                <field name="release_date"/>
+                <field name="release_man"/>
+                <field name="permit_man"/>
+                <field name="field_order_man"/>
+                <field name="within_order_man"/>
+                <field name="handcarry_man"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="delivery_filter" model="ir.ui.view">
+        <field name="name">gvm.delivery.filter</field>
+        <field name="model">gvm.delivery</field>
+        <field name="arch" type="xml">
+            <search string="Search Product">
+                <field name="de_num"/>
+                <field name="delivery_number"/>
+                <field name="release"/>
+                <field name="release_action"/>
+                <field name="release_man"/>
+                <field name="field_order_man"/>
+                <field name="within_order_man"/>
+                <field name="handcarry_man"/>
+            </search>
+        </field>
+    </record>
+
     <record id="gvm_product_tree_all" model="ir.ui.view">
         <field name="name">gvm.product.tree_all</field>
         <field name="model">gvm.product</field>
@@ -47,9 +149,8 @@
             <tree decoration-muted="state in ('cancel','bad')" decoration-info="destination_date!=False" decoration-danger="expected_date!=False and current_date>expected_date and destination_date==False" decoration-bf="expected_date!=False and current_date>expected_date and destination_date==False" default_order="issue asc">
                 <field name="sequence_num"/>
                 <field name="purchase_by_maker" string="발주번호"/>
-                <field name="name" string="도면번호"/>
+                <field name="name" string="도면번호/규격"/>
                 <field name="product_name" required="1"/>
-                <field name="specification"/>
                 <field name="material"/>
                 <field name="issue" string="파트"/>
                 <field name="create_date" widget="date"/>
@@ -66,7 +167,6 @@
                 <field name="expected_date"/>
                 <field name="destination_date"/>
                 <field name="receiving_date"/>
-                <field name="category" invisible="1"/>
                 <field name="request_receiving_man"/>
                 <field name="reorder_num" string="자재상태"/>
                 <field name="state"/>
@@ -91,9 +191,8 @@
                 <field name="project_id" string="프로젝트"/>
                 <field name="issue" string="파트"/>
                 <field name="purchase_by_maker" string="발주번호"/>
-                <field name="name" string="도면번호"/>
+                <field name="name" string="도면번호/규격"/>
                 <field name="product_name" required="1"/>
-                <field name="specification"/>
                 <field name="material"/>
                 <field name="create_date" widget="date"/>
                 <field name="request_date"/>
@@ -106,7 +205,6 @@
                 <field name="total_price" sum="Total amount" widget="monetary" groups="purchase.group_purchase_manager"/>
                 <field name="order_date"/>
                 <field name="destination_date"/>
-                <field name="category" invisible="1"/>
                 <field name="reorder_num" string="자재상태"/>
                 <field name="state"/>
                 <field name="bad_item"/>
@@ -129,13 +227,11 @@
                     <group>
                         <group string="기본정보">
                             <field name="sequence_num"/>
-                            <field name="name" string="도면번호"/>
+                            <field name="name" string="도면번호/규격"/>
                             <field name="product_name" required="1"/>
-                            <field name="specification"/>
                             <field name="material"/>
                             <field name="order_man"/>
                             <field name="partner_ids"/>
-                            <field name="category"/>
                         </group>
                         <group>
                             <field name="project_set" widget="many2many_tags"/>
@@ -152,14 +248,12 @@
                             <group>
                                 <group>
                                     <field name="state"/>
-                                    <field name="release_place"/>
                                     <field name="request_date"/>
                                     <field name="expected_date"/>
                                     <field name="destination_date"/>
                                     <field name="destination_man"/>
                                     <field name="receiving_date"/>
                                     <field name="receiving_man"/>
-                                    <field name="release_place"/>
                                     <field name="request_receiving_man"/>
                                     <field name="complete_date"/>
                                 </group>
@@ -178,10 +272,6 @@
                             </group>
                         </page>
                     </notebook>
-                    <div class="oe_chatter">
-                        <field name="message_follower_ids" widget="mail_followers"/>
-                        <field name="message_ids" widget="mail_thread"/>
-                    </div>
                 </sheet>
             </form>
         </field>
@@ -242,16 +332,13 @@
         <field name="arch" type="xml">
             <search string="Search Product">
                 <field name="product_name"/>
-                <field name="name" string="도면번호"/>
-                <field name="specification"/>
+                <field name="name" string="도면번호/규격"/>
                 <field name="create_uid"/>
                 <field name="partner_id"/>
-                <filter name="current_month" string="Current Month" domain="[('create_date','&lt;',(context_today()+relativedelta(months=1)).strftime('%%Y-%%m-01')),('create_date','&gt;=',time.strftime('%%Y-%%m-01'))]"/>
-                <filter name="prev_month" string="Prev Month" domain="[('create_date','&gt;=',(context_today()-relativedelta(months=1)).strftime('%%Y-%%m-01')),('create_date','&lt;',time.strftime('%%Y-%%m-01'))]"/>
-                <filter name="cate_1" string="기구/가공품" domain="[('category','=',1)]"/>
-                <filter name="cate_2" string="기구/표준품" domain="[('category','=',2)]"/>
-                <filter name="cate_3" string="전장/가공품" domain="[('category','=',3)]"/>
-                <filter name="cate_4" string="전장/표준품" domain="[('category','=',4)]"/>
+                <filter name="current_month" string="이번 달" domain="[('create_date','&lt;',(context_today()+relativedelta(months=1)).strftime('%%Y-%%m-01')),('create_date','&gt;=',time.strftime('%%Y-%%m-01'))]"/>
+                <filter name="prev_month" string="저번 달" domain="[('create_date','&gt;=',(context_today()-relativedelta(months=1)).strftime('%%Y-%%m-01')),('create_date','&lt;',time.strftime('%%Y-%%m-01'))]"/>
+                <filter name="prev_month" string="작년" domain="[('create_date','&gt;=',(context_today()-relativedelta(years=1)).strftime('%%Y-01-01')),('create_date','&lt;',(context_today()-relativedelta(years=1)).strftime('%%Y-12-01'))]"/>
+                <filter name="prev_month" string="올해" domain="[('create_date','&gt;=',(context_today()).strftime('%%Y-01-01')),('create_date','&lt;',time.strftime('%%Y-12-01'))]"/>
                 <separator/>
                 <group expand="0" string="Group By">
                     <filter string="프로젝트" domain="[]" context="{'group_by':'project_id'}"/>
@@ -294,8 +381,15 @@
             </form>
         </field>
     </record>
-
-
+    <record id="action_delivery" model="ir.actions.act_window">
+        <field name="name">택배/핸드캐리</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">gvm.delivery</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" eval="False"/> <!-- Force empty -->
+        <field name="view_id" ref="delivery_tree"/>
+    </record>
     <record id="action_gvm_product" model="ir.actions.act_window">
         <field name="name">제품</field>
         <field name="type">ir.actions.act_window</field>
@@ -357,7 +451,6 @@
                 <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
                 <field name="currency_id" invisible="1"/>
                 <field name="state"/>
-                <field name="charge"/>
                 <field name="invoice_status" invisible="1"/>
             </tree>
         </field>

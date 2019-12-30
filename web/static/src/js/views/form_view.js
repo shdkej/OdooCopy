@@ -44,70 +44,61 @@ var FormView = View.extend(common.FieldManagerMixin, {
         this.autofocus();
     },
     events:{
+        'click #export_excel_button': function(){
+            this.gvm_excel();
+        },
         'click #order_button': 'gvm_on_button_order',
-        'click #quotation_change_button': 'gvm_on_button_duplicate',
         'click #keep_button': 'gvm_change_state1',
         'click #unkeep_button': 'gvm_change_state1',
         'click #destination_button': 'gvm_change_state1',
         'click #receive_button': 'gvm_change_state1',
-	'click #add_check': function(){
-	  var id = Number($('#add_check').attr('name'))
-      console.log(id)
-	  var td = $('.check_hidden:eq('+id+')').removeClass('o_form_invisible');
-	  $('.check_hidden:eq('+(id+2)+')').removeClass('o_form_invisible');
-	  $('tr:eq(2)').prepend('<td style="border:0!important"></td>')
-	  $('tr:eq(3)').prepend('<td style="border:0!important"></td>')
-	  $('#add_check').attr('name',1)
-	},
-	'click .del_check': function(e){
-	  var del = $(e.currentTarget).attr('id')
-	  //$('.tr_head td:eq('+(Number(del)+1)+')').remove();
-	  //$('.tr_body td:eq('+del+')').remove();
-	  $('#add_check').attr('name',0)
-	},
-	'click #sign_button': function(){
-	  this.gvm_sign_button()
-	},
-	'click #deny_button': function(){
-	  this.gvm_sign_button('cancel')
-	},
-	'click .download_button': function(){
-	  var el = $('.oe_attachments').children();
-	  var url = '';
-	  $.each(el, function(i){
-	    url = el[i].firstElementChild.href;
-	    window.open(url, "_blank");
-	  });
-	},
-	'click #toexcel': function(){
-	  var excelFile = '<html xmlns:x="urn:schemas-microsoft-com:office:excel"';
-	  excelFile += '<head>';
-	  excelFile += '<meta http-equiv="Content-type" content="text/html;charset=utf-8"/>';
-	  excelFile += '</head>';
-	  excelFile += '<body><table>';
-	  excelFile += $("#exceltable").html() + $("#exceltable2").html();
-	  excelFile += '</table></body>';
-	  excelFile += '</html>';
-
-	  var data_type = 'data:application/vnd.ms-excel';
-	  window.open(data_type + ',' + encodeURIComponent(excelFile));
-	},
+        'click #add_check': function(){
+            var id = Number($('#add_check').attr('name'));
+            var td = $('.check_hidden:eq('+id+')').removeClass('o_form_invisible');
+            $('.check_hidden:eq('+(id+2)+')').removeClass('o_form_invisible');
+            $('tr:eq(2)').prepend('<td style="border:0!important"></td>');
+            $('tr:eq(3)').prepend('<td style="border:0!important"></td>');
+            $('#add_check').attr('name',1)
+        },
+        'click .del_check': function(e){
+            var del = $(e.currentTarget).attr('id')
+            //$('.tr_head td:eq('+(Number(del)+1)+')').remove();
+            //$('.tr_body td:eq('+del+')').remove();
+            $('#add_check').attr('name',0)
+        },
+        'click #sign_button': function(){
+            this.gvm_sign_button()
+        },
+        'click #deny_button': function(){
+            this.gvm_sign_button('cancel')
+        },
+        'click .download_button': function(){
+            var el = $('.oe_attachments').children();
+            var url = '';
+            $.each(el, function(i){
+                url = el[i].firstElementChild.href;
+                window.open(url, "_blank");
+            });
+        },
+        'click #toexcel': function(){
+            this.gvm_excel('sign');
+        },
     },
-    /**
-     * Called each time the form view is detached from the DOM
-     */
+        /**
+         * Called each time the form view is detached from the DOM
+         */
     on_detach_callback: function() {
         this.trigger('detached');
     },
     init: function() {
+	    $('#export_excel_button').hide();
         $('#order_button').hide();
-        $('#quotation_change_button').hide();
-	$('#gvm_search_purchase').hide();
-	$('#keep_button').hide();
-	$('#unkeep_button').hide();
-	$('#destination_button').hide();
-	$('#receive_button').hide();
-	this.gvm_search_purchase();
+        $('#gvm_search_purchase').hide();
+        $('#keep_button').hide();
+        $('#unkeep_button').hide();
+        $('#destination_button').hide();
+        $('#receive_button').hide();
+        this.gvm_search_purchase();
         var self = this;
         this._super.apply(this, arguments);
         this.fields = {};
@@ -993,97 +984,105 @@ var FormView = View.extend(common.FieldManagerMixin, {
             });
         }
     },
+
     gvm_change_state1: function(e){
-         this.gvm_change_state($(e.target).attr('name'));
-	 console.log($(e.target).attr('name'));
+        this.gvm_change_state($(e.target).attr('name'));
+        console.log($(e.target).attr('name'));
     },
     gvm_change_state: function(state){
-         var self = this;
-	 var ids = [];
-	 var confirm_people = prompt("이름을 입력해주세요(미입력 시 접속자 이름)");
-	 if (confirm_people === null){
-	   return;
-	 }
-	 $('#radiogroup:checked').each(function(){
-	     ids.push($(this).closest('tr').attr('data-id'));
-	 });
-	 self.rpc("/web/dataset/state",{
-	    ids: ids,
-	    state: state,
-	    name: confirm_people
-	 })
+        var self = this;
+        var ids = [];
+        var confirm_people = prompt("이름을 입력해주세요(미입력 시 접속자 이름)");
+        if (confirm_people === null){
+            return;
+        }
+        $('tbody #radiogroup:checked').each(function(){
+            ids.push($(this).closest('tr').attr('data-id'));
+        });
+        var Product = new Model('gvm.product');
+        Product.call('gvm_onchange_state',[ids,state,confirm_people]).then(function(result){self.reload()});
     },
     gvm_search_purchase: function(){
         var self = this;
-	$('#gvm_search_purchase option').remove()
-	$('#gvm_search_purchase').append('<option id="0" value="0">New</option>')
+        $('#gvm_search_purchase option').remove();
+        $('#gvm_search_purchase').append('<option id="0" value="0">New</option>');
         var Purchase = new Model('purchase.order');
         Purchase.query(['name'],['id']).limit(50).all().then(function(id){
-          $.each(id, function(index, item){
-            $('#gvm_search_purchase').append('<option id="'+index+'" value="'+item.id+'">'+item.name+'</option>');
-          });
-       });
+            $.each(id, function(index, item){
+                $('#gvm_search_purchase').append('<option id="'+index+'" value="'+item.id+'">'+item.name+'</option>');
+            });
+        });
     },
     gvm_on_button_duplicate: function(state) {
-         alert('저장 하시면 적용됩니다.');
-         var self = this;
-         var ids = [];
-	 var id = '';
-	 $('#radiogroup:checked').each(function(){
-	   ids.push($(this).closest('tr').attr('data-id'));
-	 });
-         if($('#gvm_search_purchase').val() == 0){
-	     return this.has_been_loaded.then(function() {
-	        return self.dataset.call('copy', [self.datarecord.id, {}, self.dataset.context]).then(function(new_id) {
-	          self.record_created(new_id);
-	          console.log($('#gvm_search_purchase').val())
-		  id = new_id;
-	          if(state == 'purchase'){
-	               self.rpc("/web/dataset/change_purchase", {
-	                  ids: ids,
-	                  new_record: id,
-	                  state: state,
-	               })
-	          }else{
-	               self.rpc("/web/dataset/change_purchase", {
-	                  ids: ids,
-	                  new_record: id,
-	               })
-	          }
-	          self.to_edit_mode();
-	       });
-	     });
-	  }else{
-	    id = $('#gvm_search_purchase').val();
-	    console.log(id)
-	    self.rpc("/web/dataset/change_purchase", {
-	           ids: ids,
-	           new_record: id,
- 	    })
-	    location.reload();
-	  }
- },
+        var self = this;
+        var ids = []; //선택한 자재 리스트
+        var id = '';
+        var Purchase = new Model('gvm.product');
+        $('tbody #radiogroup:checked').each(function(){
+            ids.push($(this).closest('tr').attr('data-id'));
+        });
+        var select_purchase_id = $('#gvm_search_purchase').val();
+        console.log(ids);
+        // 선택항목 구매로 올리기 클릭
+        if(select_purchase_id == 0){ // New 선택 시 
+            id = '';
+            /*
+            return this.has_been_loaded.then(function() {
+                return self.dataset.call('copy', [self.datarecord.id, {}, self.dataset.context]).then(function(new_id) {
+                    self.record_created(new_id);
+                    console.log(new_id);
+                    Purchase.call('gvm_change_purchase',[ids, new_id]).then(function(result){
+                        self.to_edit_mode();
+                    });
+                });
+            });
+            */
+        }else{ // 발주서 번호 선택 시
+            id = select_purchase_id;
+        }
+        Purchase.call('gvm_change_purchase',[ids, id]).then(function(result){
+            //self.to_edit_mode();
+        });
+    },
     gvm_on_button_order: function() {
          var state = 'draft'
          this.gvm_on_button_duplicate(state);
     },
     gvm_sign_button: function(state){
+        console.log(state)
 	    var self = this;
 	    var comment = prompt('의견이 있으시면 적어주시기 바랍니다.');
-	    var url = '/web/dataset/comment'
-	    if (comment != null){
-	      var ids = String(location.hash).split('&view_type=')[0].split('id=')[1];
-              self.rpc(url,{
-	         ids: ids,
-	         comment: comment,
-		 state: state,
-	      });
-	      location.reload();
-	    }
+	    if (comment === null){
+            return;
+        }
+	    var ids = String(location.hash).split('&view_type=')[0].split('id=')[1];
+        var Sign = new Model('gvm.signcontent');
+        Sign.call('gvm_sign_comment',[ids,comment,state]).then(function(result){
+            self.reload();
+        });
     },
+    gvm_excel: function(state){
+        var excelFile = '<html xmlns:x="urn:schemas-microsoft-com:office:excel"';
+        excelFile += '<head>';
+        excelFile += '<meta http-equiv="Content-type" content="text/html;charset=utf-8"/>';
+        excelFile += '</head>';
+        excelFile += '<body><table>';
+        if (state){
+            excelFile += $("#exceltable").html() + $("#exceltable2").html();
+        }else{
+            excelFile += $(".o_list_editable .o_list_view").html();
+        }
+        excelFile += '</table></body>';
+        excelFile += '</html>';
+
+        var data_type = 'data:application/vnd.ms-excel';
+        window.open(data_type + ',' + encodeURIComponent(excelFile));
+    },
+
     on_action: function(action){
         console.debug('Executing action', action);
     },
+
     reload: function() {
         var self = this;
         return this.reload_mutex.exec(function() {

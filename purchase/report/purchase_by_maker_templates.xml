@@ -5,7 +5,7 @@
             <t t-set="o" t-value="o.with_context({'lang':o.partner_id.lang})"/>
             <div class="page">
                 <div class="gvm_sign">
-                    <table style="position:fixed; top:-100px; right:5px; z-index:1;">
+                    <table style="position:fixed; right:5px; z-index:1;">
                         <thead>
                             <tr height="30" class="tr_head">
                                 <!--결재라인 헤더 -->
@@ -17,15 +17,19 @@
                         <tbody>
                             <!--결재라인 바디 -->
                             <tr height="80" class="tr_body">
-                                <td class="td_check" style="border:2px solid;"></td> 
-                                <td class="td_check" style="border:2px solid;"></td>
-                                <td class="td_check" style="border:2px solid;"></td>
+                                <td class="td_check" style="border:2px solid; text-align:center; vertial-align:middle;">
+                                    <span t-field="o.drawing_man"/>
+                                </td> 
+                                <td class="td_check" style="border:2px solid; text-align:center; vertial-align:middle;">
+                                    <span t-field="o.permit_man"/>
+                                </td> 
+                                <td class="td_check" style="border:2px solid; text-align:center; vertial-align:middle;">
+                                </td> 
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div class="oe_structure"/>
 
                 <div class="row mt32 mb32">
                     <div class="col-xs-6">
@@ -55,7 +59,7 @@
                             <strong>Project : </strong><div t-field="o.project_id"/>
                         </div>
                         <div t-if="o.issue">
-                            <strong>Part : </strong><div t-field="o.issue"/>
+                            <strong>Unit : </strong><div t-field="o.issue"/>
                         </div>
                     </div>
                 </div>
@@ -63,18 +67,20 @@
                 <table class="table table-condensed">
                     <thead>
                         <tr>
-                            <th><strong>Description</strong></th>
-                            <th><strong>Name</strong></th>
-                            <th><strong>Material</strong></th>
-                            <th><strong>Specification</strong></th>
-                            <th class="text-center"><strong>Expected Date</strong></th>
-                            <th class="text-right"><strong>Qty</strong></th>
+                            <th><strong>도번 및 규격</strong></th>
+                            <th><strong>품명</strong></th>
+                            <th><strong>재질</strong></th>
+                            <th><strong>분류</strong></th>
+                            <th><strong>비고</strong></th>
+                            <th class="text-center"><strong>납기요청일자</strong></th>
+                            <th class="text-right"><strong>총 수</strong></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr t-if="o.product" t-foreach="o.product" t-as="p">
                             <td>
                                 <span t-field="p.name"/>
+                                <span t-if="p.specification" t-field="p.specification"/>
                             </td>
                             <td>
                                 <span t-field="p.product_name"/>
@@ -83,7 +89,10 @@
                                 <span t-field="p.material"/>
                             </td>
                             <td>
-                                <span t-field="p.specification"/>
+                                <span t-field="p.category"/>
+                            </td>
+                            <td>
+                                <span t-field="p.etc"/>
                             </td>
                             <td class="text-right">
                                 <span t-field="p.request_date"/>

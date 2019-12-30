@@ -300,7 +300,7 @@
 <div t-name="ListView" class="table-responsive">
     <table class="o_list_view table table-condensed table-striped">
         <!--<t t-set="columns_count" t-value="visible_columns.length + (options.selectable ? 1 : 0) + (options.deletable ? 1 : 0)"/>-->
-        <t t-set="columns_count" t-value="visible_columns.length"/>
+        <t t-set="columns_count" t-value="visible_columns.length"/>  
         <thead>
             <tr t-if="options.header">
                 <t t-foreach="columns" t-as="column">
@@ -317,7 +317,7 @@
                 <t t-foreach="columns" t-as="column">
                     <th t-if="!column.meta and column.invisible !== '1'" t-att-data-id="column.id"
                         t-attf-class="#{((options.sortable and column.sortable and column.tag !== 'button') ? 'o_column_sortable' : '')}"
-                            t-att-width="150">
+                        t-att-width="150">
                         <t t-if="column.tag !== 'button'"><t t-raw="column.heading()"/></t>
                     </th>
                 </t>
@@ -506,13 +506,13 @@
     </t>
 </table>
 <t t-name="FormRenderingNotebook">
-    <button id="quotation_change_button" name="change" class="btn" style="display:none">선택항목 새로 만들기</button>
+    <button id="export_excel_button" class="btn" name="excel" style="display:none">엑셀</button>
+    <button id="destination_button" class="btn" name="destination" style="display:none">선택항목 입고</button>
+    <button id="receive_button" class="btn" name="done" style="display:none">선택항목 출고</button>
     <button id="order_button" class="btn" name="purchase" style="display:none">선택항목 견적으로 올리기</button>
     <select id="gvm_search_purchase" style="display:none"></select>
     <button id="keep_button" class="btn" name="keep" style="display:none">보류</button>
     <button id="unkeep_button" class="btn" name="unkeep" style="display:none">보류해제</button>
-    <button id="destination_button" class="btn" name="destination" style="display:none">선택항목 입고</button>
-    <button id="receive_button" class="btn" name="done" style="display:none">선택항목 출고</button>
     <div class="o_notebook">
         <ul t-attf-class="nav nav-tabs #{classnames}" role="tablist">
             <li t-foreach="pages" t-as="page" t-att-modifiers="page.modifiers">

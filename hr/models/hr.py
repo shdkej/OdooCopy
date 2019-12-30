@@ -149,9 +149,10 @@ class Employee(models.Model):
     city = fields.Char(related='address_id.city')
     login = fields.Char(related='user_id.login', readonly=True)
     last_login = fields.Datetime(related='user_id.login_date', string='Latest Connection', readonly=True)
-    holiday_count = fields.Float('남은연차', default=0.0)
+    holiday_count = fields.Float('남은연차', default=0.0, track_visibility='onchange')
     join_date = fields.Date('join_date')
     holiday_max_count = fields.Integer('연차총개수')
+    hr_tracking = fields.One2many('hr.tracking', 'name', string='연차')
 
     # image: all image fields are base64 encoded and PIL-supported
     image = fields.Binary("Photo", default=_default_image, attachment=True,
@@ -202,24 +203,43 @@ class Employee(models.Model):
          #홀수/ 짝수 판별
          year_check = year_entering % 2.0
 
+         count = 0
+         reason = ''
+         holiday = record.holiday_count
+
          #1년미만 입사자
          if year_entering == 0 and companyMonth != presentMonth and companyDay == presentDay:
            #연차 1개를 증가시킨다.
-           record.holiday_count += 1.0
+           #1년 미만 재직자 연차 개수 1개 추가
+           #record.holiday_count += 1.0
+           count = holiday + 1.0
+           reason += 'under 1 year'
            _logger.warning("%s under 1 year" % record.name)
          #1년
          elif year_entering == 1 and companyMonth == presentMonth and companyDay == presentDay:
            #연차 15개를 증가시킨다.
-           record.holiday_count += 15.0
+           #record.holiday_count += 15.0
+           count = holiday + 15.0
+           reason += 'check 1 year'
+           #1년 재직자 연차 개수 15개 추가
            _logger.warning("%s 1 year" % record.name)
          #2년
          elif year_entering > 1 and companyMonth == presentMonth and companyDay == presentDay:
            #남은 연차의 갯수가 + 일경우 연차 초기화
-           if record.holiday_count > 0.0:
-              record.holiday_count = 0.0
+           #   record.holiday_count = 0.0
            #연차 15개를 증가시킨다.
-           record.holiday_count += 15.0
+           #2년 재직자 연차 개수 15개 초기화
+           #record.holiday_count += 15.0
+           count = 15.0
+           if record.holiday_count < 0.0:
+             count = holiday + 15
+           reason += 'check 2 year'
            _logger.warning("%s 2 year" % record.name)
+         else:
+           _logger.warning("%s 해당없음" % record.name)
+           count = holiday
+           continue
+
          #3년이상 재직 시 2년마다 연차 총 개수 1개씩 증가
          if year_entering > 2  and companyMonth == presentMonth and companyDay == presentDay:   
            #3년이상 종사자 2년마다 연차 개수 2개씩 증가
@@ -228,20 +248,31 @@ class Employee(models.Model):
            #짝수
 	   if year_check == 0:
 	     year_1count = (year_entering / 2.0) - 1.0
-             record.holiday_count += year_1count
+             #3년 재직자 연차 개수 2개 추가
+             #record.holiday_count += year_1count
+             count += year_1count
+             reason += ' and over 3 year + %s' % year_1count
              _logger.warning("%s 3 year" % record.name)
 	   #홀수
 	   else:
  	     year_2count = (year_entering - 1.0) / 2.0
-	     record.holiday_count += year_2count
+	     #record.holiday_count += year_2count
+	     count += year_2count
+             reason += ' and over 3 year + %s' % year_2count
              _logger.warning("%s 3 year" % record.name)
 	
          #1년미만 입사자는 max_count = 0 
          if year_entering == 0 and companyMonth != presentMonth and companyDay == presentDay:
            record.holiday_max_count = 0
          else:
-           record.holiday_max_count = record.holiday_count
-       
+           #record.holiday_max_count = record.holiday_count
+           record.holiday_max_count = count
+
+         # 연차개수 변경 시 로그 남기기
+         record.holiday_count = count
+         text = str('입사일 기준 연차계산: 기존 %s, 계산 %s = 변경 %s' % (holiday, count, record.holiday_count))
+         text = text + ' (' + reason + ')'
+         self.env['hr.tracking'].create({'name':record.id, 'holiday_count':count, 'etc':text})
        #입사일이없는경우
        else:
             record.holiday_max_count = 0
@@ -446,3 +477,15 @@ class TimeAttendance(models.Model):
                 record = self.env['hr.timeattendance'].create({'name':name, 'date':date})
 	    record.gotohome = time - th
       _logger.info('Parse Complite')
+
+class HrTracking(models.Model):
+
+    _name = "hr.tracking"
+    _description = "Hr Tracking about holiday count..."
+    _order = "date desc"
+
+    name = fields.Many2one('hr.employee','name')
+    date = fields.Date('Date', default=fields.Datetime.now)
+    holiday_count = fields.Float('남은연차', track_visibility='onchange')
+    etc = fields.Char('내용')
+    sign_id = fields.Many2one('gvm.signcontent','결재문서')

@@ -1023,7 +1023,7 @@ var X2ManyList = ListView.List.extend({
         if (this.options.deletable) { columns++; }
 
         var $cell = $('<td>', {
-            colspan: columns,
+            colspan: columns+1,
             'class': 'o_form_field_x2many_list_row_add'
         }).append(
             $('<a>', {href: '#'}).text(_t("Add an item"))

@@ -57,6 +57,10 @@ class ProjectSite(models.Model):
     sequence = fields.Integer(default=1)
     project_ids = fields.Many2many('project.project', 'project_task_type_rel', 'type_id', 'project_id', string='Projects')
 
+    _sql_constraints = [
+        ('project_site_unique', 'unique (name)', '이미 등록된 이름입니다.')
+    ]
+
 class Project(models.Model):
     _name = "project.project"
     _description = "Project"
@@ -233,7 +237,6 @@ class Project(models.Model):
     world = fields.Boolean(string='Show Project on dashboard')
     crm = fields.Many2one('crm.lead','crm')
     timeline = fields.One2many('project.timeline','project','일정표')
-#    sign = fields.One2many('gvm.signcontent','project','sign')
     state = fields.Selection([
         ('ready','준비'),
         ('po', '발주'),
@@ -244,6 +247,7 @@ class Project(models.Model):
         ], string='Status', default='ready', )
     project_rate = fields.Integer(string='계층',default='1')
     work_time = fields.Float('업무시간', compute='_compute_work_time', store=True)
+    work_tasks = fields.Many2many('project.task','project','work_tasks',string="업무",compute='_compute_work_tasks')
 
     _sql_constraints = [
         ('project_date_greater', 'check(date >= date_start)', 'Error! project start-date must be lower than project end-date.')
@@ -252,7 +256,9 @@ class Project(models.Model):
 
     @api.multi
     def button_project_complete(self):
-        self.write({'is_finish':True})
+        self.write({'is_finish':True,
+                    'state':'finish'
+                    })
         return {}
 
     @api.depends('state')
@@ -263,12 +269,19 @@ class Project(models.Model):
 
     @api.depends('line_ids')
     def _compute_work_time(self):
-      _logger.warning("compute work time")
       for record in self:
         total_work_time = 0
         for line_id in record.line_ids:
           total_work_time += line_id.work_time
         record.work_time = total_work_time
+
+    def _compute_work_tasks(self):
+        for record in self:
+           worksheet = self.env['account.analytic.line'].search([('project_id','=',record.id)])
+           work_ids = []
+           for w in worksheet:
+            work_ids.append(w.task_id.id)
+           record.work_tasks = work_ids
 
     @api.multi
     def on_change_issue(self):
