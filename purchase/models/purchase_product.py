@@ -393,6 +393,8 @@ class GvmPurchaseProduct(models.Model):
               stock.write({'ponum':value})
 
               product.stock_item = True            
+              product.product_id = stock.id
+
               # 개수가 모자라면 분할해야 함
               stock_log = stock.stock
               stock_count = stock.stock - product.total_count

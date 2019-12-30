@@ -69,7 +69,7 @@
         <field name="arch" type="xml">
             <form string="Sign">
                 <header>
-                    <button name="button_remove" string="취소" type="object" groups="hr.group_hr_manager"  confirm="취소하시겠습니까?" attrs="{'invisible':[('sign_ids','in',[2,4,5,6]),('state','!=','done')]}"/>
+                    <button name="button_remove" string="취소" type="object" groups="hr.group_hr_manager"  confirm="취소하시겠습니까?" attrs="{'invisible':[('state','!=','done')]}"/>
                     <span attrs="{'invisible':[('check','=',False)]}"><input type="button" class="sign_button" id="sign_button" value="결재"/></span>
                     <span attrs="{'invisible':[('check','=',False)]}"><input type="button" class="sign_button" id="deny_button" value="반려"/></span>
                     <button name="button_confirm" string="상신" type="object" states="temp" confirm="상신하시겠습니까?"/>
@@ -97,7 +97,7 @@
                             <tree editable="bottom">
                                 <field name="sequence" widget="handle"/>
                                 <field name="check"/>
-                                <field name="name"/>
+                                <field name="name" options="{'no_create_edit':True, 'no_create':True}"/>
                                 <field name="state"/>
                                 <field name="check_date"/>
                                 <field name="reason" string="코멘트"/> 
