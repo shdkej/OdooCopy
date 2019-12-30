@@ -191,9 +191,8 @@
                                 <field name="name" string="상세설명"/>
                                 <field name="account_id" invisible="1"/>
                                 <field name="location"/>
-                                <field name="date" string="출퇴근기록 불러오기"/>
                                 </group>
-                				<span class="mobile_invisible">
+                                <span class="mobile_invisible">
                                 <h3>시작시간 : </h3><field name="date_from"/>
                                 <h3>종료시간 : </h3><field name="date_to"/>
                                 </span>
@@ -202,7 +201,7 @@
                                 <h3>종료시간 : </h3><field name="mobile_date_to" widget="datetimecustom"/>
                                 </span>
                                 <group>
-                                <field name="test_date_from" invisible="1"/>
+			                	<field name="test_date_from" invisible="1"/>
                                 <field name="company_id" groups="base.group_multi_company" invisible="1"/>
                                 <field name="amount" invisible="1"/>
                                 <field name="work_time" string="업무시간"/>
@@ -210,6 +209,7 @@
                                 <field name="currency_id" invisible="1"/>
                                 <field name="lunch"/>
                                 <field name="holiday"/>
+                                <field name="date" string="출퇴근 기록 불러오기"/>
                             </group>
                         </group>
                     </sheet>
@@ -224,8 +224,7 @@
             <field name="arch" type="xml">
                 <calendar color="user_id" date_start="date_from" date_stop="date_to" string="Tasks" mode="week" event_open_popup="%(view_account_analytic_line_form)s">
                     <field name="name"/>
-                    <field name="account_id"/>
-		    <field name="user_id"/>
+                    <field name="user_id"/>
                 </calendar>
             </field>
         </record>

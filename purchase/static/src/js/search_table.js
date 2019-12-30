@@ -346,17 +346,26 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         var project_selected = $('#gvm_search_product.comboTreeInputBox').val();
         var Project = new Model('project.project');
         var project_id = Project.query(['id']).filter([['name','=',project_selected]]).all().then(function(id){
-            var prj_id = id[0].id
-            var action = {
-                type: 'ir.actions.act_window',
-                res_model: 'project.project',
-                res_id: prj_id,
-                view_mode: 'form',
-                target: 'new',
-                view_type: 'form',
-                views: [[false, 'form']],
-            };
-            self.do_action(action);
+            var prj_id = id[0].id;
+            var model_obj = new Model('ir.model.data');
+            model_obj.call('get_object_reference', ['project','project_product_view_form_simplified']).then(function(result){
+                var view_id = result[1];
+                var ctx = {
+                    'view_product_menu':0
+                }
+                var action = {
+                    type: 'ir.actions.act_window',
+                    res_model: 'project.project',
+                    res_id: prj_id,
+                    view_mode: 'form',
+                    target: 'new',
+                    view_type: 'form',
+                    context: ctx,
+                    view_id: "project_project_view_form_simplified", 
+                    views: [[view_id,'form']],
+                };
+                self.do_action(action);
+            });
         })
         //new data.DataSet(this, model, undefined)
         //        .create({'name':name,'project_id':project_id,'user_id':1,'stage_id':18}, undefined);

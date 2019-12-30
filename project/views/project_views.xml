@@ -71,6 +71,8 @@
     <record id="edit_project" model="ir.ui.view">
         <field name="name">project.project.form</field>
         <field name="model">project.project</field>
+        <field name="mode">primary</field>
+        <field name="priority">1</field>
         <field name="arch" type="xml">
             <form string="Project">
                 <header>
@@ -97,10 +99,8 @@
                         </button>
                     </div>
                     <div class="oe_title">
-                        <label for="name" class="oe_edit_only"/>
+                        <label for="name" class="oe_edit_only" string="프로젝트명"/>
                         <h1><field name="name" placeholder="Project Name" required="True"/></h1>
-                        <label for="code" class="oe_edit_only"/>
-                        <h1><field name="code" placeholder="Project Code" required="True"/></h1>
                         <label for="site" class="oe_edit_only"/>
                         <h1><field name="sites" placeholder="Site" required="True"/></h1>
                         <div name="options_active" class="oe_edit_only">
@@ -111,19 +111,18 @@
                         </div>
                     </div>
                     <notebook>
-                        <page name="settings" string="Settings">
+                        <page name="settings" string="업무" invisible="context.get('view_product_menu')">
                             <group name="part">
                                 <group>
-                                    <field name="tasks" string="작업">
+                                    <field name="tasks" string="업무">
                                         <tree editable="true">
                                             <field name="name" string="작업명"/>
-                                            <field name="checklist5" string="설비명"/>
                                         </tree>
                                     </field>
                                 </group>
                             </group>
                         </page>
-                        <page name="manage" string="manage" groups="project.group_project_manager">
+                        <page name="manage" string="관리" groups="project.group_project_manager">
                             <group name="work">
                                 <group>
                                     <field name="line_ids" string="공수">
@@ -136,8 +135,9 @@
                                 </group>
                             </group>
                         </page>
-                        <page name="emails" string="etc" attrs="{'invisible': [('alias_domain', '=', False)]}">
+                        <page name="emails" string="기타" attrs="{'invisible': [('alias_domain', '=', False)]}">
                             <group>
+                                <field name="code" placeholder="Project Code" string="프로젝트 코드" groups="project.group_project_manager"/>
                                 <field name="percent" invisible="0"/>
                                 <field name="user_id" string="Project Manager"
                                     attrs="{'readonly':[('active','=',False)]}"/>
@@ -238,6 +238,26 @@
         </field>
     </record>
 
+    <record id="project_product_view_form_simplified" model="ir.ui.view">
+        <field name="name">project.product.view.form.simplified</field>
+        <field name="model">project.project</field>
+        <field name="priority">88</field>
+        <field name="arch" type="xml">
+            <form string="Project">
+                <sheet>
+                    <group name="title">
+                        <h1><field name="name" class="o_project_name oe_inline"
+                            string="Project Name" placeholder="e.g. Office Party" readonly="1"/></h1>
+                    </group>
+                    <footer>
+                        <button string="닫기" class="btn-default" special="cancel"/>
+                    </footer>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
     <record id="project_project_view_form_simplified" model="ir.ui.view">
         <field name="name">project.project.view.form.simplified</field>
         <field name="model">project.project</field>
@@ -289,8 +309,8 @@
         <field name="res_model">project.project</field>
         <field name="view_type">form</field>
         <field name="view_mode">form</field>
-        <field name="view_id" ref="project_project_view_form_simplified"/>
-        <field name="target"></field>
+        <field name="view_id" ref="project_product_view_form_simplified"/>
+        <field name="target">new</field>
     </record>
 
     <record id="action_project_analysis" model="ir.actions.act_window">

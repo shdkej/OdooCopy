@@ -444,7 +444,7 @@ class GvmSignContent(models.Model):
 	 #잔업특근기간수정
          date_from = datetime.strptime(record.date_from, '%Y-%m-%d')
          date_from = date_from + dt.timedelta(days=-1)
-         worktime = self.env['account.analytic.line'].search([('date_from','>=',str(date_from)),('date_to','<=',record.date_to),('user_id','=',record.user_id.id)])  #,('unit_amount','>=',1)])
+         worktime = self.env['account.analytic.line'].search([('date_from','>=',str(date_from)),('date_to','<=',record.date_to),('user_id','=',record.user_id.id),('unit_amount','>=',1)])
          record.timesheet = worktime
 
     @api.model
@@ -551,7 +551,7 @@ class GvmSignContent(models.Model):
 	  #연차갯수
 	  count = self.check_holiday_count()
 	  #로그인한 유저정보
-	  hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.user_department.id)])
+	  hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.dep_ids.id)])
 	  #총 연차갯수 + 사용했던 연차갯수
 	  h_count = float(hr_name.holiday_count) + float(count)
 	  # 적용
@@ -566,11 +566,15 @@ class GvmSignContent(models.Model):
 	 #연차갯수
 	 count = self.check_holiday_count()
 	 #로그인한 유저정보
-	 hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.user_department.id)])
+	 hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.dep_ids.id)])
+         _logger.warning("name%s"%self.user_id.name)
+         _logger.warning("depart%s"%self.dep_ids.id)
 	 #총 연차갯수 + 사용했던 연차갯수
 	 h_count = float(hr_name.holiday_count) + float(count)
 	 # 적용
          hr_name.holiday_count = float(h_count)
+         _logger.warning("count%s"%h_count)
+         _logger.warning("count2%s"%hr_name.holiday_count)
 	 #상태 정보: 취소상태
          self.write({'state':'remove'})
 
@@ -679,7 +683,7 @@ class GvmSignContent(models.Model):
         #[취소권한부여] 294: 유예진, 295: 이승현, 258: 김진우, 316: 조나래
         allower = [1,294,295,258,316]
         for record in self:
-            if record.state in ['temp','write','cancel']:
+            if record.state in ['temp','write','cancel','remove']:
 	     if self.env.user.name != record.user_id.name and self.env.uid != 1:
                raise UserError(_('본인 외 수정 불가'))
             else:
@@ -711,6 +715,15 @@ class GvmSignContentCost(models.Model):
     description = fields.Char(string='description')
     ratio = fields.Float('환율',default='1')
     card = fields.Selection([('personal','개인'),('corporation','법인')],default='personal')
+
+    @api.onchange('cost')
+    def get_currency(self):
+      if self.cost > 100000:
+        self.currency = 'dong'
+      elif self.cost > 1000:
+        self.currency = 'won'
+      elif self.cost <= 1000:
+        self.currency = 'yuan'
 
 class GvmSignContentCost2(models.Model):
     _name = "gvm.signcontent.cost2"
