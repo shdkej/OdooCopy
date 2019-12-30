@@ -8,11 +8,12 @@
         web_icon="purchase,static/description/icon.png"
         sequence="25"/>
 
+    <menuitem id="menu_delivery" name="택배/핸드캐리"
+        parent="menu_purchase_root" sequence="3" action="action_delivery"/>
     <menuitem id="menu_purchase_manage" name="발주"
         parent="menu_purchase_root" sequence="4" />
     <menuitem id="menu_procurement_management" name="자재 및 업체"
         parent="menu_purchase_root" sequence="1" />
-
     <menuitem id="menu_search_table" action="purchase_search_table_action" name="BOM" parent="menu_purchase_root"
         sequence="3"/>
 
@@ -40,7 +41,7 @@
         action="product.product_supplierinfo_type_action" id="menu_product_pricelist_action2_purchase"
         parent="menu_procurement_management" sequence="16" groups="purchase.group_manage_vendor_price"/>
 
-    <menuitem
+            <menuitem
         id="menu_product_in_config_purchase" name="Products"
         parent="menu_purchase_config" sequence="30" groups="base.group_no_one"/>
 
@@ -184,11 +185,10 @@
                     <button name="action_rfq_send" states="purchase" string="Send PO by Email" type="object" context="{'send_rfq':False}" groups="purchase.group_purchase_manager"/>
                     <button name="action_view_picking" string="Receive Products" class="oe_highlight" type="object" attrs="{'invisible': ['|', '|' , ('is_shipped', '=', True), ('state','not in', ('purchase','done')), ('picking_count', '=', 0)]}"/>
                     <button name="button_draft" states="cancel" string="재상신" type="object" />
-                    <button name="button_cancel" states="draft,to approve,sent,purchase" string="Cancel" type="object"  groups="purchase.group_purchase_manager"/>
-                    <button name="button_done" type="object" string="구매완료" states="purchase" class="oe_highlight" groups="purchase.group_purchase_manager"/>
+                    <button name="button_cancel" states="draft" string="Cancel" type="object"  groups="purchase.group_purchase_manager"/>
                     <button name="button_unlock" type="object" string="Unlock" states="done" groups="purchase.group_purchase_manager"/>
                     <button name="button_create_bill" type="object" string="계산서 생성" groups="purchase.group_purchase_manager"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,sent,purchase" readonly="1"/>
+                    <field name="state" widget="statusbar" statusbar_visible="write,draft,done" readonly="1"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -216,7 +216,6 @@
                     <group>
                         <group>
                             <field name="partner_id" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" domain="[('supplier','=',True)]" string="업체명"/>
-                            <field name="partner_ref"/>
                             <field name="date_order"/>
                             <field name="order_man"/>
                             <field name="permit_man"/>    
@@ -234,7 +233,6 @@
                                 <tree editable="bottom">
                                     <field name="name"/>
                                     <field name="product_name"/>
-                                    <field name="specification"/>
                                     <field name="material"/>
                                     <field name="drawing_man"/>
                                     <field name="request_date"/>
@@ -242,7 +240,6 @@
                                     <field name="destination_date"/>
                                     <field name="receiving_date"/>
                                     <field name="receiving_man"/>
-                                    <field name="release_place"/>
                                     <field name="original_count"/>
                                     <field name="total_count"/>
                                     <field name="known_price" attrs="{'invisible':[('known_price','==',0)]}" groups="purchase.group_purchase_manager"/>
@@ -302,14 +299,17 @@
         <field name="arch" type="xml">
             <form string="Purchase Order">
                 <header>
-                    <button name="print_quotation" string="Print RFQ" type="object" states="draft" class="oe_highlight" groups="purchase.group_purchase_manager"/>
-                    <button name="print_quotation" string="Print RFQ" type="object" states="sent" groups="purchase.group_purchase_manager"/>
+                    <button name="button_cancel" states="draft" string="발주취소" type="object"  groups="purchase.group_purchase_manager"/>
+                    <button name="button_reorder" type="object" states="draft,done" string="결재취소" groups="purchase.group_purchase_manager"/>
+                    <button name="button_done" type="object" string="발주완료" states="draft" class="oe_highlight" groups="purchase.group_purchase_manager"/>
                     <button name="button_send_quotation" type="object" states="write" string="검토완료" class="oe_highlight" groups="purchase.group_analytic_accounting"/>
-                    <button name="action_rfq_send" states="purchase" string="Send PO by Email" type="object" context="{'send_rfq':False}" groups="purchase.group_purchase_manager"/>
-                    <button name="action_view_picking" string="Receive Products" class="oe_highlight" type="object" attrs="{'invisible': ['|', '|' , ('is_shipped', '=', True), ('state','not in', ('purchase','done')), ('picking_count', '=', 0)]}"/>
-                    <button name="button_cancel" states="draft,to approve,sent,purchase" string="Cancel" type="object"  groups="purchase.group_purchase_manager"/>
-                    <button name="button_create_bill" type="object" string="계산서 생성" groups="purchase.group_purchase_manager"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,sent,purchase" readonly="1"/>
+                    <field name="state" widget="statusbar" statusbar_visible="write,draft,done" readonly="1"/>
+                    <!--현재사용하지않지만 추후사용예정-->
+                    <button name="print_quotation" string="Print RFQ" type="object" states="draft" class="oe_highlight" groups="purchase.group_purchase_manager" invisible ="1"/>
+                    <button name="print_quotation" string="Print RFQ" type="object" states="sent" groups="purchase.group_purchase_manager" invisible="1"/>
+                    <button name="button_create_bill" type="object" string="계산서 생성" groups="purchase.group_purchase_manager" invisible ="1"/>
+                    <button name="action_rfq_send" states="purchase" string="Send PO by Email" type="object" context="{'send_rfq':False}" groups="purchase.group_purchase_manager" invisible ="1"/>
+                    <button name="action_view_picking" string="Receive Products" class="oe_highlight" type="object" attrs="{'invisible': ['|', '|' , ('is_shipped', '=', True), ('state','not in', ('purchase','done')), ('picking_count', '=', 0)]}" invisible ="1"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -337,13 +337,10 @@
                     <group>
                         <group>
                             <field name="partner_id" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" domain="[('supplier','=',True)]" string="업체명"/>
-                            <field name="partner_ref"/>
                             <field name="permit_date"/>
                             <field name="drawing_man"/>
                             <field name="order_man"/>
                             <field name="permit_man"/>
-                            <field name="request"/>
-                            <field name="charge"/>
                             <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
                             <field name="currency_id" groups="base.group_multi_currency"/>
                             <field name="is_shipped" invisible="1"/>
@@ -356,16 +353,14 @@
                             <field name="project_code" invisible="1"/>
                             <field name="issue_maker" invisible="1"/>
                             <field name="project_ids" string="세부 프로젝트" widget="many2many_tags" domain="[('name','ilike',project_name)]" attrs="{'invisible':[('project_code','=',False)],'required':[('project_code','=',True)]}"/>
-                            <field name="part" string="유닛" domain="[('project_id','=',project_id)]"/>
                             <field name="issue" string="파트" domain="[('project_id','=',project_id)]">
+                            <field name="part" string="유닛" domain="[('project_id','=',project_id)]"/>
                                 <form>
                                     <field name="name"/>
                                 </form>
                             </field>
                             <field name="line_count"/>
-                            <field name="category"/>
                             <field name="department" string="부서"/>
-                            <field name="release_place"/>
                             <field name="attachment" widget="many2many_binary2"/>
                         </group>
                     </group>
@@ -374,11 +369,10 @@
                             <field name="product">
                                 <tree editable="bottom" decoration-danger="emergency==True or stock_item==True" decoration-bf="emergency==True" decoration-info="destination_date!=False" decoration-muted="state in ('cancel','bad')" groups="purchase.group_purchase_manager">
                                     <field name="sequence_num" widget="handle"/>
-                                    <field name="product_ids" string="기존자재" options="{'no_create':True}"/>
-                                    <field name="name" string="도면번호"/>
+                                    <field name="name" string="도면번호/규격"/>
                                     <field name="product_name" required="1"/>
-                                    <field name="specification"/>
                                     <field name="material"/>
+                                    <field name="category"/>
                                     <field name="drawing_man"/>
                                     <field name="partner_ids"/>
                                     <field name="request_date" required="1"/>
@@ -395,10 +389,8 @@
                                     <field name="state"/>
                                     <field name="emergency"/>
                                     <field name="stock_item"/>
-                                    <field name="release_place" invisible="1"/>
-                                    <field name="category" invisible="1"/>
-                                    <button name="button_destination" type="object" string="입고" class="oe_highlight" attrs="{'invisible' :[('destination_date','!=',False)]}" confirm="입고되었습니까?"/>
-                                    <button name="button_receiving" type="object" string="출고" class="oe_highlight" attrs="{'invisible' :[('state','!=','request_receiving')]}" confirm="출고 승인 하시겠습니까?" groups="purchase.group_purchase_manager"/>
+                                    <field name="de_num"/>
+                                    <button name="button_paydone" type="object" string="지급완료" class="oe_highlight" attrs="{'invisible' :[('state','!=','destination')]}" confirm="지급완료되었습니까?" groups="purchase.group_purchase_manager"/>
                                 </tree>
                             </field>
                         </page>
@@ -492,7 +484,6 @@
             </kanban>
         </field>
     </record>
-
     <record id="purchase_order_tree" model="ir.ui.view">
         <field name="name">purchase.order.tree</field>
         <field name="model">purchase.order</field>
@@ -567,7 +558,6 @@
     </record>
 
     <menuitem action="purchase_form_action" id="menu_purchase_form_action" parent="menu_purchase_control" sequence="6"/>
-
     <record id="purchase_form_action_finish" model="ir.actions.act_window">
         <field name="name">구매 완료</field>
         <field name="type">ir.actions.act_window</field>

@@ -45,7 +45,7 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         this.Numtmp_col = [];
         this.original_data = [];
         this.detail_toggle = true;
-        this.colHeaders = ['O','번호','도번 및 규격','품명','재질','원수','비고','상태','발주서번호'];
+        this.colHeaders = ['O','번호','도번 및 규격','품명','재질','분류','원수','이슈사항 및 재발주요청사유','상태','발주서번호'];
 
         var Project = new Model('project.project');
         Project.query(['name','project_rate']).filter([['is_finish','=',false]]).all().then(function(id){
@@ -138,9 +138,20 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         self.detail_product = [];
         var project_selected = $('#gvm_search_product.comboTreeInputBox').val();
         Product.query(
-            ['id','sequence_num','name','product_name','material','original_count','bad_state','purchase_by_maker','etc','create_date','state']
+            ['id','sequence_num','name','product_name','material','category','original_count','bad_state','purchase_by_maker','etc','create_date','state']
             ).filter(self.search_filter).limit(500).all().then(function(id){
             $.each(id, function(index, item){
+            if (item.category == '1'){
+                 item.category = '기구/가공품';}
+            else if (item.category == '2'){
+                 item.category = '기구/요소품';}
+            else if (item.category == '3'){
+                 item.category = '전장/가공품';}
+            else if (item.category == '4'){
+                 item.category = '전장/요소품';}
+            else {
+                 item.category = '기타';}
+
                 //-1표시는 따로 저장
                 if (item.sequence_num.toString().indexOf('-') != -1 || item.state == 'bad') {
                     self.sub_data.push([0, //체크박스
@@ -148,6 +159,7 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
                         item.name,                  //2
                         item.product_name,          //3
                         item.material,              //4
+                        item.category,              //10
                         item.original_count,        //5
                         item.etc,                   //6
                         item.bad_state,             //7
@@ -161,11 +173,14 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
                         item.name,                  //2
                         item.product_name,          //3
                         item.material,              //4
+                        item.category,              //10
                         item.original_count,        //5
                         item.etc,                   //6
                         item.bad_state,             //7
                         item.purchase_by_maker[1],  //8
                         ]);
+                    console.log(item.category)
+                    self.data_id.push(item.id);
                 }
             })
         }).then(function(){self.loading();});
@@ -185,11 +200,10 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
                 self.Numtmp_col.push(cellNum_col);
             }
         }
-
         if (self.data.length == 0){
             self.data.push(['0','0']);
         }
-        var td_size = [30,40,190,140,100,50,100,50,80];
+        var td_size = [30,40,190,140,100,80,50,180,80,80];
         self.$('#mytable').jexcel({
             data: self.data, 
             colHeaders: self.colHeaders,
@@ -202,6 +216,7 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
             {type: 'text'},
             {type: 'text'},
             {type: 'text'},
+            {type: 'dropdown', source:['기구/가공품','기구/요소품','전장/가공품','전장/요소품','기타']},
             {type: 'text'},
             {type: 'text'},
             {type: 'dropdown', source:['A','B','C','D','E','F','G'] },
@@ -214,7 +229,7 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         var parent_product = '';
         // 수정되었던 자재를 이름순이 아닌  작성시간 순으로 정렬
         self.sub_data.sort(function(a,b){
-            if (a[9]>b[9]){ //9 = create_date
+            if (a[10]>b[10]){ //9 = create_date
                 return 1;
             }else{
                 return -1;
@@ -233,7 +248,7 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
             last_element = $(parent_product.lastElementChild);
             var td_element = '';
             $.each(value, function(i,item){
-                if (i == 0 || i == 9){return true;} //0 = excel cell num, 9 = create_date
+                if (i == 0 || i == 10){return true;} //0 = excel cell num, 9 = create_date
                 td_element += '<td width="' + td_size[i] + 'px" align="center" style="background-color:#f3f3f3">' + item + '</td>';
             });
             var child_td = '<tr id="row-1000" class="detail_cell" style="display:none; margin:3px">'
@@ -268,11 +283,11 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
                     }
                     reorder_text = '';
                     row[0] = self.data_id[self.Numtmp_row[id]]; 
-                    if (row[7] == false){
-                        row[7] = 'A';
+                    if (row[8] == false){
+                        row[8] = 'A';
                     }
-                    row[9] = project_selected;
-                    row[10] = selected_part.text();
+                    row[10] = project_selected;
+                    row[11] = selected_part.text();
                 });
                 if (save_complete){
                     Product.call('gvm_bom_save', ['save',self.update_content]).then(function(){

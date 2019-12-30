@@ -256,7 +256,9 @@ class Project(models.Model):
 
     @api.multi
     def button_project_complete(self):
-        self.write({'is_finish':True})
+        self.write({'is_finish':True,
+                    'state':'finish'
+                    })
         return {}
 
     @api.depends('state')

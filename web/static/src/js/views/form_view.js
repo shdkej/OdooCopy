@@ -1049,6 +1049,7 @@ var FormView = View.extend(common.FieldManagerMixin, {
          this.gvm_on_button_duplicate(state);
     },
     gvm_sign_button: function(state){
+        console.log(state)
 	    var self = this;
 	    var comment = prompt('의견이 있으시면 적어주시기 바랍니다.');
 	    if (comment === null){

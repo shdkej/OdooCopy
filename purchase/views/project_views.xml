@@ -9,10 +9,8 @@
                 <field name="product">
                     <tree editable="bottom" decoration-danger="emergency==True" decoration-bf="emergency==True" decoration-info="destination_date!=False">
                         <field name="sequence_num"/>
-                        <field name="product_ids" string="기존자재"/>
-                        <field name="name" string="도면번호"/>
+                        <field name="name" string="도면번호/규격"/>
                         <field name="product_name" required="1"/>
-                        <field name="specification"/>
                         <field name="material"/>
                         <field name="order_man"/>
                         <field name="request_date"/>

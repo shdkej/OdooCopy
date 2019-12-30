@@ -299,7 +299,8 @@
 
 <div t-name="ListView" class="table-responsive">
     <table class="o_list_view table table-condensed table-striped">
-        <t t-set="columns_count" t-value="visible_columns.length + (options.selectable ? 1 : 0) + (options.deletable ? 1 : 0)"/>
+        <!--<t t-set="columns_count" t-value="visible_columns.length + (options.selectable ? 1 : 0) + (options.deletable ? 1 : 0)"/>-->
+        <t t-set="columns_count" t-value="visible_columns.length"/>  
         <thead>
             <tr t-if="options.header">
                 <t t-foreach="columns" t-as="column">
@@ -316,7 +317,7 @@
                 <t t-foreach="columns" t-as="column">
                     <th t-if="!column.meta and column.invisible !== '1'" t-att-data-id="column.id"
                         t-attf-class="#{((options.sortable and column.sortable and column.tag !== 'button') ? 'o_column_sortable' : '')}"
-                            t-att-width="150">
+                        t-att-width="150">
                         <t t-if="column.tag !== 'button'"><t t-raw="column.heading()"/></t>
                     </th>
                 </t>

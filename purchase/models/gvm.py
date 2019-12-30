@@ -18,32 +18,107 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 _logger = logging.getLogger(__name__)
+class GvmDelivery(models.Model):
+    _name = "gvm.delivery"
+    _description = "gvm_delivery"
+
+    @api.model
+    def default_sequence(self):
+        _logger.warning("sequence%s"%self.env['ir.sequence'].next_by_code('gvm.delivery'))
+        return  self.env['ir.sequence'].next_by_code('gvm.delivery')
+
+    de_num = fields.Char('택배번호', required=True, index=True, copy=False, default='New')
+    attachment = fields.Many2many('ir.attachment',domain="[('res_model','=','gvm.delivery')]", string='명세서')
+    release = fields.Selection([('company','사내'),('SDV','SDV'),('SSM','SSM'),('internal','국내')], string='출고지', default='SSM')
+    release_action = fields.Selection([('handcarry','핸드캐리'),('delivery','택배')], string='출고', default='handcarry')
+    arrival_date = fields.Date('도착예정일자', default=datetime.today())
+    release_date = fields.Date('출고일자',default=datetime.today())
+    release_man = fields.Many2one('res.users','출고자',default=lambda self:self.env.uid)
+    permit_man = fields.Many2one('res.users','검토자')
+    field_order_man = fields.Many2one('res.users','현지요청자',default=lambda self:self.env.uid)
+    within_order_man = fields.Many2one('res.users','사내요청자',default=lambda self:self.env.uid)
+    handcarry_man = fields.Many2one('res.users','핸드캐리담당자')
+    delivery_number = fields.Char('송장번호')
+    delivery = fields.Many2many('gvm.product', string='product')
+    state = fields.Selection([
+        ('write', '작성'),
+        ('send_ready', '발송준비중'),
+        ('sending', '발송중'),
+        ('send', '발송완료'),
+        ('cancel', '취소')
+        ], string='Status', readonly=True, index=True, copy=False, default='write', track_visibility='onchange')
+
+    @api.model
+    def create(self, vals):
+        if vals.get('de_num','New') == 'New':
+            vals['de_num'] = self.env['ir.sequence'].next_by_code('gvm.delivery') or '/'
+        res = super(GvmDelivery, self).create(vals)
+        self.write({'state': 'send_ready'})
+        return res
+
+    @api.multi
+    def button_done(self):
+        self.write({'state': 'send'})
+        return {}
+
+    def button_confirm(self):
+        name = self.delivery
+        for value in name:
+           value.write({'de_num':self.de_num})
+        self.write({'state': 'send_ready'})
+        return {}
+
+    def button_cancel(self):
+        name = self.delivery
+        for value in name:
+           value.write({'de_num':''})
+        self.write({'state': 'cancel'})
+        return {}
+
+    @api.multi
+    def button_resend(self):
+        name = self.delivery
+        for value in name:
+           value.write({'de_num':self.de_num})
+        self.write({'state': 'send_ready'})
+        return {}
+
+    @api.multi
+    def button_send(self):
+        self.write({'state': 'sending'})
+        return {}
+
 class GvmProduct(models.Model):
     _name = "gvm.product"
     _inherit = ['mail.thread', 'ir.needaction_mixin']
     _description = "gvm_product"
     _order = 'create_date, sequence_num, name, product_name'
-    
-    name = fields.Char('name',index=True, copy=False)
-    product_ids = fields.Many2one('gvm.product','product_ids')
+
+    #택배
+    purchase_num = fields.Char('구매 번호')
+    before_weight = fields.Char('포장 전 무게')
+    after_weight = fields.Char('포장 후 무게')
+    weight_state = fields.Selection([('normal','정상'),('abnormal','확인필요')],string='무게비교',readonly=True)
+
+    de_num = fields.Char('택배번호', readonly=True)
+    name = fields.Char('도면번호/규격',index=True, copy=False)
     product_id = fields.Many2one('product.product','product_id')
     project_ids = fields.Many2one('project.project','project_id', store=True, compute='_compute_project_name')
     project_set = fields.Many2many('project.project',string='project_set', compute='_compute_project_name',store=True)
     purchase = fields.Many2one('purchase.order','purchase')
-    purchase_by_maker = fields.Many2one('gvm.purchase_product','설계발주')
+    purchase_by_maker = fields.Many2one('gvm.purchase_product','설계발주번호')
     #part = fields.Many2one('project.task','part', compute='_compute_part')
     #issue = fields.Many2one('project.issue','issue',compute='_compute_issue',store=True)
-    part = fields.Many2one('project.task','part')
-    issue = fields.Many2one('project.issue','issue')
+    part = fields.Many2one('project.task',string='유닛')
+    issue = fields.Many2one('project.issue',string='파트')
 
+    category = fields.Selection([('1','기구/가공품'),('2','기구/요소품'),('3','전장/가공품'),('4','전장/요소품'),('5','기타')],string="분류")
     #project_id = fields.Char('프로젝트',copy=False,store=True, compute='_compute_project_name')
     project_id = fields.Char('프로젝트')
     part_name = fields.Char('파트', store=True, compute='_compute_part_name')
     product_name = fields.Char('품명')
     original_count = fields.Integer('원수',default=1)
     total_count = fields.Integer('총 발주 수', compute='_compute_total_count')
-    drawing = fields.Char('도면번호')
-    specification = fields.Char('규격')
     material = fields.Char('재질')
     order_man = fields.Char('발주요청자',translate=True)
     drawing_man = fields.Char('설계자',translate=True)
@@ -62,7 +137,7 @@ class GvmProduct(models.Model):
     department = fields.Char('부서',store=True, compute='_compute_department')
     exid = fields.Char('이름',compute='_compute_xml_id')
     known_price = fields.Integer('이전 가격',compute='_compute_set_price')
-    etc = fields.Char('비고')
+    etc = fields.Char('이슈사항 및 재발주요청사유')
     state = fields.Selection([
         ('all', 'All'),
         ('done', '출고'),
@@ -77,7 +152,8 @@ class GvmProduct(models.Model):
 	('delete','삭제'),
 	('cancel','발주취소'),
         ('request_receiving', '출고요청'),
-        ('destination', '입고')
+        ('destination', '입고'),
+        ('paydone','지급완료')
         ], string='Status', default='no',track_visibility="onchange")
     partner_id = fields.Char('업체명',store=True, compute='_compute_partner')
     partner_ids = fields.Many2one('res.partner','업체',domain='[("supplier","=",True)]')
@@ -103,8 +179,9 @@ class GvmProduct(models.Model):
 	('F', '분실'),
 	('G', '업체미스'),
 	], string='불량유형', default='A')
-    release_place = fields.Many2one('gvm.product.release',string='출고지')
+    release_place = fields.Many2one('gvm.delivery.release',string='출고지')
     sub_id = fields.Char('sub_id')
+    image = fields.Binary("image")
 
     def _generate_order_by(self, order_spec, query):
 	my_order = "case when substring(sequence_num from '^P') IS NULL then substring(sequence_num from '^\d+$')::int end, sequence_num"
@@ -116,7 +193,7 @@ class GvmProduct(models.Model):
         res = self.get_external_id()
         for record in self:
             record.exid = res.get(record.id)
-
+    
     @api.depends('purchase_by_maker.attachment')
     def _compute_attachment(self):
       for record in self:
@@ -131,12 +208,9 @@ class GvmProduct(models.Model):
     def _compute_set_price(self):
      for record in self:
        value = ''
-       if record.specification:
-            value = record.specification
-            record.known_price = self.search(['&','|',('specification','ilike',value),('name','ilike',value),('price','!=','0')], limit=1).price
-       elif record.name:
+       if record.name:
             value = record.name
-            record.known_price = self.search(['&','|',('specification','ilike',value),('name','ilike',value),('price','!=','0')], limit=1).price
+            record.known_price = self.search(['|',('name','ilike',value),('price','!=','0')], limit=1).price
 
     @api.depends('total_count','price')
     def _compute_total_price(self):
@@ -190,7 +264,7 @@ class GvmProduct(models.Model):
       else:
        record.order_man = record.purchase_by_maker.create_uid.name
        record.drawing_man = record.purchase_by_maker.create_uid.name
-
+    
     @api.depends('purchase_by_maker.line_count','original_count')
     def _compute_total_count(self):
      for record in self:
@@ -220,6 +294,11 @@ class GvmProduct(models.Model):
         return {}
 
     @api.multi
+    def button_paydone(self):
+        self.write({'state': 'paydone'})
+        return {}
+
+    @api.multi
     def button_request_receiving(self):
         self.write({'request_receiving_man': self.env.user.name,
 	            'state': 'request_receiving'})
@@ -232,18 +311,6 @@ class GvmProduct(models.Model):
 	            'state': 'done'})
         return {}
 
-    @api.onchange('product_ids')
-    def _onchange_product(self):
-      for record in self:
-         record.name = self.product_ids.name
-         record.product_name = self.product_ids.product_name
-         record.specification = self.product_ids.specification
-         record.order_man = self.env.uid
-         record.etc = self.product_ids.etc
-         record.price = self.product_ids.price
-         record.material = self.product_ids.material
-         record.request_date = datetime.today() + timedelta(days=7)
-	 
     @api.onchange('destination_date')
     def _onchange_destination_date(self):
       for record in self:
@@ -315,21 +382,38 @@ class GvmProduct(models.Model):
     	Product = request.env['gvm.product']
     	Project = request.env['project.project']
 	Part = request.env['project.issue']
-	column = ['id','sequence_num','name','product_name','material','original_count', 'etc']
-	ko_column = ['id','번호','도번 및 규격','품명','재질','원수', '비고']
+	column = ['id','sequence_num','name','product_name','material','original_count', 'etc','category']
+	ko_column = ['id','번호','도번 및 규격','품명','재질','원수', '비고','분류']
 	if vals:
-	  project_id = Project.search([('name','=',vals[0][9].encode('utf-8'))]).id
-	  part_id = Part.search([('name','=',vals[0][10].encode('utf-8')),('project_id','=',project_id)]).id
+	  project_id = Project.search([('name','=',vals[0][10].encode('utf-8'))]).id
+	  part_id = Part.search([('name','=',vals[0][11].encode('utf-8')),('project_id','=',project_id)]).id
         for val in vals:
           product_id = val[0]
           product_sequence_num = val[1]
           product_main_name = val[2].encode('utf-8')
           product_name = val[3].encode('utf-8')
           product_material = val[4].encode('utf-8')
-          product_original_count = val[5]
-          product_etc = val[6].encode('utf-8')
-          product_bad_state = val[7]
-          product_project_id = val[9].encode('utf-8')
+          product_category = val[5].encode('utf-8')
+          product_original_count = val[6]
+          product_etc = val[7].encode('utf-8')
+          product_bad_state = val[8]
+          product_project_id = val[10].encode('utf-8')
+         
+          if product_category == '기구/가공품':
+             val[5] = '1'
+             product_category = '1'
+          elif product_category == '기구/요소품':
+             val[5] = '2' 
+             product_category = '2' 
+          elif product_category == '전장/가공품':
+             val[5] = '3'
+             product_category = '3'
+          elif product_category == '전장/요소품':
+             val[5] = '4'
+             product_category = '4'
+          else:
+             val[5] = '5'
+             product_category = '5'
 
           # 수정 시 표시 붙여주기
 	  if (product_bad_state == False or product_bad_state.upper().encode('utf-8') == 'FALSE'):
@@ -371,7 +455,7 @@ class GvmProduct(models.Model):
                     % ( str(unicode(ko_column[i])), Update[column[i]], val[i], str(datetime.today())[0:10]))
                 reorder_text += text
                 reorder_text += '<br><br>'
-
+              
               product_object.write({
                 column[i] : val[i],
               })
@@ -385,7 +469,8 @@ class GvmProduct(models.Model):
                          'project_ids': project_id, 
                          'project_set':[(4, project_id)], 
                          'request_date':datetime.today() + timedelta(days=7),
-                         'order_man':request.env.user.name})
+                         'order_man':request.env.user.name,
+            })
 	  else:
 	    PONum = Product.create({
 	    		'sequence_num':val[1],
@@ -400,6 +485,7 @@ class GvmProduct(models.Model):
 			'request_date':datetime.today() + timedelta(days=7),
 			'order_man':request.env.user.name,
                         'etc':product_etc,
+                        'category':product_category
 	    })
 	    PONum.write({
 			'project_set':[(4, project_id)],
@@ -415,8 +501,8 @@ class GvmProduct(models.Model):
 	part_id = ''
         newPo = ''
 	if vals:
-	  project_id = Project.search([('name','=',vals[0][9])]).id
-	  part_id = Part.search([('name','=',vals[0][10]),('project_id','=',project_id)]).id
+	  project_id = Project.search([('name','=',vals[0][10])]).id
+	  part_id = Part.search([('name','=',vals[0][11]),('project_id','=',project_id)]).id
           newPo = Purchase.create({
 	           'project_id':project_id,
                    'partner_id':1013,
@@ -426,7 +512,6 @@ class GvmProduct(models.Model):
 		   'drawing_man':request.env.uid,
                   })
           for np in vals:
-            _logger.warning(np)
 	    newPo.write({'product':[(4, int(repr(np[0]).encode('utf-8')))]})
 
     def gvm_onchange_state(ids, state, name):
@@ -469,7 +554,6 @@ class GvmProductReleasePlace(models.Model):
     
     name = fields.Char('name',index=True, copy=False)
     method = fields.Char('method')
-    product_ids = fields.Many2one('gvm.product','product_ids')
 
     @api.multi
     def name_get(self):
