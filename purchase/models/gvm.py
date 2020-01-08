@@ -181,7 +181,7 @@ class GvmProduct(models.Model):
 	], string='불량유형', default='A')
     release_place = fields.Many2one('gvm.delivery.release',string='출고지')
     sub_id = fields.Char('sub_id')
-    image = fields.Binary("image")
+    image = fields.Binary("image", attachment=True)
 
     def _generate_order_by(self, order_spec, query):
 	my_order = "case when substring(sequence_num from '^P') IS NULL then substring(sequence_num from '^\d+$')::int end, sequence_num"

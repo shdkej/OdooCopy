@@ -390,6 +390,7 @@
                                     <field name="emergency"/>
                                     <field name="stock_item"/>
                                     <field name="de_num"/>
+                                    <field name="image" widget="image" string="사진"/>
                                     <button name="button_paydone" type="object" string="지급완료" class="oe_highlight" attrs="{'invisible' :[('state','!=','destination')]}" confirm="지급완료되었습니까?" groups="purchase.group_purchase_manager"/>
                                 </tree>
                             </field>

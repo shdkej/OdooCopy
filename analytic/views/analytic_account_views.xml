@@ -273,8 +273,13 @@
             <field name="arch" type="xml">
                 <pivot string="Analytic Entries" >
                     <field name="user_id" type="row"/>
-		            <field name="date" interval="month" type="col"/>
-                    <field name="unit_amount" type="measure"/>
+                    <field name="date" interval="month" type="col"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                    <field name="unit_amount" sum="Quantity" string="잔업시간"/>
+                    <field name="holiday"/>
+                    <field name="name"/>
+                    <field name="lunch"/>
                 </pivot>
             </field>
         </record>

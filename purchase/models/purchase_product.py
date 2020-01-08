@@ -374,7 +374,7 @@ class GvmPurchaseProduct(models.Model):
         return self.env['report'].get_action(self, 'purchase.report_purchasequotation_by_maker')
 
     @api.multi
-    def button_send_quotation(self): 
+    def button_send_quotation(self):
         if self.product:
 	  for product in self.product:
 	    product.write({'state':'purchase'})
@@ -393,6 +393,8 @@ class GvmPurchaseProduct(models.Model):
               stock.write({'ponum':value})
 
               product.stock_item = True            
+              product.product_id = stock.id
+
               # 개수가 모자라면 분할해야 함
               stock_log = stock.stock
               stock_count = stock.stock - product.total_count
@@ -518,11 +520,28 @@ class GvmPurchaseProduct(models.Model):
 
     @api.multi
     def button_done(self):
-        for order in self:
-	    if order.product:
-	      for pd in order.product:
-	        pd.state = 'purchase_complete'
-        self.write({'state': 'done'})
+         #발주자에게 메일보내기
+         gvm = gvm_mail()
+         sender = request.env.user.name
+         receiver = self.env['hr.employee'].search([('user_id','=',self.order_man.id)])
+         #메타데이터 id
+         post_id = self.id
+         #문서번호(S0001)
+         po_num = str(self.name)
+         #사용모델위치
+         model_name = 'gvm.purchase_product'
+         #링크에서 찾아서 쓰면됨
+         #현재페이지 위치 찾는 용도(리스트)
+         menu_id = "357"
+         action_id = "471"
+         post = "발주 물품이 입고되었습니다. 확인해주세요."
+         Flag = 2
+         _logger.warning("sender%s"%sender)
+         _logger.warning("receiver%s"%receiver.name)
+         send_mail = gvm_mail().gvm_send_mail(sender, receiver, post, post_id, po_num, model_name, menu_id, action_id,Flag)
+
+         #발주완료
+         self.write({'state': 'done'})
 
     @api.multi
     def button_create_bill(self):

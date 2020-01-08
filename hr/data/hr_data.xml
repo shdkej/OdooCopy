@@ -56,7 +56,7 @@ Leave Management (keep track of employee leaves), Expense Management (manage emp
             <field name='interval_type'>months</field>
             <field name="numbercall">-1</field>
             <field name="active">True</field>
-            <field name="model">analytic.account.line</field>
+            <field name="model">account.analytic.line</field>
             <field name="function">parse_holiday</field>
             <field name="args">()</field>
         </record>

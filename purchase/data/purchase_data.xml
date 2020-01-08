@@ -52,5 +52,14 @@
             <field name="padding">5</field>
             <field name="company_id" eval="False"/>
         </record>
+
+        <!-- Sequences for gvm.delivery --> 
+        <record id="seq_gvm_delivery" model="ir.sequence">
+            <field name="name">GVM Delivery</field>
+            <field name="code">gvm.delivery</field>
+            <field name="prefix">DE</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
     </data>
 </odoo>
