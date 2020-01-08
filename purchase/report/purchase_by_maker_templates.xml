@@ -80,7 +80,6 @@
                         <tr t-if="o.product" t-foreach="o.product" t-as="p">
                             <td>
                                 <span t-field="p.name"/>
-                                <span t-if="p.specification" t-field="p.specification"/>
                             </td>
                             <td>
                                 <span t-field="p.product_name"/>

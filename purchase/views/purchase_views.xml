@@ -367,7 +367,7 @@
                     <notebook>
                         <page string="Products">
                             <field name="product">
-                                <tree editable="bottom" decoration-danger="emergency==True or stock_item==True" decoration-bf="emergency==True" decoration-info="destination_date!=False" decoration-muted="state in ('cancel','bad')" groups="purchase.group_purchase_manager">
+                                <tree editable="bottom" decoration-danger="emergency==True or stock_item==True" decoration-bf="emergency==True" decoration-info="destination_date!=False" decoration-muted="state in ('cancel','bad')">
                                     <field name="sequence_num" widget="handle"/>
                                     <field name="name" string="도면번호/규격"/>
                                     <field name="product_name" required="1"/>

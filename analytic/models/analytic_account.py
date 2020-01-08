@@ -131,9 +131,9 @@ class AccountAnalyticLine(models.Model):
         if vals.get('project_id'):
             project = self.env['project.project'].browse(vals.get('project_id'))
             vals['account_id'] = project.analytic_account_id.id
-        for record in self:
-	     if self.env.user.name != record.user_id.name and self.env.uid != 1:
-               raise UserError(_('본인 외 수정 불가'))
+        #for record in self:
+	#     if self.env.user.name != record.user_id.name and self.env.uid != 1:
+        #       raise UserError(_('본인 외 수정 불가'))
         res = super(AccountAnalyticLine, self).write(vals)
         self.calculate_work_time()
         _logger.warning("write")

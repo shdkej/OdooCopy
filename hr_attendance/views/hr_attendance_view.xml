@@ -9,14 +9,10 @@
         <field name="arch" type="xml">
             <tree string="Employee attendances">
                 <field name="employee_id"/>
-        		<field name="check_in"/>
-		        <field name="check_in_place"/>
+		<field name="check_in"/>
+		<field name="check_in_place"/>
                 <field name="check_out"/>
                 <field name="check_out_place"/>
-                <field name="outing_start"/>
-                <field name="reason"/>
-                <field name="destination"/>
-                <field name="outing_end"/>
             </tree>
         </field>
     </record>
@@ -130,12 +126,7 @@
         <field name="name">Attendance</field>
         <field name="tag">hr_attendance_my_attendances</field>
         <field name="target">main</field>
-    </record>
-
-    <record id="hr_attendance_action_outing" model="ir.actions.client">
-        <field name="name">outing</field>
-        <field name="tag">hr_attendance_outing</field>
-        <field name="target">main</field>
+<!--        <button name="button_leavework" string="퇴근" type="object"/>-->
     </record>
 
     <record id="hr_attendance_action_greeting_message" model="ir.actions.client">
@@ -145,13 +136,11 @@
 
     <!-- Menus -->
 
-    <menuitem id="menu_hr_attendance_root" name="Attendances" sequence="3" groups="hr.group_hr_attendance" web_icon="hr_attendance,static/description/icon.png"/>
+    <menuitem id="menu_hr_attendance_root" name="Attendances" sequence="90" groups="hr.group_hr_attendance" web_icon="hr_attendance,static/description/icon.png"/>
     
-    <menuitem id="menu_hr_attendance_my_attendances" name="출장" parent="menu_hr_attendance_root" sequence="10" groups="hr.group_hr_attendance" action="hr_attendance_action_my_attendances"/>
+    <menuitem id="menu_hr_attendance_my_attendances" name="My Attendances" parent="menu_hr_attendance_root" sequence="10" groups="hr.group_hr_attendance" action="hr_attendance_action_my_attendances"/>
 
-    <menuitem id="menu_hr_attendance_outing" name="외근" parent="menu_hr_attendance_root" sequence="10" groups="hr.group_hr_attendance" action="hr_attendance_action_outing"/>
-
-    <menuitem id="menu_hr_attendance_manage_attendances" name="관리" parent="menu_hr_attendance_root" sequence="20" groups="hr_attendance.group_hr_attendance_user"/>
+    <menuitem id="menu_hr_attendance_manage_attendances" name="Manage Attendances" parent="menu_hr_attendance_root" sequence="20" groups="hr_attendance.group_hr_attendance_user"/>
 
     <menuitem id="menu_hr_attendance_view_attendances" name="Attendances" parent="menu_hr_attendance_manage_attendances" sequence="10" groups="hr_attendance.group_hr_attendance_user" action="hr_attendance_action"/>
 

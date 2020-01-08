@@ -40,7 +40,8 @@ class gvm_mail():
 	   if rc.work_email:
              receivers.append(str(rc.work_email))
        
-     receivers.append('parksh@gvmltd.com')
+     receivers.append('nohsh@gvmltd.com')
+     _logger.warning(receivers)
 
      post_id = str(postId)
      html = str('<a href="' + url + 

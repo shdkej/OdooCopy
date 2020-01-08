@@ -8,55 +8,6 @@ var Widget = require('web.Widget');
 var QWeb = core.qweb;
 var _t = core._t;
 
-//외근
-var outing = Widget.extend({
-    events: {
-        "click .o_hr_attendance_outing_icon": function() {
-            this.$('.o_hr_attendance_outing_icon').attr("disabled", "disabled");
-            //사유와 목적지를가져온다.
-            var hr_employee = new Model('hr.employee');
-            var destinaion = $('#destination').val();
-            var reason = $('#reason').val();
-            hr_employee.call('get_outing_list',[[1],[destinaion],[reason]]);
-            alert("OK");
-        },
-    },
-
-    start: function () {
-        var self = this;
-
-        var hr_employee = new Model('hr.employee');
-        hr_employee.query(['outing_state', 'name'])
-            .filter([['user_id', '=', self.session.uid]])
-            .all()
-            .then(function (res) {
-                if (_.isEmpty(res) ) {
-                    self.$('.o_hr_attendance_employee').append(_t("Error : Could not find employee linked to user"));
-                    return;
-                }
-                self.employee = res[0];
-                self.$el.html(QWeb.render("outingMenu", {widget: self}));
-            });
-
-        return this._super.apply(this, arguments);
-    },
-
-    update_attendance: function (my_location) {
-        var self = this;
-        var hr_employee = new Model('hr.employee');
-        hr_employee.call('attendance_manual', [[self.employee.id], 'hr_attendance.hr_attendance_action_outing', my_location])
-            .then(function(result) {
-                if (result.action) {
-                    self.do_action(result.action);
-                } else if (result.warning) {
-                    self.do_warn(result.warning);
-                }
-            });
-    },
-
-});
-
-//출장
 var MyAttendances = Widget.extend({
     events: {
         "click .o_hr_attendance_sign_in_out_icon": function() {
@@ -102,7 +53,6 @@ var MyAttendances = Widget.extend({
         var result;
         var self = this;
         var hr_employee = new Model('hr.employee');
-//        hr_employee.call('get_outing_list',[]);
         var geoOptions = {
             timeout: 10 * 1000,
             enableHighAccuracy: true
@@ -130,9 +80,8 @@ var MyAttendances = Widget.extend({
     },
 });
 
-core.action_registry.add('hr_attendance_my_attendances', MyAttendances)
-                    .add('hr_attendance_outing', outing);
+core.action_registry.add('hr_attendance_my_attendances', MyAttendances);
 
-return {MyAttendances,outing};
+return MyAttendances;
 
 });

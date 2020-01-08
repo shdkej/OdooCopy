@@ -20,16 +20,11 @@ class HrAttendance(models.Model):
 
     employee_id = fields.Many2one('hr.employee', string="Employee", default=_default_employee, required=True, ondelete='cascade', index=True)
     department_id = fields.Many2one('hr.department', string="Department", related="employee_id.department_id")
-    check_in = fields.Datetime(string="출장_출근시간", default=fields.Datetime.now, required=True)
+    check_in = fields.Datetime(string="Check In", default=fields.Datetime.now, required=True)
     check_in_place = fields.Char('출근장소')
-    check_out = fields.Datetime(string="츌장_퇴근시간")
+    check_out = fields.Datetime(string="Check Out")
     check_out_place = fields.Char('퇴근장소')
     worked_hours = fields.Float(string='Worked Hours', compute='_compute_worked_hours', store=True, readonly=True)
-    outing_start = fields.Datetime(string="외근_출발시간")
-    outing_end = fields.Datetime(string="외근_복귀/퇴근시간")
-    reason = fields.Char('외근사유', index=True, store=True)
-    destination = fields.Char('목적지', index=True, store=True)
-
 
     @api.multi
     def name_get(self):
