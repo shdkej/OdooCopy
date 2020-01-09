@@ -1070,7 +1070,7 @@ var FormView = View.extend(common.FieldManagerMixin, {
         if (state){
             excelFile += $("#exceltable").html() + $("#exceltable2").html();
         }else{
-            excelFile += $(".o_list_editable .o_list_view").html();
+            excelFile += ($(".o_list_editable .o_list_view").html());
         }
         excelFile += '</table></body>';
         excelFile += '</html>';

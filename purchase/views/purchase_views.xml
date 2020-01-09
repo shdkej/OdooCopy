@@ -293,6 +293,23 @@
         </field>
     </record>
 
+    <record id="view_gvm_purchase_product_search" model="ir.ui.view">
+        <field name="name">gvm.purchase.product.search</field>
+        <field name="model">gvm.purchase_product</field>
+        <field name="arch" type="xml">
+            <search string="Search Product">
+                <field name="product" string="도면번호"/>
+                <field name="name" string="PO 번호"/>
+                <field name="partner_id" string="업체" operator="child_of"/>
+                <filter string="Unread Messages" name="message_needaction" domain="[('message_needaction','=',True)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="프로젝트" domain="[]" context="{'group_by':'project_id'}"/>
+                    <filter string="업체" domain="[]" context="{'group_by':'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
     <record id="gvm_purchase_product_form" model="ir.ui.view">
         <field name="name">gvm.purchase.product.form</field>
         <field name="model">gvm.purchase_product</field>
