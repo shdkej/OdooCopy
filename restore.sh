@@ -7,4 +7,4 @@ unzip ${BackupPath}/backups/${filename} -d ${BackupPath}/backups
 createdb -h db -O odoo -U odoo ${dbname}
 psql -h db ${dbname} -U odoo < ${BackupPath}/backups/dump.sql
 mkdir ${BackupPath}/filestore/${dbname}
-cp -r ${BackupPath}/filestore/* ${BackupPath}/filestore/${dbname}
+cp -r ${BackupPath}/backups/filestore/* ${BackupPath}/filestore/${dbname}
