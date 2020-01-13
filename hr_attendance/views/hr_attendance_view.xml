@@ -95,6 +95,12 @@
 
     <!-- actions -->
 
+    <record id="hr_attendance_outing" model="ir.actions.client">
+        <field name="name">Attendance</field>
+        <field name="tag">hr_attendance_outing</field>
+        <field name="target">main</field>
+    </record>
+
     <record id="hr_attendance_action" model="ir.actions.act_window">
         <field name="name">Attendances</field>
         <field name="res_model">hr.attendance</field>
@@ -150,9 +156,11 @@
 
     <menuitem id="menu_hr_attendance_root" name="Attendances" sequence="90" groups="hr.group_hr_attendance" web_icon="hr_attendance,static/description/icon.png"/>
     
-    <menuitem id="menu_hr_attendance_my_attendances" name="My Attendances" parent="menu_hr_attendance_root" sequence="10" groups="hr.group_hr_attendance" action="hr_attendance_action_my_attendances"/>
+    <menuitem id="menu_hr_attendance_my_attendances" name="근태" parent="menu_hr_attendance_root" sequence="10" groups="hr.group_hr_attendance" action="hr_attendance_action_my_attendances"/>
 
-    <menuitem id="menu_hr_attendance_manage_attendances" name="Manage Attendances" parent="menu_hr_attendance_root" sequence="20" groups="hr_attendance.group_hr_attendance_user"/>
+    <menuitem id="menu_hr_attendance_outing" name="외근" parent="menu_hr_attendance_root" sequence="10" groups="hr.group_hr_attendance" action="hr_attendance_outing"/>
+
+    <menuitem id="menu_hr_attendance_manage_attendances" name="관리" parent="menu_hr_attendance_root" sequence="20" groups="hr_attendance.group_hr_attendance_user"/>
 
     <menuitem id="menu_hr_attendance_view_attendances" name="Attendances" parent="menu_hr_attendance_manage_attendances" sequence="10" groups="hr_attendance.group_hr_attendance_user" action="hr_attendance_action"/>
 
