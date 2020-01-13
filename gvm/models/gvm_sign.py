@@ -891,7 +891,6 @@ class GvmSignLine(models.Model):
 
     @api.model
     def default_sequence(self):
-        _logger.warning("sequence%s"%self.env['ir.sequence'].next_by_code('gvm.signline.number'))
         return  self.env['ir.sequence'].next_by_code('gvm.signline.number')
     
     name = fields.Many2one ('hr.employee' ,string = 'name', required=True)

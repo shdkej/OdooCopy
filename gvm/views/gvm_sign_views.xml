@@ -117,7 +117,7 @@
                         <span attrs="{'invisible':[('sign_ids','!=',1)]}"> (남은 연차개수 : <span id="red_text"><field name="holiday_count"/></span> 일)</span>
 
                     <group  string="작성시 유의사항" attrs="{'invisible':[('state','!=','temp')]}">    
-                        <img src="https://ifh.cc/g/Lvp4j.jpg" widgth="auto" height="auto" attrs="{'invisible':[('state','!=','temp')]}"/>
+                        <img src="https://ifh.cc/g/bBU0o.jpg" widgth="auto" height="auto" attrs="{'invisible':[('state','!=','temp')]}"/>
                     </group>
 
                     <!--문서속성 -->

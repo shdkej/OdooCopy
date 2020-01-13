@@ -129,15 +129,15 @@ class AccountAnalyticLine(models.Model):
     work_time = fields.Float('작업시간', default=0.0,compute='_compute_basic_cost', search='_search_work_time')
     location = fields.Selection([('1','사내'),('2','사외'),('3','해외출장')],string='업무장소', default='1')
 
-    @api.multi
-    def write(self, vals):
-        if vals.get('project_id'):
-            project = self.env['project.project'].browse(vals.get('project_id'))
-            vals['account_id'] = project.analytic_account_id.id
-        res = super(AccountAnalyticLine, self).write(vals)
-        self.calculate_work_time()
-        _logger.warning("write")
-        return res
+#    @api.multi
+#    def write(self, vals):
+#        if vals.get('project_id'):
+#            project = self.env['project.project'].browse(vals.get('project_id'))
+#            vals['account_id'] = project.analytic_account_id.id
+#        res = super(AccountAnalyticLine, self).write(vals)
+#        self.calculate_work_time()
+#        _logger.warning("write")
+#        return res
 
     @api.depends('date_from','date_to','holiday')
     def _compute_basic_cost(self):
