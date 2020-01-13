@@ -247,7 +247,7 @@
                                     <div id="exceltable2">
                                         <field name="timesheet">
                                             <tree editable="1" decoration-info='weekend==True' decoration-bf='weekend==True'>
-                                                <field name="project_id" string="프로젝트" readonly="1"/>
+ <!--                                               <field name="project_id" string="프로젝트" readonly="1"/>-->
                                                 <field name="date_from" widget="date" string="일자" readonly="1"/>
                                                 <field name="unit_amount" string="잔업시간" widget="float_time" readonly="1"/>
                                                 <field name="weekend" string="일자" invisible="1"/>

@@ -341,7 +341,7 @@ class AccountAnalyticLine(models.Model):
         d1 = datetime.strptime(self.date_from,fmt) + td
         d2 = datetime.strptime(self.date_to,fmt) + td
 	if d1.day != d2.day:
-          same_day = (datetime.strptime(self.date_from,fmt)+td).replace(hour=10, minute=00)
+          same_day = (datetime.strptime(self.date_from,fmt)+td).replace(hour=9, minute=00)
           self.date_to = same_day
 	#sh
 	#세콤기록시간을 입력하지 않을경우, 현재 입력날짜로 변환

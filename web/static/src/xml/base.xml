@@ -513,6 +513,7 @@
     <select id="gvm_search_purchase" style="display:none"></select>
     <button id="keep_button" class="btn" name="keep" style="display:none">보류</button>
     <button id="unkeep_button" class="btn" name="unkeep" style="display:none">보류해제</button>
+    <button id="paydone_button" class="btn" name="paydone" style="display:none">지급완료</button>
     <div class="o_notebook">
         <ul t-attf-class="nav nav-tabs #{classnames}" role="tablist">
             <li t-foreach="pages" t-as="page" t-att-modifiers="page.modifiers">

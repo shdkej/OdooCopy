@@ -352,6 +352,7 @@ var ListView = View.extend({
 	      $('#unkeep_button').show();
 	      $('#destination_button').show();
 	      $('#receive_button').show();
+	      $('#paydone_button').show();
 	    }else{
 	      $('#export_excel_button').hide();
 	      $('#order_button').hide();
@@ -360,6 +361,7 @@ var ListView = View.extend({
 	      $('#unkeep_button').hide();
 	      $('#destination_button').hide();
 	      $('#receive_button').hide();
+	      $('#paydone_button').hide();
 	    }
     },
     gvm_button_destination: function(){

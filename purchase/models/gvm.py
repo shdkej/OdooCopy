@@ -26,7 +26,7 @@ class GvmDelivery(models.Model):
     def default_sequence(self):
         _logger.warning("sequence%s"%self.env['ir.sequence'].next_by_code('gvm.delivery'))
         return  self.env['ir.sequence'].next_by_code('gvm.delivery')
-
+    delivery_ids = fields.Many2one('project.project')
     de_num = fields.Char('택배번호', required=True, index=True, copy=False, default='New')
     attachment = fields.Many2many('ir.attachment',domain="[('res_model','=','gvm.delivery')]", string='명세서')
     release = fields.Selection([('company','사내'),('SDV','SDV'),('SSM','SSM'),('internal','국내')], string='출고지', default='SSM')

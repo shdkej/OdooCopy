@@ -434,7 +434,16 @@
             </p>
         </field>
     </record>
-
+    <record model="ir.ui.view" id="project_project_calendar">
+        <field name="name">project.project.calendar</field>
+        <field name="model">project.project</field>
+        <field name="priority" eval="2"/>
+        <field name="arch" type="xml">
+            <calendar string="Calendar View" date_start="date_start" color="state">
+                <field name="name"/>
+            </calendar>
+        </field>
+    </record>
     <record id="open_view_project_all_config" model="ir.actions.act_window">
         <field name="name">Projects</field>
         <field name="res_model">project.project</field>

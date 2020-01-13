@@ -52,6 +52,7 @@ var FormView = View.extend(common.FieldManagerMixin, {
         'click #unkeep_button': 'gvm_change_state1',
         'click #destination_button': 'gvm_change_state1',
         'click #receive_button': 'gvm_change_state1',
+        'click #paydone_button': 'gvm_change_state1',
         'click #add_check': function(){
             var id = Number($('#add_check').attr('name'));
             var td = $('.check_hidden:eq('+id+')').removeClass('o_form_invisible');
@@ -98,6 +99,7 @@ var FormView = View.extend(common.FieldManagerMixin, {
         $('#unkeep_button').hide();
         $('#destination_button').hide();
         $('#receive_button').hide();
+        $('#paydone_button').hide();
         this.gvm_search_purchase();
         var self = this;
         this._super.apply(this, arguments);
@@ -1071,6 +1073,7 @@ var FormView = View.extend(common.FieldManagerMixin, {
             excelFile += $("#exceltable").html() + $("#exceltable2").html();
         }else{
             excelFile += $(".o_list_editable .o_list_view").html();
+            excelFile -= $(".o_checkbox").html();
         }
         excelFile += '</table></body>';
         excelFile += '</html>';
