@@ -47,6 +47,15 @@
                     </field>
                 </group>
             </xpath>
+            <xpath expr="//field[@name='alias_contact']" position="after">
+                <group string='delivery'>
+                    <field name="delivery">
+                        <tree>
+                            <field name="de_num"/>
+                        </tree>
+                    </field>
+                </group>
+            </xpath>
         </field>
     </record>
     <record id="project_pivot_product_inherited" model="ir.ui.view">

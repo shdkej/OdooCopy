@@ -299,7 +299,8 @@
     <template id="web.menu_secondary">
         <a class="o_sub_menu_logo" t-att-href="'/web/?debug' if debug else '/web'">
             <span class="oe_logo_edit">Edit Company data</span>
-            <img src='/web/binary/company_logo'/>
+<!--            <img src='/web/binary/company_logo'/>-->
+                <img src='https://ifh.cc/g/5Mte9.png'/>
         </a>
         <div class="o_sub_menu_content">
             <t t-foreach="menu_data['children']" t-as="menu">

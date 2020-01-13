@@ -13,6 +13,12 @@
 		<field name="check_in_place"/>
                 <field name="check_out"/>
                 <field name="check_out_place"/>
+                <field name="outing_start"/>
+                <field name="reason"/>
+                <field name="date"/>
+                <field name="destination"/>
+                <field name="outing_end"/>
+                <field name="outing_place"/>
             </tree>
         </field>
     </record>
@@ -26,9 +32,15 @@
                     <group>
                         <field name="employee_id"/>
                         <field name="check_in"/>
-			 <field name="check_in_place"/>
-			 <field name="check_out"/>
+                        <field name="check_in_place"/>
+                        <field name="check_out"/>
                         <field name="check_out_place"/>
+                        <field name="outing_start"/>
+                        <field name="destination"/>
+                        <field name="date"/>
+                        <field name="reason"/>
+                        <field name="outing_end"/>
+                        <field name="outing_place"/>
                     </group>
                 </sheet>
             </form>

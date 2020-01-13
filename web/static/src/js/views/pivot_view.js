@@ -85,6 +85,7 @@ var PivotView = View.extend({
             case 'measure':
                 self.widgets.push(field.attrs.widget || "");
                 self.active_measures.push(name);
+                //self.active_measures.push('name');
                 break;
             case 'col':
                 self.initial_col_groupby.push(name);
@@ -444,7 +445,7 @@ var PivotView = View.extend({
             groupbys = [],
             row_gbs = this.main_row.groupbys,
             col_gbs = this.main_col.groupbys,
-            fields = [].concat(row_gbs, col_gbs, this.active_measures);
+            fields = [].concat(row_gbs, col_gbs, this.active_measures, 'name');
         for (i = 0; i < row_gbs.length + 1; i++) {
             for (j = 0; j < col_gbs.length + 1; j++) {
                 groupbys.push(row_gbs.slice(0,i).concat(col_gbs.slice(0,j)));
@@ -683,7 +684,7 @@ var PivotView = View.extend({
     },
     draw_rows: function ($tbody, rows) {
         var self = this,
-            i, j, value, $row, $cell, $header,
+            i, j, value, $row, $cell, $header, value_name,
             nbr_measures = this.active_measures.length,
             length = rows[0].values.length,
             display_total = this.main_col.width > 1;
@@ -719,14 +720,13 @@ var PivotView = View.extend({
             $header.appendTo($row);
             for (j = 0; j < length; j++) {
                 value = formats.format_value(rows[i].values[j], {type: measure_types[j % nbr_measures], widget: widgets[j % nbr_measures]});
-                console.log(rows[i]);
                 $cell = $('<td>')
                             .data('id', rows[i].id)
                             .data('col_id', rows[i].col_ids[Math.floor(j / nbr_measures)])
                             .toggleClass('o_empty', !value)
                             .text(value)
                             .addClass('o_pivot_cell_value text-right')
-                            .attr('title',value);
+                            .attr('title','value_name');
                 if (((j >= length - this.active_measures.length) && display_total) || i === 0){
                     $cell.css('font-weight', 'bold');
                 }
@@ -817,7 +817,7 @@ var PivotView = View.extend({
                 indent: header.path.length - 1,
                 title: header.path[header.path.length-1],
                 expanded: header.expanded,
-                values: values,              
+                values: values,
             });
             traverse_tree(self.main_col.root, add_cells, header.id, values, col_ids);
             if (self.main_col.width > 1) {

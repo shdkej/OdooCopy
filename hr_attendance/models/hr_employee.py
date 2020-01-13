@@ -31,10 +31,12 @@ class HrEmployee(models.Model):
 
     attendance_ids = fields.One2many('hr.attendance', 'employee_id', help='list of attendances for the employee')
     last_attendance_id = fields.Many2one('hr.attendance', compute='_compute_last_attendance_id')
-    attendance_state = fields.Selection(string="Attendance", compute='_compute_attendance_state', selection=[('checked_out', "Checked out"), ('checked_in', "Checked in")])
+    attendance_state = fields.Selection(string="Attendance", selection=[('checked_out', "Checked out"), ('checked_in', "Checked in")],defalut ='cheked_out')
+    outing_state = fields.Selection(string="Attendance", selection=[('outing_out', "outing out"), ('outing_in', "outing in")],default='outing_out')
     manual_attendance = fields.Boolean(string='Manual Attendance', compute='_compute_manual_attendance', inverse='_inverse_manual_attendance',
                                        help='The employee will have access to the "My Attendances" menu to check in and out from his session')
     check_today_attendance = fields.Boolean()
+    location = fields.Char()
     _sql_constraints = [('barcode_uniq', 'unique (barcode)', "The Badge ID must be unique, this one is already assigned to another employee.")]
 
     @api.multi
@@ -56,12 +58,13 @@ class HrEmployee(models.Model):
     def _compute_last_attendance_id(self):
         for employee in self:
             employee.last_attendance_id = employee.attendance_ids and employee.attendance_ids[0] or False
-
+    
     @api.depends('last_attendance_id.check_in', 'last_attendance_id.check_out', 'last_attendance_id')
     def _compute_attendance_state(self):
         for employee in self:
+            #employee.attendance_state = employee.last_attendance_id and not employee.last_attendance_id.check_out and 'checked_in' or 'checked_out'
             employee.attendance_state = employee.last_attendance_id and not employee.last_attendance_id.check_out and 'checked_in' or 'checked_out'
-
+    
     @api.constrains('pin')
     def _verify_pin(self):
         for employee in self:
@@ -104,17 +107,39 @@ class HrEmployee(models.Model):
             modified_attendance = self.sudo().attendance_action_change()
         action_message['attendance'] = modified_attendance.read()[0]
         return {'action': action_message}
-   
-    #sh
-    def button_leavework(self): 
-       """ 출근과 퇴근을 사용자가 지정하여 사용할 수 있다. 사무실에서 찍은경우 사무실의 기록을 가져온다."""
-       """현재사용자 퇴근버튼을 눌렀을경우"""
-       #현재사용자의 출근시간을 찾는다.
-       gotowork = self.env['hr.timeattendance'].search([('user_id','=',self.env.uid)]).gotowork
-       _logger.warning("gotowork")
 
-    #sh
-    def _Check_check_out_time(self):
+    def write_outing_list(ids,destination,reason,date_to,date_from,location):
+        hr_employee = request.env['hr.employee'].search([('user_id','=',request.env.uid)])
+
+        #외근
+        if hr_employee.outing_state == 'outing_out': 
+          date_to = str(date_to)
+          date_form = str(date_from)
+          date = date_to + " ~ " + date_from
+
+          hr_attendance = request.env['hr.attendance']
+          hr_attendance.create({'employee_id':hr_employee.id,
+                                'reason':reason,
+                                'destination':destination,
+                                'outing_start':datetime.today(),
+                                'date':date,
+          })
+          hr_employee.write({'outing_state':'outing_in',
+                             'attendance_state':'checked_out',
+          })
+        #복귀/퇴근
+        else:
+          _logger.warning('test')
+          attendance = request.env['hr.attendance'].search([('employee_id', '=', hr_employee.id), ('outing_end', '=', False)], limit=1)       
+          attendance.write({'outing_end':datetime.today(),
+                            'outing_place':location
+
+          })
+          hr_employee.write({'outing_state':'outing_out',
+                             'attendance_state':'checked_out',
+          })
+
+    def _Check_out_time(self):
        """ 퇴근을 하지 않았을경우, 다음날 00시 00분 00초에 자동으로  퇴근이 된다."""
        #현재시간	
        date = datetime.now()
@@ -140,7 +165,7 @@ class HrEmployee(models.Model):
 	     'check_out':check_out_time
 	   })
 #        return self.env['hr.attendance'].write(check_out_date)
-
+    
     @api.multi
     def attendance_action_change(self, location):
         """ Check In/Check Out action
@@ -160,7 +185,7 @@ class HrEmployee(models.Model):
 	check_out_cut_line = ""
 	
 	#해당 유저의 처음 출근시간이 존재할 경우
-	if check_in_date != False :
+	if check_in_date != False:
 	 #해당 유저의 첫 체크인시간을 년,월,일,시간,분,초로 변경
 	 check_in_last_time = datetime.strptime(check_in_date, '%Y-%m-%d %H:%M:%S')
 	 #체크인 기준시간(다음날 00시 00분 00초)
@@ -171,8 +196,9 @@ class HrEmployee(models.Model):
 	 check_out_cut_line = check_in_last_time + relativedelta(hours=1)
 
 	#체크인상태일 경우
+        _logger.warning(self.attendance_state)
 	if self.attendance_state != 'checked_in':
-	     #해당 유저의 출근시간이 존재할경우
+	     #해당 유저의 출근시간이 존재하지 않을경우
 	     if check_in_date != False:
 	       #출퇴근 기준시간보다 현재의 시간이 클 경우
 	       if present_date > check_in_cut_line:
@@ -182,6 +208,7 @@ class HrEmployee(models.Model):
                     'check_in': present_date,
                     'check_in_place': location,
                  }
+                 self.attendance_state = 'checked_in'
 	         return self.env['hr.attendance'].create(vals)
 	       #출퇴근 기준시간보다 현재의 시간이 작을 경우 
 	       else:
@@ -193,19 +220,24 @@ class HrEmployee(models.Model):
 	         'employee_id': self.id,
 	         'check_in': present_date,
                  'check_in_place': location,
-	       }
+	       } 
+               self.attendance_state = 'checked_in'
                return self.env['hr.attendance'].create(vals)
 	#체크아웃상태일 경우       
         else:
+           hr_attendance = self.env['hr.attendance']
+
 	   #해당 유저의 체크아웃 파악
-           attendance = self.env['hr.attendance'].search([('employee_id', '=', self.id), ('check_out', '=', False)], limit=1)       
+           attendance = self.env['hr.attendance'].search([('employee_id', '=', self.id), ('check_out', '=', False), ('check_in', '!=', False)], limit=1)       
+           _logger.warning(attendance)
 	   if attendance:
 	    #출퇴근 기준시간 보다 현재의 시간이 클경우
      	    if present_date > check_out_cut_line:
 	      #서버에 생성
               attendance.check_out = present_date
 	      attendance.check_out_place = location
-	    #출퇴근 기준시간 보다 현쟈시간이 작을경우
+              self.attendance_state = 'checked_out'
+	   #출퇴근 기준시간 보다 현쟈시간이 작을경우
 	    else:
 	      raise UserError(_('퇴근시간이 아닙니다.'))
            return attendance
@@ -253,14 +285,12 @@ class HrEmployee(models.Model):
         full_address = ''
         address = r
         status = address['status']['name']
-	_logger.warning(status)
         if status == 'ok':
           name4 = str(address['results'][0]['region']['area4']['name'])
           name3 = str(address['results'][0]['region']['area3']['name'])
           name2 = str(address['results'][0]['region']['area2']['name'])
           name1 = str(address['results'][0]['region']['area1']['name'])
           name0 = str(address['results'][0]['region']['area0']['name'])
-	  _logger.warning(name0)
 
           roadaddr0, roadaddr1 = '',''
 	  if len(address['results']) > 1:
@@ -277,7 +307,6 @@ class HrEmployee(models.Model):
     def geolocation(self):
         url = 'https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyB99SRIPe6V5HCvbhf9rzaEbi8E2jP_1Zg'
         r = requests.post(url).json()
-	_logger.warning(r)
         lat = str(r['location']['lat'])
         lng = str(r['location']['lng'])
         latlng = [lat,lng]
