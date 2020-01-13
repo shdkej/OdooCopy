@@ -40,7 +40,8 @@ class gvm_mail():
 	   if rc.work_email:
              receivers.append(str(rc.work_email))
        
-     receivers.append('parksh@gvmltd.com')
+     receivers.append('nohsh@gvmltd.com')
+     _logger.warning(receivers)
 
      post_id = str(postId)
      html = str('<a href="' + url + 
@@ -53,6 +54,8 @@ class gvm_mail():
      msg['from'] = 'GVM_ERP'
 
      s = smtplib.SMTP_SSL(host='smtp.mailplug.co.kr', port=465)
+     _logger.warning('send mail')
+     _logger.warning(receivers)
      s.login(user=gvm_mail_id, password=gvm_mail_pw)
      s.sendmail(sender, receivers, msg.as_string())
      s.quit()

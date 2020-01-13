@@ -365,7 +365,6 @@ return Widget.extend({
         var self = this;
         setTimeout(function(){
         var filters = _.invoke(self.propositions, 'get_filter');
-        console.log(filters);
         var filters_widgets = _.map(filters, function (filter) {
                return new search_inputs.Filter(filter, self);
             });
@@ -464,14 +463,12 @@ return Widget.extend({
     commit_search: function () {
         var filters = _.invoke(this.propositions, 'get_filter'),
             filters_widgets = _.map(filters, function (filter) {
-                console.log(filter);
                 return new search_inputs.Filter(filter, this);
             }),
             filter_group = new search_inputs.FilterGroup(filters_widgets, this.searchview),
             facets = filters_widgets.map(function (filter) {
                 return filter_group.make_facet([filter_group.make_value(filter)]);
             });
-        console.log(filters_widgets);
         filter_group.insertBefore(this.$add_filter);
         $('<li class="divider">').insertBefore(this.$add_filter);
         this.searchview.query.add(facets, {silent: true});

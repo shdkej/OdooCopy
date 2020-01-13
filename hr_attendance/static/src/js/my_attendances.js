@@ -162,9 +162,8 @@ var MyAttendances = Widget.extend({
     },
 });
 
-core.action_registry.add('hr_attendance_my_attendances', MyAttendances)
-                    .add('hr_attendance_outing', outing);
+core.action_registry.add('hr_attendance_my_attendances', MyAttendances);
 
-return {MyAttendances,outing};
+return MyAttendances;
 
 });

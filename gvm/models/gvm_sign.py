@@ -265,17 +265,6 @@ class GvmSignContent(models.Model):
     @api.model
     def _compute_my_check_count(self):
       my_doc = self.env['gvm.signcontent'].search([('user_id','=',self.env.uid)])
-      my_check_doc = self.env['gvm.signcontent'].search(['|','|','|','|','|',
-                                     ('check1','=',self.env.uid),
-                                     ('check2','=',self.env.uid),
-                                     ('check3','=',self.env.uid),
-                                     ('check4','=',self.env.uid),
-                                     ('check5','=',self.env.uid),
-                                     ('check6','=',self.env.uid)
-				     ])
-      my_check_finish_doc = self.env['gvm.signcontent'].search([('check1','=',self.env.uid)])
-      my_check_deny_doc = self.env['gvm.signcontent'].search([('check1','=',self.env.uid)])
-      my_ref_doc = self.env['gvm.signcontent'].search([('reference','=',self.env.uid)])
       for record in self:
         record.my_doc_count = len(my_doc)
         record.my_check_count = len(my_check_doc)
@@ -492,7 +481,7 @@ class GvmSignContent(models.Model):
 	  #연차갯수
 	  count = self.check_holiday_count()
 	  #로그인한 유저정보
-	  hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.user_department.id)])
+	  hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.dep_ids.id)])
 	  #총 연차갯수 + 사용했던 연차갯수
 	  h_count = float(hr_name.holiday_count) + float(count)
 	  # 적용
@@ -505,7 +494,9 @@ class GvmSignContent(models.Model):
 	 #연차갯수
 	 count = self.check_holiday_count()
 	 #로그인한 유저정보
-	 hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.user_department.id)])
+	 hr_name = self.env['hr.employee'].sudo(1).search(['&',('name','=',self.user_id.name),('department_id','=',self.dep_ids.id)])
+         _logger.warning("name%s"%self.user_id.name)
+         _logger.warning("depart%s"%self.dep_ids.id)
 	 #총 연차갯수 + 사용했던 연차갯수
 	 h_count = float(hr_name.holiday_count) + float(count)
 	 # 적용
@@ -520,25 +511,25 @@ class GvmSignContent(models.Model):
 
     #상신버튼 눌렀을경우 동작함수
     def button_confirm(self):
-       for record in self:
-         #결재정보를 얻는다.
-         check_id_list = record.get_check_list()
-
-         #중복검사
-         for check in check_id_list:
+      for record in self:
+       #결재정보를 얻는다.
+       check_id_list = record.get_check_list()
+         
+       #중복검사
+       for check in check_id_list:
            if len(check_id_list) > len(filter(lambda x:x[1]!=check[1], check_id_list))+1:
              raise UserError(_('결재라인은 중복되면 안됩니다.'))
            #권한검사Flag     
            if "sign" in check:
              record.check_inspection = False
 
-         #권한검사
-         #결재자가 없을경우 상신할 수 없다.
-         if record.check_inspection == True:
-            raise UserError(_('결재자가 없습니다. 결재라인을 확인하세요.'))
+       #권한검사
+       #결재자가 없을경우 상신할 수 없다.
+       if record.check_inspection == True:
+           raise UserError(_('결재자가 없습니다. 결재라인을 확인하세요.'))
  
-       #연차 개수
-       if self.sign.num == 1:
+      #연차 개수
+      if self.sign.num == 1:
          count = self.check_holiday_count()
 	 hr_name = self.env['hr.employee'].sudo(1).search([('name','=',self.user_id.name)])
 	 h_count = float(hr_name.holiday_count) - float(count) 
@@ -547,11 +538,11 @@ class GvmSignContent(models.Model):
          #if h_count < -7:
          # raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
        
-       self.sendmail()
-       #처음 결재자에게 메일을 보낸다.
-       self.write({'state':'write',
-                   'confirm_date':datetime.today()
-       })
+      self.sendmail()
+      #처음 결재자에게 메일을 보낸다.
+      self.write({'state':'write',
+                  'confirm_date':datetime.today()
+      })
 
     def check_holiday_count(self, rest1=None, date_to=None, date_from=None):
         count = 0

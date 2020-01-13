@@ -7,7 +7,6 @@ from dateutil.relativedelta import relativedelta
 from odoo.exceptions import UserError
 from odoo import models, fields, api, exceptions, _, SUPERUSER_ID
 from datetime import datetime
-from odoo.http import content_disposition, dispatch_rpc, request
 import requests
 import logging
 import sys
@@ -42,7 +41,6 @@ class HrEmployee(models.Model):
 
     @api.multi
     def _compute_manual_attendance(self):
-        hr_attendance = self.env['hr.attendance'].search([])
         for employee in self:
             employee.manual_attendance = employee.user_id.has_group('hr.group_hr_attendance') if employee.user_id else False
 
@@ -66,8 +64,7 @@ class HrEmployee(models.Model):
         for employee in self:
             #employee.attendance_state = employee.last_attendance_id and not employee.last_attendance_id.check_out and 'checked_in' or 'checked_out'
             employee.attendance_state = employee.last_attendance_id and not employee.last_attendance_id.check_out and 'checked_in' or 'checked_out'
-
-
+    
     @api.constrains('pin')
     def _verify_pin(self):
         for employee in self:
@@ -229,22 +226,20 @@ class HrEmployee(models.Model):
 	#체크아웃상태일 경우       
         else:
            hr_attendance = self.env['hr.attendance']
-           #if hr_attendance.outing_start == False:
-	   #   raise UserError(_('출장중이 아닙니다.'))
-           #return
 
 	   #해당 유저의 체크아웃 파악
            attendance = self.env['hr.attendance'].search([('employee_id', '=', self.id), ('check_out', '=', False), ('check_in', '!=', False)], limit=1)       
            _logger.warning(attendance)
 	   if attendance:
 	    #출퇴근 기준시간 보다 현재의 시간이 클경우
-#     	    if present_date > check_out_cut_line:
+     	    if present_date > check_out_cut_line:
+	      #서버에 생성
               attendance.check_out = present_date
 	      attendance.check_out_place = location
               self.attendance_state = 'checked_out'
-	    #출퇴근 기준시간 보다 현쟈시간이 작을경우
-	   # else:
-	   #   raise UserError(_('퇴근시간이 아닙니다.'))
+	   #출퇴근 기준시간 보다 현쟈시간이 작을경우
+	    else:
+	      raise UserError(_('퇴근시간이 아닙니다.'))
            return attendance
 
     @api.model_cr_context

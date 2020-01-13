@@ -64,13 +64,6 @@ class GvmProductInherit(models.Model):
     title = fields.Boolean('invisible')
     emergency = fields.Boolean('긴급',defualt=False,store=True)
 
-
-    def _generate_order_by(self, order_spec, query):
-	my_order = "issue asc, case when substring(sequence_num from '^P') IS NULL then substring(sequence_num from '^\d+$')::int end, sequence_num"
-	if order_spec:
-	   return super(GvmProduct,self)._generate_order_by(order_spec,query) + "," + my_order
-	return " order by " + my_order
-
     def _compute_xml_id(self):
         res = self.get_external_id()
         for record in self:

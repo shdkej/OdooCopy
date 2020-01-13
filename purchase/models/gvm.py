@@ -181,7 +181,9 @@ class GvmProduct(models.Model):
 	], string='불량유형', default='A')
     release_place = fields.Many2one('gvm.delivery.release',string='출고지')
     sub_id = fields.Char('sub_id')
-    image = fields.Binary("image", attachment=True)
+    image = fields.Binary("image")
+    image_duplicate = fields.Binary("image",compute='_compute_image')
+    product_ids = fields.Many2many('product.product', string='product')
 
     def _generate_order_by(self, order_spec, query):
 	my_order = "case when substring(sequence_num from '^P') IS NULL then substring(sequence_num from '^\d+$')::int end, sequence_num"
@@ -193,6 +195,11 @@ class GvmProduct(models.Model):
         res = self.get_external_id()
         for record in self:
             record.exid = res.get(record.id)
+
+    @api.one
+    def _compute_image(self):
+        _logger.warning('search image')
+        self.image_duplicate = self.image
     
     @api.depends('purchase_by_maker.attachment')
     def _compute_attachment(self):

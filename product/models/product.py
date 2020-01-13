@@ -190,6 +190,7 @@ class ProductProduct(models.Model):
 
     _sql_constraints = [
         ('barcode_uniq', 'unique(barcode)', _("A barcode can only be assigned to one product !")),
+        ('model_uniq', 'unique(model)', _("이미 등록된 모델이 있습니다.")),
     ]
 
     def _compute_product_price(self):
