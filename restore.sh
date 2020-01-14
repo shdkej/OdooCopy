@@ -14,15 +14,15 @@ echo ${filename}
 unzip ${filename} -d ${BackupPath}/backups
 echo "db:5432:${dbname}:$USER:$PASSWORD" >> /root/.pgpass
 chmod 0600 /root/.pgpass
-createdb -h db -U odoo ${dbname}
-psql -h db -U odoo ${dbname} < ${BackupPath}/backups/dump.sql
-psql -h -db -U odoo ${dbname} -c "DELETE FROM ir_attachment WHERE url LIKE '/web/content/%'"
+createdb -h db -U odoo -w ${dbname}
+psql -h db -U odoo -w ${dbname} < ${BackupPath}/backups/dump.sql
+psql -h -db -U odoo -w ${dbname} -c "DELETE FROM ir_attachment WHERE url LIKE '/web/content/%'"
 mkdir -p ${BackupPath}/filestore/${dbname}
-mv -i ${BackupPath}/backups/filestore/* ${BackupPath}/filestore/${dbname}
+mv ${BackupPath}/backups/filestore/* ${BackupPath}/filestore/${dbname}
 echo "##데이터 백업 완료##"
 echo "${GREEN}소스코드 업데이트를 하시겠습니까? (y or n)${NC}"
 read check_update
-if [ $check_update = "n"]
+if [ $check_update = "n" ]
 then
     echo "${GREEN}##데이터 업데이트 완료##${NC}"
     break
