@@ -16,7 +16,7 @@ echo "db:5432:*:$USER:$PASSWORD" >> /root/.pgpass
 chmod 0600 /root/.pgpass
 createdb -h db -U odoo -w ${dbname}
 psql -h db -U odoo -w ${dbname} < ${BackupPath}/backups/dump.sql
-psql -h -db -U odoo -w ${dbname} -c "DELETE FROM ir_attachment WHERE url LIKE '/web/content/%'"
+psql -h db -U odoo -w ${dbname} -c "DELETE FROM ir_attachment WHERE url LIKE '/web/content/%'"
 mkdir -p ${BackupPath}/filestore/${dbname}
 mv ${BackupPath}/backups/filestore/* ${BackupPath}/filestore/${dbname}
 echo "##데이터 백업 완료##"
