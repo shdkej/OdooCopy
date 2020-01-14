@@ -12,18 +12,18 @@ fi
 BackupPath="/var/lib/odoo"
 echo ${filename}
 unzip ${filename} -d ${BackupPath}/backups
-echo "${GREEN}##비밀번호를 입력해주세요 (default = myodoo)##${NC}"
-createdb -h db -O odoo -U odoo ${dbname}
-echo "${GREEN}##한번 더 비밀번호를 입력해주세요 (default = myodoo)##${NC}"
+echo "db:5432:${dbname}:$USER:$PASSWORD" >> /root/.pgpass
+createdb -h db -U odoo ${dbname}
 psql -h db -U odoo ${dbname} < ${BackupPath}/backups/dump.sql
+psql -h -db -U odoo ${dbname} -c "DELETE FROM ir_attachment WHERE url LIKE '/web/content/%'"
 mkdir -p ${BackupPath}/filestore/${dbname}
 mv -i ${BackupPath}/backups/filestore/* ${BackupPath}/filestore/${dbname}
 echo "##데이터 백업 완료##"
 echo "${GREEN}소스코드 업데이트를 하시겠습니까? (y or n)${NC}"
 read check_update
-if [ $check_update = "n" ]
+if [ $check_update = "n"]
 then
-    echo "${GREEN}##데이터 업데이트 완료##${NC}"
+	echo "${GREEN}##데이터 업데이트 완료##${NC}"
     break
 fi
 git stash clear
@@ -31,6 +31,6 @@ git stash
 git pull origin master
 git stash drop
 echo "##소스코드 업데이트 완료##"
-cp config.ini.backup config.ini
-odoo --db_host db -r $USER -w $PASSWORD -d gvm -u  analytic,gvm,gvm_mrp,hr,hr_attendance,product,project,purchase
+cp config.ini.example config.ini
+odoo --db_host db -r $USER -w $PASSWORD -d gvm -d analytic,gvm,gvm_mrp,hr,hr_attendance,product,project,purchase
 echo "${GREEN}##최신버전 업데이트 완료##${NC}"
