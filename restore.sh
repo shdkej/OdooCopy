@@ -23,7 +23,7 @@ echo "${GREEN}소스코드 업데이트를 하시겠습니까? (y or n)${NC}"
 read check_update
 if [ $check_update = "n"]
 then
-	echo "${GREEN}##데이터 업데이트 완료##${NC}"
+    echo "${GREEN}##데이터 업데이트 완료##${NC}"
     break
 fi
 git stash clear
@@ -32,5 +32,5 @@ git pull origin master
 git stash drop
 echo "##소스코드 업데이트 완료##"
 cp config.ini.example config.ini
-odoo --db_host db -r $USER -w $PASSWORD -d gvm -d analytic,gvm,gvm_mrp,hr,hr_attendance,product,project,purchase
+odoo --db_host db -r $USER -w $PASSWORD -d ${dbname} -u analytic,gvm,gvm_mrp,hr,hr_attendance,product,project,purchase
 echo "${GREEN}##최신버전 업데이트 완료##${NC}"
