@@ -1,7 +1,7 @@
 #/bin/bash
 filename=$(ls -tr | tail -5 | grep [0-9]_)
-GREEN=
-NC=
+GREEN='\033[0;31m'
+NC='\033[0m'
 echo -n "${GREEN}DB명을 입력해주세요(미입력시 gvm) :${NC}"
 read input
 dbname="$input"
@@ -21,7 +21,7 @@ mv -i ${BackupPath}/backups/filestore/* ${BackupPath}/filestore/${dbname}
 echo "##데이터 백업 완료##"
 echo "${GREEN}소스코드 업데이트를 하시겠습니까? (y or n)${NC}"
 read check_update
-if [ $check_update = "n"]
+if [ $check_update = "n" ]
 then
     break
 fi
@@ -30,5 +30,5 @@ git stash
 git pull origin master
 git stash drop
 echo "##소스코드 업데이트 완료##"
-ou analytic,gvm,gvm_mrp,hr,hr_attendance,product,project,purchase
+odoo --db_host db -r $USER -w $PASSWORD -d gvm -u  analytic,gvm,gvm_mrp,hr,hr_attendance,product,project,purchase
 echo "${GREEN}##데이터 업데이트 완료##${NC}"
