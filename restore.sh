@@ -18,6 +18,7 @@ createdb -h db -U odoo -w ${dbname}
 psql -h db -U odoo -w ${dbname} < ${BackupPath}/backups/dump.sql
 psql -h db -U odoo -w ${dbname} -c "DELETE FROM ir_attachment WHERE url LIKE '/web/content/%'"
 mkdir -p ${BackupPath}/filestore/${dbname}
+chown -R odoo:odoo ${BackupPath}
 mv ${BackupPath}/backups/filestore/* ${BackupPath}/filestore/${dbname}
 echo "##데이터 백업 완료##"
 echo "${GREEN}소스코드 업데이트를 하시겠습니까? (y or n)${NC}"
