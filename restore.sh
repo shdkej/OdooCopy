@@ -1,6 +1,6 @@
 #/bin/bash
 filename=$(ls -tr | tail -5 | grep [0-9]_)
-GREEN='\033[0;31m'
+GREEN='\033[0;32m'
 NC='\033[0m'
 echo -n "${GREEN}DB명을 입력해주세요(미입력시 gvm) :${NC}"
 read input
@@ -23,6 +23,7 @@ echo "${GREEN}소스코드 업데이트를 하시겠습니까? (y or n)${NC}"
 read check_update
 if [ $check_update = "n" ]
 then
+    echo "${GREEN}##데이터 업데이트 완료##${NC}"
     break
 fi
 git stash clear
@@ -30,5 +31,6 @@ git stash
 git pull origin master
 git stash drop
 echo "##소스코드 업데이트 완료##"
+cp config.ini.backup config.ini
 odoo --db_host db -r $USER -w $PASSWORD -d gvm -u  analytic,gvm,gvm_mrp,hr,hr_attendance,product,project,purchase
-echo "${GREEN}##데이터 업데이트 완료##${NC}"
+echo "${GREEN}##최신버전 업데이트 완료##${NC}"
