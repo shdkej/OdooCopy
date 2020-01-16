@@ -1705,6 +1705,9 @@ function _exclEndDay(end, allDay) {
 
 
 function lazySegBind(container, segs, bindHandlers) {
+    if (container == undefined){
+        return false;
+    }
 	container.unbind('mouseover').mouseover(function(ev) {
 		var parent=ev.target, e,
 			i, seg;
@@ -5197,10 +5200,10 @@ function DayEventRenderer() {
 		// If `doAppend`==true, uses a temporary container.
 		var renderContainer = false ? $("<div/>") : finalContainer;
         console.log('renderContainer')
-        console.log(renderContainer[0])
-        console.log(renderContainer)
-        if (renderContainer[0] == undefined){
-            console.log('a')
+        if (renderContainer == undefined){
+            console.log('a');
+			renderContainer = $("<div class='fc-event-container' style='position:absolute;z-index:8;top:0;left:0'/>")
+				.appendTo($("<div style='position:absolute;z-index:2;left:0;width:100%'/>"));
         }
 
 		var segments = buildSegments(events);
@@ -5215,8 +5218,6 @@ function DayEventRenderer() {
 
 		// render the HTML. innerHTML is considerably faster than jQuery's .html()
 		renderContainer[0].innerHTML = html;
-        console.log('test')
-        console.log(html)
 
 		// retrieve the individual elements
 		elements = renderContainer.children();
