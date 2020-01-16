@@ -30,8 +30,13 @@ _logger = logging.getLogger(__name__)
 class GvmSign(models.Model):
     _name = "gvm.sign"
     _description = "sign"
-    _order = 'num'
+    _order = 'sign_sequence'
 
+    @api.model
+    def default_sequence(self):
+        return  self.env['ir.sequence'].next_by_code('sign.number')
+    
+    sign_sequence = fields.Integer (' 순번 ', default=default_sequence)
     name = fields.Char(string='sign',required=True)
     num = fields.Integer(string='number')
 
@@ -256,27 +261,6 @@ class GvmSignContent(models.Model):
          #다음 결재자를 찾는다.
          check_id_list = record.get_check_list()
         
-         #반려되었을경우
-         if record.state == 'cancel': 
-           #결재버튼을 숨긴다.
-           record.check = False
-	   #현재 서버 페이지의 정보를 가져온다.
-	   rest1 = record.rest1
-	   date_to = record.date_to
-	   date_from = record.date_from
-	   #연차의 갯수를 상신 전상태로 돌린다.
-	   count = record.check_holiday_count(rest1,date_to,date_from)
-	   hr_name = record.env['hr.employee'].search([('name','=',record.user_id.name)])
-	   h_count = float(hr_name.holiday_count) +  float(count)
-	   hr_name.write({
-	            'holiday_count': h_count
-	   })
-           text = str('근태 반려 %s -> %s' % (h_count+count, h_count))
-           self.env['hr.tracking'].create({'name':hr_name.id,'holiday_count':h_count,'etc':text,'sign_id':self.id})
-	   #다음 결제권한을  작성자에게 넘긴다. 
-	   record.next_check = record.writer
-	   return False
-
     @api.depends('user_id')
     def _compute_holiday_count(self):
       for record in self:
@@ -363,31 +347,36 @@ class GvmSignContent(models.Model):
           boss = dep.manager_id
           management = self.env['hr.employee'].search([('department_id','=',10)])
           ceo = self.env['hr.employee'].search([('id','=',126)])
+          present_user =  self.env['hr.employee'].search([('user_id','=',user)]) 
 	  management_manager = management[0]
+
+          #부서장일경우 대표님으로 결재
+          if present_user == boss:
+            boss = ceo
           #check: 결재(sign), 합의(2), 통보(3) / state : 0 (대기) / sequnce : 순번 
           if record.sign_ids in [2,3]:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequnce':'0'}),
-                                (0, 0, {'name':management[1].id, 'check':'2','state':'0','sequnce':'1'}),
-                                (0, 0, {'name':management_manager.id, 'check':'2','state':'0','sequnce':'2'}),
+            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
+                                (0, 0, {'name':management[1].id, 'check':'2','state':'0','sequence':'1'}),
+                                (0, 0, {'name':management_manager.id, 'check':'2','state':'0','sequence':'2'}),
                                ]
-          elif record.sign_ids == 4:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequnce':'0'}),
-                                (0, 0, {'name':ceo.id, 'check':'sign','state':'0','sequnce':'1'}),
-                               ]
+          elif record.sign_ids == [4,6]:
+            if boss.id != ceo.id:
+                record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
+                                    (0, 0, {'name':ceo.id, 'check':'sign','state':'0','sequence':'1'}),
+                                   ]
+            else:
+                record.sign_line = [(0, 0, {'name':ceo.id, 'check':'sign','state':'0','sequence':'0'}),
+                                   ]
           elif record.sign_ids == 5:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequnce':'0'}),
-                                (0, 0, {'name':management[2].id, 'check':'2','state':'0','sequnce':'1'}),
-                               ]
-	  elif record.sign_ids == 6:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequnce':'0'}),
-                                (0, 0, {'name':ceo.id, 'check':'sign','state':'0','sequnce':'1'}),
+            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
+                                (0, 0, {'name':management[2].id, 'check':'2','state':'0','sequence':'1'}),
                                ]
 	  elif record.sign_ids == 1:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequnce':'0'}),
-                                (0, 0, {'name':management[1].id, 'check':'3','state':'0','sequnce':'1'}),
+            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
+                                (0, 0, {'name':management[1].id, 'check':'3','state':'0','sequence':'1'}),
                                ]
           else:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequnce':'0'}),
+            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
                                ]
 
     @api.depends('date_from','date_to')
@@ -675,6 +664,24 @@ class GvmSignContent(models.Model):
       else:
         _logger.warning('click deny')
         if state == 'cancel':
+          #결재버튼을 숨긴다.
+          sign_id.check = False
+          #현재 서버 페이지의 정보를 가져온다.
+	  rest1 = sign_id.rest1
+          date_to = sign_id.date_to
+          date_from = sign_id.date_from
+          #연차의 갯수를 상신 전상태로 돌린다.
+          count = sign_id.check_holiday_count(rest1,date_to,date_from)
+          hr_name = request.env['hr.employee'].search([('name','=',sign_id.user_id.name)])
+          h_count = float(hr_name.holiday_count) +  float(count)
+          hr_name.write({
+                  'holiday_count': h_count
+          })
+          text = str('근태 반려 %s -> %s' % (h_count+count, h_count))
+          request.env['hr.tracking'].create({'name':hr_name.id,'holiday_count':h_count,'etc':text,'sign_id':sign_id.id})
+          #다음 결제권한을  작성자에게 넘긴다. 
+          sign_id.next_check = sign_id.writer
+
           for record in sign_id.sign_line:
             #결재시간이없고 자기자신일경우
             if record.check_date == False:
@@ -761,7 +768,7 @@ class GvmSignContent(models.Model):
         #[취소권한부여] 294: 유예진, 295: 이승현, 258: 김진우, 316: 조나래
         allower = [1,294,295,258,316]
         for record in self:
-            if record.state in ['temp','write','cancel']:
+            if record.state in ['temp','write','cancel','remove']:
 	     if self.env.user.name != record.user_id.name and self.env.uid != 1:
                raise UserError(_('본인 외 수정 불가'))
             else:

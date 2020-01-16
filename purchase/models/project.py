@@ -44,6 +44,7 @@ class GvmProjectProject(models.Model):
     _inherit = 'project.project'
 
     product = fields.One2many('gvm.product', 'project_ids',string='product')
+    delivery = fields.One2many('gvm.delivery', 'delivery_ids' ,string='delivery')
     product_cost = fields.Float('자재비용', compute='_compute_product_cost', store=True)
 
     @api.depends('name')

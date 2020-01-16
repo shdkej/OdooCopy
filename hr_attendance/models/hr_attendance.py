@@ -13,42 +13,46 @@ _logger = logging.getLogger(__name__)
 class HrAttendance(models.Model):
     _name = "hr.attendance"
     _description = "Attendance"
-    _order = "check_in desc"
+    _order = "create_date desc"
 
     def _default_employee(self):
         return self.env['hr.employee'].search([('user_id', '=', self.env.uid)], limit=1)
 
     employee_id = fields.Many2one('hr.employee', string="Employee", default=_default_employee, required=True, ondelete='cascade', index=True)
     department_id = fields.Many2one('hr.department', string="Department", related="employee_id.department_id")
-    check_in = fields.Datetime(string="출장_출근시간", default=fields.Datetime.now, required=True)
-    check_in_place = fields.Char('출근장소')
-    check_out = fields.Datetime(string="츌장_퇴근시간")
-    check_out_place = fields.Char('퇴근장소')
-    worked_hours = fields.Float(string='Worked Hours', compute='_compute_worked_hours', store=True, readonly=True)
-    outing_start = fields.Datetime(string="외근_출발시간")
-    outing_end = fields.Datetime(string="외근_복귀/퇴근시간")
-    reason = fields.Char('외근사유', index=True, store=True)
-    destination = fields.Char('목적지', index=True, store=True)
+    check_in = fields.Datetime(string="[출장] 출근")
+    check_in_place = fields.Char('[출장] 출근장소')
+    check_out = fields.Datetime(string="[출장] 퇴근")
+    check_out_place = fields.Char('[출장] 퇴근장소')
+    #worked_hours = fields.Float(string='Worked Hours', compute='_compute_worked_hours', store=True, readonly=True)
+    worked_hours = fields.Float(string='Worked Hours', store=True, readonly=True)
+    outing_start = fields.Datetime(string="[외근] 출발")
+    outing_end = fields.Datetime(string="[외근] 퇴근")
+    reason = fields.Char('[외근] 외근사유')
+    destination = fields.Char('[외근] 목적지')
+    date = fields.Char('[외근] 업무예정시간')
+    outing_place = fields.Char('[외근] 퇴근장소')
 
+    #@api.multi
+    #def name_get(self):
+    #    result = []
+    #    for attendance in self:
+    #        if not attendance.check_out:
+    #          if not attendance.outing_start:
+    #            result.append((attendance.id, _("%(empl_name)s from ") % {
+    #                'empl_name': attendance.employee_id.name_related,
+#                    'check_in': fields.Datetime.to_string(fields.Datetime.context_timestamp(attendance, fields.Datetime.from_string(attendance.check_in))),
+    #            }))
+    #        else:
+    #          if not attendance.outing_end:
+    #            result.append((attendance.id, _("%(empl_name)s from ") % {
+    #                'empl_name': attendance.employee_id.name_related,
+ #                   'check_in': fields.Datetime.to_string(fields.Datetime.context_timestamp(attendance, fields.Datetime.from_string(attendance.check_in))),
+ #                   'check_out': fields.Datetime.to_string(fields.Datetime.context_timestamp(attendance, fields.Datetime.from_string(attendance.check_out))),
+    #            }))
+    #    return result
 
-    @api.multi
-    def name_get(self):
-        result = []
-        for attendance in self:
-            if not attendance.check_out:
-                result.append((attendance.id, _("%(empl_name)s from %(check_in)s") % {
-                    'empl_name': attendance.employee_id.name_related,
-                    'check_in': fields.Datetime.to_string(fields.Datetime.context_timestamp(attendance, fields.Datetime.from_string(attendance.check_in))),
-                }))
-            else:
-                result.append((attendance.id, _("%(empl_name)s from %(check_in)s to %(check_out)s") % {
-                    'empl_name': attendance.employee_id.name_related,
-                    'check_in': fields.Datetime.to_string(fields.Datetime.context_timestamp(attendance, fields.Datetime.from_string(attendance.check_in))),
-                    'check_out': fields.Datetime.to_string(fields.Datetime.context_timestamp(attendance, fields.Datetime.from_string(attendance.check_out))),
-                }))
-        return result
-
-    @api.depends('check_in', 'check_out')
+    #@api.depends('check_in', 'check_out')
     def _compute_worked_hours(self):
         for attendance in self:
             if attendance.check_out:
@@ -56,7 +60,7 @@ class HrAttendance(models.Model):
                     attendance.check_in, DEFAULT_SERVER_DATETIME_FORMAT)
                 attendance.worked_hours = delta.total_seconds() / 3600.0
 
-    @api.constrains('check_in', 'check_out')
+    #@api.constrains('check_in', 'check_out')
     def _check_validity_check_in_check_out(self):
         """ verifies if check_in is earlier than check_out. """
         for attendance in self:
@@ -64,7 +68,7 @@ class HrAttendance(models.Model):
                 if attendance.check_out < attendance.check_in:
                     raise exceptions.ValidationError(_('"Check Out" time cannot be earlier than "Check In" time.'))
 
-    @api.constrains('check_in', 'check_out', 'employee_id')
+    #@api.constrains('check_in', 'check_out', 'employee_id')
     def _check_validity(self):
         """ Verifies the validity of the attendance record compared to the others from the same employee.
             For the same employee we must have :

@@ -513,6 +513,7 @@
     <select id="gvm_search_purchase" style="display:none"></select>
     <button id="keep_button" class="btn" name="keep" style="display:none">보류</button>
     <button id="unkeep_button" class="btn" name="unkeep" style="display:none">보류해제</button>
+    <button id="paydone_button" class="btn" name="paydone" style="display:none">지급완료</button>
     <div class="o_notebook">
         <ul t-attf-class="nav nav-tabs #{classnames}" role="tablist">
             <li t-foreach="pages" t-as="page" t-att-modifiers="page.modifiers">
@@ -967,7 +968,7 @@
 </t>
 
 <div t-name="SearchView.FilterMenu" class="btn-group o_dropdown">
-            <input type="text" autocomplete="off" id="gvm_search" width="100px" placeholder="Select"/>
+            <input type="text" autocomplete="off" id="gvm_search" width="100px" placeholder="프로젝트 검색창" style="background-color:#efeff8; border:1px solid #555"/>
             <select class="gvm_search_part" id="gvm_search_part" name="gvm_search" style="display:none"></select>
             <button class="gvm_search_export" id="gvm_search_export" name="gvm_search_export" style="display:none">엑셀로 출력</button>
     <button class="o_dropdown_toggler_btn btn btn-sm dropdown-toggle" data-toggle="dropdown">
@@ -975,20 +976,20 @@
     </button>
     <ul class="dropdown-menu o_filters_menu" role="menu">
         <li class="o_add_filter o_closed_menu">
-            <a href="#">Add Custom Filter</a>
-        </li>
-        <li class="o_add_filter_menu">
-            <button class="btn btn-primary btn-sm o_apply_filter" type="button">Apply</button>
-            <button class="btn btn-default btn-sm o_add_condition" type="button"><span class="fa fa-plus-circle"/> Add a condition</button>
-        </li>
-    </ul>
+        <a href="#">Add Custom Filter</a>
+    </li>
+    <li class="o_add_filter_menu">
+        <button class="btn btn-primary btn-sm o_apply_filter" type="button">Apply</button>
+        <button class="btn btn-default btn-sm o_add_condition" type="button"><span class="fa fa-plus-circle"/> Add a condition</button>
+    </li>
+</ul>
 </div>
 <t t-name="SearchView.filters">
-    <li t-foreach="widget.filters" t-as="filter" t-if="!filter.visible || filter.visible()"
-            t-att-title="filter.attrs.string ? filter.attrs.help : undefined"
-            t-att-data-index="filter_index">
-        <a href="#"><t t-esc="filter.attrs.string or filter.attrs.help or filter.attrs.name or 'Ω'"/></a>
-    </li>
+<li t-foreach="widget.filters" t-as="filter" t-if="!filter.visible || filter.visible()"
+        t-att-title="filter.attrs.string ? filter.attrs.help : undefined"
+        t-att-data-index="filter_index">
+    <a href="#"><t t-esc="filter.attrs.string or filter.attrs.help or filter.attrs.name or 'Ω'"/></a>
+</li>
 </t>
 <t t-name="SearchView.field">
     <label t-att-class="'oe_label' + (attrs.help ? '_help' : '')"
@@ -1080,7 +1081,7 @@
 
 <div t-name="SearchView.GroupByMenu" class="btn-group hidden-xs o_dropdown">
     <button class="o_dropdown_toggler_btn btn btn-sm dropdown-toggle" data-toggle="dropdown">
-        <span class="fa fa-bars"/> Group By <span class="caret"/>
+        <span class="fa fa-bars"/> 그룹필터 <span class="caret"/>
     </button>
     <ul class="dropdown-menu o_group_by_menu" role="menu">
         <li class="divider"/>
@@ -1101,9 +1102,8 @@
 </t>
 
 <div t-name="SearchView.FavoriteMenu" class="btn-group o_dropdown">
-    <button class="o_dropdown_toggler_btn btn btn-sm dropdown-toggle" data-toggle="dropdown">
-        <span class="fa fa-star"/> Favorites <span class="caret"/>
-    </button>
+<!--    <button class="o_dropdown_toggler_btn btn btn-sm dropdown-toggle" data-toggle="dropdown">
+    </button>-->
     <ul class="dropdown-menu o_favorites_menu" role="menu">
         <li class="divider"/>
         <li class="o_save_search o_closed_menu">
