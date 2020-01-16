@@ -30,8 +30,13 @@ _logger = logging.getLogger(__name__)
 class GvmSign(models.Model):
     _name = "gvm.sign"
     _description = "sign"
-    _order = 'num'
+    _order = 'sign_sequence'
 
+    @api.model
+    def default_sequence(self):
+        return  self.env['ir.sequence'].next_by_code('sign.number')
+    
+    sign_sequence = fields.Integer (' 순번 ', default=default_sequence)
     name = fields.Char(string='sign',required=True)
     num = fields.Integer(string='number')
 

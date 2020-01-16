@@ -47,12 +47,6 @@ var outing = Widget.extend({
         hr_employee.call('write_outing_list',[self.employee.id,destination,reason,date_to,date_from,my_location])
             .then(function(result) {
                 location.reload();
-                if (result.action) {
-                    self.do_action(result.action);
-                
-                } else if (result.warning) {
-                    self.do_warn(result.warning);
-                }
             });
     },
 
@@ -121,7 +115,7 @@ var MyAttendances = Widget.extend({
         var self = this;
         var hr_employee = new Model('hr.employee');
         hr_employee.call('attendance_manual', [[self.employee.id], 'hr_attendance.hr_attendance_action_my_attendances', my_location])
-            .then(function(result) {
+              .then(function(result) {
                 if (result.action) {
                     self.do_action(result.action);
                 } else if (result.warning) {

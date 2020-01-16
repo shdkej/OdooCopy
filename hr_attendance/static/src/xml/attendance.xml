@@ -51,7 +51,7 @@
 		    <t t-esc="widget.check_today_attendance"/>
              <t t-if="widget.employee.outing_state=='outing_out'">
                  <div style="text-align:left">
-                        <label name="time">외근예정시간</label><br/>
+                    <label name="time">외근예정시간</label><br/>
                     <input style = "background-color:#efeff8; border:1px solid #555" type="time" id="date_to" value="12:00:00"/>
                     <label>부터</label> 
                     <input style = "background-color:#efeff8; border:1px solid #555" type="time" id="date_from" value="12:00:00"/><br/>
