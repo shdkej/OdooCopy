@@ -1,4 +1,5 @@
 *.pyc
+*.swp
 config.ini
 account/
 account_accountant/
