@@ -374,7 +374,7 @@ class GvmPurchaseProduct(models.Model):
         return self.env['report'].get_action(self, 'purchase.report_purchasequotation_by_maker')
 
     @api.multi
-    def button_send_quotation(self): 
+    def button_send_quotation(self):
         if self.product:
 	  for product in self.product:
 	    product.write({'state':'purchase'})

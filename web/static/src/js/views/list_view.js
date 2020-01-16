@@ -398,10 +398,12 @@ var ListView = View.extend({
         excelFile += '<meta http-equiv="Content-type" content="text/html;charset=utf-8"/>';
         excelFile += '</head>';
         excelFile += '<body><table>';
-        excelFile += $(".o_list_view").html();
+        excelFile += ($(".o_list_view").html());// - $('.o_checkbox').html();
+        excelFile.replace('<input id="radiogroup" name="radiogroup" type="checkbox">','');
         excelFile += '</table></body>';
         excelFile += '</html>';
 
+        console.log(excelFile);
         var data_type = 'data:application/vnd.ms-excel';
         window.open(data_type + ',' + encodeURIComponent(excelFile));
     },

@@ -47,7 +47,6 @@ var outing = Widget.extend({
         hr_employee.call('write_outing_list',[self.employee.id,destination,reason,date_to,date_from,my_location])
             .then(function(result) {
                 location.reload();
-                
             });
     },
 
@@ -160,6 +159,6 @@ var MyAttendances = Widget.extend({
 core.action_registry.add('hr_attendance_my_attendances', MyAttendances)
                     .add('hr_attendance_outing', outing);
 
-return {MyAttendances,outing};
+return MyAttendances,outing;
 
 });

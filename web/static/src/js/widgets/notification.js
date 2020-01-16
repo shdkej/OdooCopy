@@ -57,6 +57,7 @@ var NotificationManager = Widget.extend({
         return notification;
     },
     notify: function(title, text, sticky) {
+        console.log('notificationManager. notify')
         return this.display(new Notification(this, title, text, sticky));
     },
     warn: function(title, text, sticky) {

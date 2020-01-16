@@ -21,20 +21,23 @@
     <t t-name="HrAttendanceMyMainMenu">
         <div class="o_hr_attendance_kiosk_mode_container">
             <div class="o_hr_attendance_kiosk_mode">
-              <t t-if="widget.employee">
-                    <h1>[출장] <t t-esc="widget.employee.name"/>님</h1>
+                <t t-if="widget.employee">
+                    <h1>GVM: <t t-esc="widget.employee.name"/>님</h1>
 		    <t t-esc="widget.check_today_attendance"/>
-             <t t-if="widget.employee.attendance_state=='checked_out'">
-                     <h2>출근</h2>
-			 <i class="fa fa-arrow-circle-right btn-primary o_hr_attendance_sign_in_out_icon"/>
-            </t>
-             <t t-if="widget.employee.attendance_state=='checked_in'">
-                     <h2>퇴근</h2>
-             <i class="fa fa-arrow-circle-left btn-primary o_hr_attendance_sign_in_out_icon"/>
-            </t>
-               </t> 
-                 <t t-if="!widget.employee">
-                    Error : Could not find employee linked to user.
+                    <t t-if="widget.employee.attendance_state=='checked_out'" > 
+                        <h2>출근</h2>
+			<!--
+                        <i class="fa fa-sign-in btn-primary o_hr_attendance_sign_in_out_icon"/>
+			-->
+			<i class="fa fa-arrow-circle-left btn-primary o_hr_attendance_sign_in_out_icon"/>
+                    </t>
+                    <t t-if="widget.employee.attendance_state=='checked_in'">
+                        <h2>퇴근</h2>
+			<!--
+                        <i class="fa fa-sign-out btn-primary o_hr_attendance_sign_in_out_icon"/>
+			-->
+			<i class="fa fa-arrow-circle-right btn-primary o_hr_attendance_sign_in_out_icon"/>
+                    </t> 
                 </t>
             </div>
         </div>
@@ -48,20 +51,21 @@
 		    <t t-esc="widget.check_today_attendance"/>
              <t t-if="widget.employee.outing_state=='outing_out'">
                  <div style="text-align:left">
-                        <label name="time">외근시간</label><br/>
+                    <label name="time">외근예정시간</label><br/>
                     <input style = "background-color:#efeff8; border:1px solid #555" type="time" id="date_to" value="12:00:00"/>
                     <label>부터</label> 
                     <input style = "background-color:#efeff8; border:1px solid #555" type="time" id="date_from" value="12:00:00"/><br/>
-                    <label name="destination">목적지</label> 
-                    <input style = "background-color:#efeff8; border:1px solid #555" type="text" id="destination" required="true"/>
-                    <label name="reason">사유</label> 
+                    <label name="destination">외근목적지</label> 
+                    <input style = "background-color:#efeff8; border:1px solid #555" type="text" id="destination"/>
+                    <label name="reason">외근사유</label> 
                     <input style = "background-color:#efeff8; border:1px solid #555" type="text" id="reason"/>
                  </div>
-			 <i class="fa fa-arrow-circle-o-left btn-primary o_hr_attendance_outing_icon"/>
+             <h2>출발</h2>
+			 <i class="fa fa-arrow-circle-o-right btn-primary o_hr_attendance_outing_icon"/>
             </t>
-             <t t-if="widget.employee.outing_state=='outing_in'">
-                    <h2>복귀/퇴근</h2>
-             <i class="fa fa-arrow-circle-o-right btn-primary o_hr_attendance_outing_icon"/>
+            <t t-if="widget.employee.outing_state=='outing_in'">
+             <h2>복귀/퇴근</h2>
+             <i class="fa fa-arrow-circle-o-left btn-primary o_hr_attendance_outing_icon"/>
             </t>
                </t>
                  <t t-if="!widget.employee">

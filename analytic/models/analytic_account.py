@@ -8,6 +8,9 @@ from odoo.tools.translate import _
 import logging
 from urllib2 import Request, urlopen
 from urllib import urlencode, quote_plus
+import pwd
+import grp
+import os
 
 _logger = logging.getLogger(__name__)
 
@@ -126,18 +129,15 @@ class AccountAnalyticLine(models.Model):
     work_time = fields.Float('작업시간', default=0.0,compute='_compute_basic_cost', search='_search_work_time')
     location = fields.Selection([('1','사내'),('2','사외'),('3','해외출장')],string='업무장소', default='1')
 
-    @api.multi
-    def write(self, vals):
-        if vals.get('project_id'):
-            project = self.env['project.project'].browse(vals.get('project_id'))
-            vals['account_id'] = project.analytic_account_id.id
-        for record in self:
-	     if self.env.user.name != record.user_id.name and self.env.uid != 1:
-               raise UserError(_('본인 외 수정 불가'))
-        res = super(AccountAnalyticLine, self).write(vals)
-        self.calculate_work_time()
-        _logger.warning("write")
-        return res
+#    @api.multi
+#    def write(self, vals):
+#        if vals.get('project_id'):
+#            project = self.env['project.project'].browse(vals.get('project_id'))
+#            vals['account_id'] = project.analytic_account_id.id
+#        res = super(AccountAnalyticLine, self).write(vals)
+#        self.calculate_work_time()
+#        _logger.warning("write")
+#        return res
 
     @api.depends('date_from','date_to','holiday')
     def _compute_basic_cost(self):
@@ -270,7 +270,7 @@ class AccountAnalyticLine(models.Model):
     def isHoliday(self, date):
 	state = False
 	solYear = str(datetime.today().year)
-	filename = '/usr/lib/python2.7/dist-packages/odoo/addons/gvm/test_'+solYear+'.xml'
+	filename = '/var/lib/odoo/parsing/test_'+solYear+'.xml'
 	f = open(filename)
 	info = f.read()
 	holiday = []
@@ -302,8 +302,11 @@ class AccountAnalyticLine(models.Model):
 	  response = urlopen(request).read()
 	  str_tmp += response
 
-	filename = '/usr/lib/python2.7/dist-packages/odoo/addons/gvm/test_'+solYear+'.xml'
-	with open(filename, 'w') as f:
+	filepath = '/var/lib/odoo/parsing/'
+	filename = 'test_'+solYear+'.xml'
+        if not os.path.exists(filepath):
+            os.makedirs(filepath, 0755)
+	with open(filepath + filename, 'w') as f:
 	  f.write(str_tmp)
 
     @api.depends('mobile_date_from','mobile_date_to')
