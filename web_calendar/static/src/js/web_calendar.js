@@ -984,7 +984,7 @@ var CalendarView = View.extend({
     remove_event: function(id) {
         var self = this;
         function do_it() {
-            return $.when(self.dataset.unlink([id])).then(function() {
+            return $.when(self.dataset.unlink([Number(id)])).then(function() {
                 self.$calendar.fullCalendar('removeEvents', id);
             });
         }

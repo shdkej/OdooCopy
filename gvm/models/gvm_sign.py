@@ -348,7 +348,7 @@ class GvmSignContent(models.Model):
                                 (0, 0, {'name':management[1].id, 'check':'2','state':'0','sequence':'1'}),
                                 (0, 0, {'name':management_manager.id, 'check':'2','state':'0','sequence':'2'}),
                                ]
-          elif record.sign_ids == [4,6]:
+          elif record.sign_ids in [4,6]:
             if boss.id != ceo.id:
                 record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
                                     (0, 0, {'name':ceo.id, 'check':'sign','state':'0','sequence':'1'}),

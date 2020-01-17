@@ -200,7 +200,7 @@
                                <td class="tdcolor">지급 된 비용</td>
                                <td width="40%"><field name="had_cost"/></td>
                            </tr>
-                           <tr attrs="{'invisible':['|',('sign_ids','!=',3),('user_id','in',[249,250])]}">
+                           <tr attrs="{'invisible':['|',('sign_ids','!=',3),('user_id','in',[249,250,294])]}">
                                <td class="tdcolor">문서첨부</td>
                                <td width="40%">
                                     출장계획서 : <field name="relate_sign2" options="{'no_create_edit':True,'no_create':True}" domain="[('user_id','=',user_id),('sign_ids','=',6),('state','=','done')]" attrs="{'required':[('sign_ids','=',3),('check_confirm','=',True),('user_id','not in',[249,250])]}"/><br/>
