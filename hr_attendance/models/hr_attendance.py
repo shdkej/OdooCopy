@@ -56,10 +56,10 @@ class HrAttendance(models.Model):
     def _compute_checked(self):
         hr_employee = self.env['hr.employee'].search([('user_id','=',self.env.uid)])
         if self.check_in != False:
-            hr_employee.write({'attendance_state':'checked_in'})
+             hr_employee.write({'attendance_state':'checked_in'})
         elif self.check_out != False:
-            hr_employee.write({'attendance_state':'checked_out'})
-
+             hr_employee.write({'attendance_state':'checked_out'})
+            
     @api.onchange('outing_in', 'outing_out')
     def _compute_outing(self):
         hr_employee = self.env['hr.employee'].search([('user_id','=',self.env.uid)])
@@ -77,13 +77,11 @@ class HrAttendance(models.Model):
                 attendance.worked_hours = delta.total_seconds() / 3600.0
 
     @api.multi
-    def unlink(self):       
-        hr_employee = self.env['hr.employee'].search([('user_id','=',self.env.uid)])
-        hr_employee.write({'outing_state':'outing_out',
-                           'attendance_state':'checked_out',
-        })
-
-        return super(HrAttendance, self).unlink()
+    def unlink(self):
+       hr_employee = self.env['hr.employee'].search([('user_id','=',self.env.uid)])
+       hr_employee.write({'outing_state':'outing_out',
+                          'attendance_state':'checked_out',
+       })
 
     #@api.constrains('check_in', 'check_out')
     def _check_validity_check_in_check_out(self):

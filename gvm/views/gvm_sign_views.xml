@@ -210,7 +210,7 @@
                            <td width="40%" height="30"><field name="attachment" widget="many2many_binary"/></td>
                        </tr>
 
-                        <!--문서 내용 -->
+                      <!--문서 내용 -->
                         <tr>
                             <td class="tdcolor" attrs="{'invisible':[('sign_ids','in',[4,6,7])]}">내용</td>
                             <td class="tdcolor" attrs="{'invisible':[('sign_ids','!=',4)]}">상세결과</td>

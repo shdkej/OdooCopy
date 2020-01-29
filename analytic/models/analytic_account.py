@@ -151,7 +151,7 @@ class AccountAnalyticLine(models.Model):
 
            record.write({'lunch':record.get_lunch_count()})
            record.work_time = (d1 - d2).total_seconds()/3600 - int(record.lunch)
-           #self.calculate_work_time()
+           self.calculate_work_time()
 
            day_end_standard = d2.replace(hour=19, minute=00)
 	   if d2.year <= 2019 and d2.month < 4:
