@@ -178,6 +178,7 @@ class GvmProduct(models.Model):
 	('E', '구매불량'),
 	('F', '분실'),
 	('G', '업체미스'),
+	('H', '삭제'),
 	], string='불량유형', default='A')
     release_place = fields.Many2one('gvm.delivery.release',string='출고지')
     sub_id = fields.Char('sub_id')
@@ -301,11 +302,6 @@ class GvmProduct(models.Model):
         return {}
 
     @api.multi
-    def button_paydone(self):
-        self.write({'state': 'paydone'})
-        return {}
-
-    @api.multi
     def button_request_receiving(self):
         self.write({'request_receiving_man': self.env.user.name,
 	            'state': 'request_receiving'})
@@ -388,6 +384,7 @@ class GvmProduct(models.Model):
     def gvm_bom_save(val1, vals):
     	Product = request.env['gvm.product']
     	Project = request.env['project.project']
+        purchase = request.env['gvm.purchase_product']
 	Part = request.env['project.issue']
 	column = ['id','sequence_num','name','product_name','material','original_count', 'etc','category']
 	ko_column = ['id','번호','도번 및 규격','품명','재질','원수', '비고','분류']
@@ -405,6 +402,8 @@ class GvmProduct(models.Model):
           product_etc = val[7].encode('utf-8')
           product_bad_state = val[8]
           product_project_id = val[10].encode('utf-8')
+          product_po_num = val[9]
+          _logger.warning("a%s"%product_po_num)
          
           if product_category == '기구/가공품':
              val[5] = '1'
@@ -421,10 +420,8 @@ class GvmProduct(models.Model):
           else:
              val[5] = '5'
              product_category = '5'
-
+          
           # 수정 시 표시 붙여주기
-	  if (product_bad_state == False or product_bad_state.upper().encode('utf-8') == 'FALSE'):
-	    product_bad_state = 'A'
 	  if str(product_id) != 'None':
             Update = Product.search([('id','=',product_id)])
             product_seq_num = '' 
@@ -439,21 +436,16 @@ class GvmProduct(models.Model):
             reorder_text = Update.reorder_text or ''
             product_object = ''
             # 검토완료되지 않은 자재는 바로 수정되도록
-            if Update.state == 'no':
+            if Update.state != 'no':
                 product_object = Update
             # 검토완료된 자재는 기존 자재는 불량으로 변경 후 새로 생성
             else:
-                if product_bad_state.upper().encode('utf-8') == Update.bad_state:
-                    raise UserError(_('상태 수정이 필요합니다'))
                 product_object = Product.create({'name': product_main_name})
                 Update.write({
                     'state' : 'bad',
                     'bad_state': product_bad_state.upper().encode('utf-8'), 
                     'sequence_num': product_seq_num,
                 })
-                # 수정된 자재의 발주서에 표시
-                if Update.purchase_by_maker:
-                    Update.purchase_by_maker.state = 'modify'
 
             for i in range(1,7):
               text = ''
@@ -462,24 +454,27 @@ class GvmProduct(models.Model):
                     % ( str(unicode(ko_column[i])), Update[column[i]], val[i], str(datetime.today())[0:10]))
                 reorder_text += text
                 reorder_text += '<br><br>'
-              
-              product_object.write({
-                column[i] : val[i],
-              })
+                product_object.write({
+                  column[i] : val[i],
+                })
             Update.write({'reorder_text':reorder_text})
+            _logger.warning("?%s"%reorder_text)
+            #_SH 수정할때 이쪽으로 온다.
             ##같은이름의 같은프로젝트에 있는 자재에 모두 이력을 쓰도록 해야겠다
             product_object.write({'reorder_text':reorder_text, 
                          'project_id': product_project_id,
                          'bad_state': product_bad_state.upper().encode('utf-8'), 
                          'etc': product_etc,
+			 'original_count': product_original_count,
                          'issue':part_id, 
                          'project_ids': project_id, 
                          'project_set':[(4, project_id)], 
                          'request_date':datetime.today() + timedelta(days=7),
                          'order_man':request.env.user.name,
+                         'category':product_category,
             })
 	  else:
-	    PONum = Product.create({
+           	PONum = Product.create({
 	    		'sequence_num':val[1],
 	    		'name': product_main_name,
 	    		'product_name': product_name,
@@ -493,10 +488,10 @@ class GvmProduct(models.Model):
 			'order_man':request.env.user.name,
                         'etc':product_etc,
                         'category':product_category
-	    })
-	    PONum.write({
+	        })
+	        PONum.write({
 			'project_set':[(4, project_id)],
-	    })
+	        })
 
     def update_check(check_list):
         return text
@@ -507,6 +502,7 @@ class GvmProduct(models.Model):
     	Part = request.env['project.issue']
 	part_id = ''
         newPo = ''
+        _logger.warning("vals%s"%vals)
 	if vals:
 	  project_id = Project.search([('name','=',vals[0][10])]).id
 	  part_id = Part.search([('name','=',vals[0][11]),('project_id','=',project_id)]).id

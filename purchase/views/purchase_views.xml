@@ -9,11 +9,11 @@
         sequence="25"/>
 
     <menuitem id="menu_delivery" name="택배/핸드캐리"
-        parent="menu_purchase_root" sequence="3" action="action_delivery"/>
+        parent="menu_purchase_root" sequence="4" action="action_delivery"/>
     <menuitem id="menu_purchase_manage" name="발주"
-        parent="menu_purchase_root" sequence="4" />
-    <menuitem id="menu_procurement_management" name="검색"
         parent="menu_purchase_root" sequence="1" />
+    <menuitem id="menu_procurement_management" name="검색"
+        parent="menu_purchase_root" sequence="5" />
     <menuitem id="menu_search_table" action="purchase_search_table_action" name="BOM" parent="menu_purchase_root"
         sequence="3"/>
 
@@ -58,11 +58,11 @@
         parent="purchase.menu_product_in_config_purchase" sequence="5"/>
 
     <!-- Purchase Control Menu -->
-    <menuitem id="menu_purchase_control" name="구매문서" parent="purchase.menu_purchase_root" sequence="2"/>
+    <menuitem id="menu_purchase_control" name="구매관리" parent="purchase.menu_purchase_root" sequence="5"/>
 
     <!--Inventory control-->
-    <menuitem action="stock.action_receipt_picking_move" id="menu_action_picking_tree_in_move"
-        parent="menu_purchase_control" sequence="11" groups="stock.group_stock_manager"/>
+<!--    <menuitem action="stock.action_receipt_picking_move" id="menu_action_picking_tree_in_move"
+        parent="menu_purchase_control" sequence="11" groups="stock.group_stock_manager"/>-->
 
     <!--Invoice control-->
     <menuitem
@@ -249,8 +249,6 @@
                                     <field name="emergency"/>
                                     <field name="stock_item"/>
                                     <field name="state" invisible="1"/>
-                                    <button name="button_destination" type="object" string="입고" class="oe_highlight" attrs="{'invisible' :[('destination_date','!=',False)]}" confirm="입고되었습니까?"/>
-                                    <button name="button_receiving" type="object" string="출고" class="oe_highlight" attrs="{'invisible' :[('state','!=','request_receiving')]}" confirm="출고 승인 하시겠습니까?" groups="purchase.group_purchase_manager"/>
                                 </tree>
                             </field>
                         </page>
@@ -406,8 +404,6 @@
                                     <field name="emergency"/>
                                     <field name="stock_item"/>
                                     <field name="de_num"/>
-                                    <field name="image" widget="image" string="사진"/>
-                                    <button name="button_paydone" type="object" string="지급완료" class="oe_highlight" attrs="{'invisible' :[('state','!=','destination')]}" confirm="지급완료되었습니까?" groups="purchase.group_purchase_manager"/>
                                 </tree>
                             </field>
                         </page>
@@ -550,11 +546,9 @@
             </p>
         </field>
     </record>
-    <menuitem action="purchase_rfq" id="menu_purchase_rfq"
-        parent="menu_purchase_control"
-        sequence="1"/>
+    <menuitem action="purchase_rfq" id="menu_purchase_rfq" parent="menu_purchase_control" sequence="1" name="견적요청/구매주문"/>
 
-    <record id="purchase_form_action" model="ir.actions.act_window">
+<!--    <record id="purchase_form_action" model="ir.actions.act_window">
         <field name="name">Purchase Orders</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">purchase.order</field>
@@ -574,8 +568,8 @@
         </field>
     </record>
 
-    <menuitem action="purchase_form_action" id="menu_purchase_form_action" parent="menu_purchase_control" sequence="6"/>
-    <record id="purchase_form_action_finish" model="ir.actions.act_window">
+    <menuitem action="purchase_form_action" id="menu_purchase_form_action" parent="menu_purchase_control" sequence="6"/>-->
+<!--    <record id="purchase_form_action_finish" model="ir.actions.act_window">
         <field name="name">구매 완료</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">purchase.order</field>
@@ -584,7 +578,7 @@
         <field name="domain">[('state','=','done')]</field>
         <field name="search_view_id" ref="view_purchase_order_filter"/>
     </record>
-    <menuitem action="purchase_form_action_finish" id="menu_purchase_form_action_finish" parent="menu_purchase_control" sequence="6"/>
+    <menuitem action="purchase_form_action_finish" id="menu_purchase_form_action_finish" parent="menu_purchase_control" sequence="6"/>-->
 
     <record id="purchase_form_action_write" model="ir.actions.act_window">
         <field name="name">발주요청서</field>

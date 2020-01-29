@@ -66,14 +66,13 @@ class GvmPurchaseProduct(models.Model):
     state = fields.Selection([
         ('write', '작성'),
         ('draft', '발주진행'),
-        ('modify','수정됨'),
         ('sent', 'RFQ Sent'),
-        ('modify', '수정됨'),
         ('to approve', '입금확인'),
         ('purchase', 'Purchase Order'),
         ('done', '발주진행완료'),
         ('cancel', '발주취소'),
         ('order_cancel','결재취소')
+        ('modify', '수정됨'),
         ], string='Status', readonly=True, index=True, copy=False, default='write', track_visibility='onchange')
     notes = fields.Text('Terms and Conditions')
 

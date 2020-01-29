@@ -219,7 +219,7 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
             {type: 'dropdown', source:['기구/가공품','기구/요소품','전장/가공품','전장/요소품','기타']},
             {type: 'text'},
             {type: 'text'},
-            {type: 'dropdown', source:['A','B','C','D','E','F','G'] },
+            {type: 'dropdown', source:['A','B','C','D','E','F','G','H'] },
             {type: 'text'},
             ]
         });
@@ -312,7 +312,9 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
                 row[10] = project_selected; // 0, 9, 10 에 할당된 게 없어 id, project_id, unit_id 입력
                 row[11] = selected_part.text();
                 if (row[9] == false){ // 발주서이름이 없는 항목들 모두 발주 내도록 한다
+                  if (row[8] != 'H'){ //삭제상태인 항목은 제외한다.
                     purchase_list.push(row);
+                  }
                 }
             })
         }

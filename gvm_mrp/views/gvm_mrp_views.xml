@@ -168,7 +168,7 @@
                 </tree>
             </field>
         </record>
-        <record id="gvm.mrp_sub_tree" model="ir.ui.view">
+        <record id="gvm_mrp_sub_tree" model="ir.ui.view">
             <field name="name">gvm.mrp.sub.tree</field>
             <field name="model">gvm.mrp.sub</field>
             <field name="arch" type="xml">
@@ -178,7 +178,7 @@
             </field>
         </record>
 
-        <record model="ir.ui.view" id="gvm.mrp_kanban">
+        <record model="ir.ui.view" id="gvm_mrp_kanban">
             <field name="name">gvm.mrp.kanban</field>
             <field name="model">gvm.mrp</field>
             <field name="arch" type="xml">
@@ -226,7 +226,7 @@
             </field>
         </record>
 
-        <record model="ir.ui.view" id="gvm.mrp_sub_kanban">
+        <record model="ir.ui.view" id="gvm_mrp_sub_kanban">
             <field name="name">gvm.mrp.sub.kanban</field>
             <field name="model">gvm.mrp.sub</field>
             <field name="arch" type="xml">

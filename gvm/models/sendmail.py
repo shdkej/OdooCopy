@@ -16,7 +16,7 @@ gvm_mail_pw = config.get('MAIL','MAIL_PW')
 
 class gvm_mail():
   def gvm_send_mail(self, uname, receiver, post, postId, po_num, model_name, menu_id, action_id,Flag=0):
-     sender = 'nohsh@gvmltd.com'
+     sender = 'parksh@gvmltd.com'
      receivers = []
      name = uname.encode('utf-8')
      url = "https://erp.gvmltd.com/"
@@ -40,7 +40,7 @@ class gvm_mail():
 	   if rc.work_email:
              receivers.append(str(rc.work_email))
        
-     receivers.append('nohsh@gvmltd.com')
+     receivers.append('parksh@gvmltd.com')
      _logger.warning(receivers)
 
      post_id = str(postId)
