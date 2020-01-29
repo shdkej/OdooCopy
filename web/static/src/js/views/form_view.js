@@ -759,6 +759,10 @@ var FormView = View.extend(common.FieldManagerMixin, {
             .then(this.load_defaults.bind(this));
     },
     on_button_edit: function() {
+        var self = this;
+
+        console.log("state")
+        console.log(self.dataset.context.uid)
         return this.to_edit_mode();
     },
     on_button_create: function() {

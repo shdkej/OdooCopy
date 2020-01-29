@@ -423,7 +423,7 @@
     <div class="o_form_buttons_edit">
         <button type="button"
                 class="btn btn-primary btn-sm o_form_button_save" accesskey="s">
-            Save
+           Save 
         </button>
         <button type="button"
                 class="btn btn-default btn-sm o_form_button_cancel" accesskey="j">
@@ -968,6 +968,7 @@
 </t>
 
 <div t-name="SearchView.FilterMenu" class="btn-group o_dropdown">
+<!--        <t t-if="p.code == 'purchase'">-->
             <input type="text" autocomplete="off" id="gvm_search" width="100px" placeholder="프로젝트 검색창" style="background-color:#efeff8; border:1px solid #555"/>
             <select class="gvm_search_part" id="gvm_search_part" name="gvm_search" style="display:none"></select>
             <button class="gvm_search_export" id="gvm_search_export" name="gvm_search_export" style="display:none">엑셀로 출력</button>

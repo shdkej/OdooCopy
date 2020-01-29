@@ -348,7 +348,7 @@ class GvmSignContent(models.Model):
                                 (0, 0, {'name':management[1].id, 'check':'2','state':'0','sequence':'1'}),
                                 (0, 0, {'name':management_manager.id, 'check':'2','state':'0','sequence':'2'}),
                                ]
-          elif record.sign_ids == [4,6]:
+          elif record.sign_ids in [4,6]:
             if boss.id != ceo.id:
                 record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
                                     (0, 0, {'name':ceo.id, 'check':'sign','state':'0','sequence':'1'}),
@@ -409,7 +409,7 @@ class GvmSignContent(models.Model):
                  'check_mail':False
             })
         #결재정보를 다시 얻어 결재순서를 유지한다.
-        self.get_check_list()
+        sel.get_check_list()
         self.sendmail()
     
 	#근태신청서
@@ -431,7 +431,7 @@ class GvmSignContent(models.Model):
     def After_sign_view(self):
         uname = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).id
         username = self.env['hr.employee'].search([('user_id','=',self.env.uid)]).name
-        domain = [('sign_line','in',username),('sign_line.check_checkname','=',username)]
+        domain = [('next_check','!=',username),('state','=','done')]
         return {
             'name': _('Sign'),
             'domain': domain,
@@ -562,7 +562,7 @@ class GvmSignContent(models.Model):
 	   date_from = self.date_from
         
         #포상연차일경우    
-	if rest in ['refresh','publicvacation','special']:
+	if rest in ['refresh','publicvacation','special','etc']:
 	  return count
     
 	#오전반차 오후반차 구분  
@@ -687,8 +687,8 @@ class GvmSignContent(models.Model):
 
 #_____________________메일보내기
       check = False
-      post = '결재문서'
-      Flag = 0
+      post = '결재 할 문서가 있습니다. 결재를 진행 해주새요.'
+      Flag = 2
       for record in sign_id.sign_line:
         #결재라인: 다음 결재자에게 메일보내기
         if record.check_date == False:
@@ -736,6 +736,8 @@ class GvmSignContent(models.Model):
     @api.multi
     def unlink(self):        
         for record in self:
+            if record.state == 'done':
+                raise UserError(_('결재가 완료된 문서는 삭제하실 수 없습니다. 삭제를 원하시면 총무팀에 요청하시어 결재 취소를 진행하십시오.'))
             if not record.user_id.name == self.env.user.name:
                 raise UserError(_('본인 외 삭제 불가'))
 	    elif record.state != 'temp':
@@ -838,7 +840,7 @@ class GvmSignContent(models.Model):
         #현재페이지 위치 찾는 용도(리스트)
         menu_id = "316"
         action_id = "423"
-        gvm.gvm_send_mail(self.env.user.name, receiver, '결재문서', post_id, po_num, model_name, menu_id, action_id)
+        gvm.gvm_send_mail(self.env.user.name, receiver, '결재 할 문서가 있습니다. 결재를 진행 해주새요.', post_id, po_num, model_name, menu_id, action_id,2)
 
 class GvmSignContentCost(models.Model):
     _name = "gvm.signcontent.cost"
