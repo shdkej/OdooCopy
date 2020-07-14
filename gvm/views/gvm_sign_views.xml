@@ -15,6 +15,42 @@
             </form>
         </field>
     </record>
+    <record id="view_sign_calendar" model="ir.ui.view">
+         <field name="name">calendar</field>
+         <field name="model">gvm.calendar</field>
+         <field name="arch" type="xml">
+            <calendar date_start="date_start" date_end="date_end" string="연차" mode="month">
+                   <field name="caption"/>
+            </calendar>
+         </field>
+    </record>
+    <record id="view_sign_calendar_form" model="ir.ui.view">
+         <field name="name">calendar.form</field>
+         <field name="model">gvm.calendar</field>
+         <field name="arch" type="xml">
+             <form string="연차달력">
+                 <sheet>
+                   <group>
+                      <field name="date_start"/>
+                       <field name="date_end"/>
+                       <field name="caption"/>
+                       <field name="sign"/>
+                   </group>
+                </sheet>
+             </form>
+         </field>
+    </record>
+    <record id="view_sign_calendar_tree" model="ir.ui.view">
+         <field name="name">calendar.tree</field>
+         <field name="model">gvm.calendar</field>
+         <field name="arch" type="xml">
+             <tree string="연차달력">
+                 <field name="date_start"/>
+                 <field name="date_end"/>
+                 <field name="caption"/>
+             </tree>
+         </field>
+    </record>
     <record id="sign_form_test" model="ir.ui.view">
         <field name="name">sign.form.test</field>
         <field name="model">gvm.signcontent</field>
@@ -98,12 +134,23 @@
                             <field name="state"/>
                             <field name="check_date"/>
                             <field name="reason" string="코멘트"/> 
+                            <field name="check_and" invisible="1"/>
                             <field name="check_mail" invisible="1"/>
                             <field name="check_reference" invisible="1"/>
                             <field name="check_checkname" invisible="1"/>
                         </tree>
                     </field></p>
                 </group>
+                <span  attrs="{'invisible':[('user_id','not in',[258,336,311,254,252,293,250,249])]}">
+                <group string="평가표" attrs="{'invisible':[('state','=','temp')]}">
+                    <p><field name="evaluation" attrs="{'invisible':[('sign_ids','!=',7)]}">
+                        <tree editable="bottom">
+                            <field name="name"/>
+                            <field name="score"/>
+                        </tree>
+                    </field></p>
+                </group>
+                </span>
                 <group string="기본정보">
                     <field name="user_id" string="이름"/>
                     <field name="dep_ids" string="부서"/>
@@ -444,6 +491,15 @@
         <field name="domain">[('sign_ids','=','5')]</field>
         <field name="search_view_id"/>
     </record>
+    <record id="act_sign_calendar" model="ir.actions.act_window">
+         <field name="res_model">gvm.calendar</field>
+         <field name="name">연차달력</field>
+         <field name="view_type">form</field>
+         <field name="view_mode">calendar,tree,form</field>
+         <field name="context">{}</field>
+         <field name="domain">[]</field>
+         <field name="search_view_id"/>
+    </record>
     <record id="act_sign_4" model="ir.actions.act_window">
         <field name="name">출장비정산서</field>
         <field name="res_model">gvm.signcontent</field>
@@ -504,6 +560,7 @@
         <menuitem name="통보 된 문서" id="menu_sign_content_ref" parent="menu_sign_root" action="act_sign_reference_content" sequence="3"/>
         <menuitem name="결재 할 문서" id="menu_sign_content" parent="menu_sign_root" action="ir_actions_server_gvm" sequence="0" />
         <menuitem name="결재 된 문서" id="menu_sign_content_check" parent="menu_sign_root" action="act_sign_content_check" sequence="2" />
+        <menuitem name="연차 달력" id="menu_sign_claendar" parent="menu_sign_root" action="act_sign_calendar" sequence="1" />
 <!--        <menuitem name="완료  문서" id="menu_sign_content_finish" parent="menu_sign" action="act_sign_content_finish" sequence="1" groups="hr.group_hr_manager"/>-->
         <menuitem name="전체 문서" id="menu_sign_content_all" parent="menu_sign" action="act_sign_content_all" sequence="1"/>
         <menuitem name="근태신청서" id="menu_sign_1" parent="menu_sign" action="act_sign_1" sequence="3" />

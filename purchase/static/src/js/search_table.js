@@ -22,6 +22,7 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         'change #gvm_search_product': 'update_project',
         'change #gvm_search_product_part': 'update_part',
         'click #gvm_save': 'save',
+        'click #gvm_delete': 'delete',
         'click #gvm_purchase_order': 'purchase',
         'click #detail_product_get': 'get_all_detail_product',
         'click #gvm_excel_add': 'get_detail_product',
@@ -265,6 +266,9 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         self.detail_toggle = true;
         $('#detail_product_get').html('수정이력보기');
     },
+    delete: function(){
+
+    },
     save: function(){
         var self = this;
         var project_selected = $('#gvm_search_product.comboTreeInputBox').val();
@@ -283,6 +287,9 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
                     }
                     reorder_text = '';
                     row[0] = self.data_id[self.Numtmp_row[id]]; 
+                    console.log('test')
+                    console.log(row[0])
+
                     if (row[8] == false){
                         row[8] = 'A';
                     }
@@ -299,6 +306,14 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         }else{
             alert('Please Check Project');
         }
+        // 수정되었던 자재를 이름순이 아닌  작성시간 순으로 정렬
+        self.sub_data.sort(function(a,b){
+            if (a[10]>b[10]){ //9 = create_date
+                return 1;
+            }else{
+                return -1;
+            }
+        });
     },
     purchase: function(){
         var self = this;
@@ -308,6 +323,8 @@ var SearchTable = form_common.FormWidget.extend(form_common.ReinitializeWidgetMi
         if (project_selected != false){
             $.each(self.data, function(id, row){
                 //발주서 생성 시 필요한 정보 입력
+                console.log(self.data_id[id])
+                console.log(id)
                 row[0] = self.data_id[id];
                 row[10] = project_selected; // 0, 9, 10 에 할당된 게 없어 id, project_id, unit_id 입력
                 row[11] = selected_part.text();

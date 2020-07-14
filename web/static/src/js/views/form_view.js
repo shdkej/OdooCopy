@@ -1054,7 +1054,35 @@ var FormView = View.extend(common.FieldManagerMixin, {
          var state = 'draft'
          this.gvm_on_button_duplicate(state);
     },
+    gvm_evaluation_button: function(){
+          var ids = String(location.hash).split('&view_type=')[0].split('id=')[1];
+          var Sign = new Model('gvm.signcontent');
+          var page_name = this.fields.sign_ids.el.innerText;
+          var user_id = this.datarecord.user_id[0]
+          var average = "SABCD"
+          var user_info = [1,258,336,311,254,252,293,249,250]
+          var find_user = user_info.indexOf(user_id)
+          console.log(find_user)
+          //현재해당하는 사람들만 실행괴게 해야한다.
+          if (page_name === '7' && find_user != -1){
+             var evaluation = prompt('[점수평가] S~D까지의 점수를 입력해주세요.');
+             if (evaluation != null){
+                 while(1){
+                    evaluation = evaluation.toUpperCase();
+                    find = average.indexOf(evaluation)
+                    if ( (!evaluation) || find === -1){
+                         evaluation = prompt('입력할 수 없는 값입니다. 다시 S~D까지의 점수를 입력해주세요.');
+                    }
+                    else{
+                         break;
+                    }
+                 }
+                 Sign.call('gvm_evaluation',[ids,evaluation]);
+             }
+          }
+    },
     gvm_sign_button: function(state){
+        this.gvm_evaluation_button();
         console.log(state)
 	    var self = this;
 	    var comment = prompt('의견이 있으시면 적어주시기 바랍니다.');

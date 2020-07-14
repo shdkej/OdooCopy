@@ -435,11 +435,14 @@ class GvmProduct(models.Model):
             # reorder text
             reorder_text = Update.reorder_text or ''
             product_object = ''
+            _logger.warning("update%s"%Update)
+            _logger.warning("update_state%s"%Update.state)
             # 검토완료되지 않은 자재는 바로 수정되도록
             if Update.state != 'no':
-                product_object = Update
+               product_object = Update
             # 검토완료된 자재는 기존 자재는 불량으로 변경 후 새로 생성
             else:
+                _logger.warning("hoksi")
                 product_object = Product.create({'name': product_main_name})
                 Update.write({
                     'state' : 'bad',
@@ -462,6 +465,10 @@ class GvmProduct(models.Model):
             #_SH 수정할때 이쪽으로 온다.
             ##같은이름의 같은프로젝트에 있는 자재에 모두 이력을 쓰도록 해야겠다
             product_object.write({'reorder_text':reorder_text, 
+	    		 'sequence_num':'\033[91m' +val[1],
+	    		 'name': product_main_name,
+	    		 'product_name': product_name,
+			 'material': product_material,
                          'project_id': product_project_id,
                          'bad_state': product_bad_state.upper().encode('utf-8'), 
                          'etc': product_etc,
@@ -515,7 +522,7 @@ class GvmProduct(models.Model):
 		   'drawing_man':request.env.uid,
                   })
           for np in vals:
-	    newPo.write({'product':[(4, int(repr(np[0]).encode('utf-8')))]})
+	    newPo.write({'product':[(4,int(repr(np[0]).encode('utf-8')))]})
 
     def gvm_onchange_state(ids, state, name):
         Model = request.env['gvm.product']

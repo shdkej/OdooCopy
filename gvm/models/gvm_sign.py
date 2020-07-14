@@ -56,10 +56,12 @@ class GvmSignContent(models.Model):
     writer = fields.Char(string='writer', compute='_compute_user_info')
     user_department = fields.Many2one('hr.department',string='user_department',compute='_compute_user_info')
     user_job_id = fields.Many2one('hr.job',string='user_job_id',compute='_compute_user_info')
-    content = fields.Text(string='내용',store=True)
+    content = fields.Html(string='내용',store=True)
     content2 = fields.Text(string='출장목적',store=True)
     content3 = fields.Text(string='비고',store=True)
     
+    #달력작성여부확인
+    check_calendar = fields.Boolean(default=False)
     #메일을보냈는지확인
     check_mail = fields.Boolean(default=False)
     #출장비완료보고서 확인 후 출장비정산서 작성가능 
@@ -135,6 +137,8 @@ class GvmSignContent(models.Model):
     basic_cost = fields.Integer('basic_cost',compute='_compute_basic_cost')
     had_cost = fields.Integer('had_cost')
     finally_cost = fields.Integer('finally_cost',compute='_compute_finally_cost')
+    #일반기안서 금액작성
+    finally_cost2 = fields.Integer('금액')
     currency_yuan = fields.Float(string='yuan',default=171.73)
     currency_dong = fields.Float(string='dong',default=0.05)
     currency_dollar = fields.Float(string='dollar',default=1079.5)
@@ -143,6 +147,10 @@ class GvmSignContent(models.Model):
     relate_sign2 = fields.Many2one('gvm.signcontent',string='출장계획서')
     #결재라인
     sign_line = fields.One2many('gvm.signcontent.line','sign','sign_line')
+    #평가표
+    evaluation = fields.One2many('gvm.evaluation','sign','evaluation')
+    #달력
+    calendar = fields.One2many('gvm.calendar','sign','calendar')
     #출장신청서
     companion = fields.Char('동행자')
     material1 = fields.Selection([('no','없음'), ('material','자재'), ('tool','공구'), ('etc','기타')], default ='no')
@@ -327,46 +335,114 @@ class GvmSignContent(models.Model):
           else: 
              record.refresh_use_num = 1
 
-    #기본 결재자 선택
+    #결재라인에서 기본 결재자 선택
     @api.onchange('sign_ids')
     def _default_check1(self):
         for record in self:
           user = self.env.uid
           dep = self.env['hr.department'].search([('member_ids.user_id','=',user)],limit=1)
           boss = dep.manager_id
+          # 0: 김진우과장 1: 유예진사원 2: 이승현사원
           management = self.env['hr.employee'].search([('department_id','=',10)])
-          ceo = self.env['hr.employee'].search([('id','=',126)])
-          present_user =  self.env['hr.employee'].search([('user_id','=',user)]) 
-	  management_manager = management[0]
+          ceo_kang = self.env['hr.employee'].search([('id','=',126)])
+          ceo_kim = self.env['hr.employee'].search([('id','=',125)])
+          present_user = self.env['hr.employee'].search([('user_id','=',user)]) 
+          
+          if present_user == boss or boss == ceo_kang or boss == ceo_kim:
+             #check: 결재(sign), 합의(2), 통보(3) / state : 0 (대기) / sequnce : 순번
+             if record.sign_ids == 1:
+                 record.sign_line = [(0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'0','check_and':True}),
+                                     (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'1','check_and':True}),
+                                     (0, 0, {'name':management[1].id, 'check':'3','state':'0','sequence':'2','check_and':True}),
+                                    ]
+             elif record.sign_ids == 2:
+                 record.sign_line = [(0, 0, {'name':management[1].id, 'check':'2','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':management[0].id, 'check':'2','state':'0','sequence':'1'}),
+                                     (0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'2','check_and':True}),
+                                     (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'3','check_and':True}),
+                                     (0, 0, {'name':management[1].id, 'check':'3','state':'0','sequence':'4','check_and':True}),
+                                    ]
+             elif record.sign_ids == 5:
+                 record.sign_line = [(0, 0, {'name':management[2].id, 'check':'2','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'1'}),
+                                     (0, 0, {'name':management[2].id, 'check':'3','state':'0','sequence':'2'}),
+                                    ]
 
-          #부서장일경우 대표님으로 결재
-          if present_user == boss:
-            boss = ceo
-          #check: 결재(sign), 합의(2), 통보(3) / state : 0 (대기) / sequnce : 순번 
-          if record.sign_ids in [2,3]:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
-                                (0, 0, {'name':management[1].id, 'check':'2','state':'0','sequence':'1'}),
-                                (0, 0, {'name':management_manager.id, 'check':'2','state':'0','sequence':'2'}),
-                               ]
-          elif record.sign_ids in [4,6]:
-            if boss.id != ceo.id:
-                record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
-                                    (0, 0, {'name':ceo.id, 'check':'sign','state':'0','sequence':'1'}),
-                                   ]
-            else:
-                record.sign_line = [(0, 0, {'name':ceo.id, 'check':'sign','state':'0','sequence':'0'}),
-                                   ]
-          elif record.sign_ids == 5:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
-                                (0, 0, {'name':management[2].id, 'check':'2','state':'0','sequence':'1'}),
-                               ]
-	  elif record.sign_ids == 1:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
-                                (0, 0, {'name':management[1].id, 'check':'3','state':'0','sequence':'1'}),
-                               ]
+             elif record.sign_ids == 6:
+                 record.sign_line = [(0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'0','check_and':True}),
+                                     (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'1','check_and':True}),
+                                    ]
+             elif record.sign_ids == 4:
+                 record.sign_line = [(0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'1'}),
+                                    ]
+             elif record.sign_ids == 3:
+                 record.sign_line = [(0, 0, {'name':management[1].id, 'check':'2','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':management[0].id, 'check':'2','state':'0','sequence':'1'}),
+                                     (0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'2','check_and':True}),
+                                     (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'3','check_and':True}),
+                                     (0, 0, {'name':management[1].id, 'check':'3','state':'0','sequence':'4','check_and':True}),
+                                    ]
+             elif record.sign_ids == 10:
+                 record.sign_line = [(0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'0'}),
+                                     (0, 0, {'check':'2','state':'0','sequence':'1'}),
+                                     (0, 0, {'check':'3','state':'0','sequence':'2'}),
+                                    ]
+             elif record.sign_ids == 7:
+                 record.sign_line = [(0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'1'}),
+                                    ]
+                 record.evaluation = [(0, 0, {'name':ceo_kim.id}),
+                                      (0, 0, {'name':ceo_kang.id}),
+                                     ]
           else:
-            record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
-                               ]
+             #check: 결재(sign), 합의(2), 통보(3) / state : 0 (대기) / sequnce : 순번
+             if record.sign_ids == 1:
+                 record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':management[1].id, 'check':'3','state':'0','sequence':'1'}),
+                                    ]
+             elif record.sign_ids == 2:
+                 record.sign_line = [(0, 0, {'name':management[1].id, 'check':'2','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':management[0].id, 'check':'2','state':'0','sequence':'1'}),
+                                     (0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'2'}),
+                                     (0, 0, {'name':management[1].id, 'check':'3','state':'0','sequence':'3'}),
+                                    ]
+             elif record.sign_ids == 5:
+                 record.sign_line = [(0, 0, {'name':management[2].id, 'check':'2','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'1'}),
+                                     (0, 0, {'name':management[2].id, 'check':'3','state':'0','sequence':'2'}),
+                                    ]
+
+             elif record.sign_ids == 6:
+                 record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'1','check_and':True}),
+                                     (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'2','check_and':True}),
+                                    ]
+             elif record.sign_ids == 4:
+                 record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'1'}),
+                                     (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'2'}),
+                                    ]
+             elif record.sign_ids == 3:
+                 record.sign_line = [(0, 0, {'name':management[1].id, 'check':'2','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':management[0].id, 'check':'2','state':'0','sequence':'1'}),
+                                     (0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'2'}),
+                                     (0, 0, {'name':management[1].id, 'check':'3','state':'0','sequence':'3'}),
+                                    ]
+             elif record.sign_ids == 10:
+                 record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
+                                     (0, 0, {'check':'2','state':'0','sequence':'1'}),
+                                     (0, 0, {'check':'3','state':'0','sequence':'2'}),
+                                    ]
+             elif record.sign_ids == 7:
+                 record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'1'}),
+                                     (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'2'}),
+                                    ]
+                 record.evaluation = [(0, 0, {'name':ceo_kim.id}),
+                                      (0, 0, {'name':ceo_kang.id}),
+                                      (0, 0, {'name':boss.id}),
+                                     ]
 
     @api.depends('date_from','date_to')
     def _onchange_timesheet(self):  
@@ -409,7 +485,7 @@ class GvmSignContent(models.Model):
                  'check_mail':False
             })
         #결재정보를 다시 얻어 결재순서를 유지한다.
-        sel.get_check_list()
+        self.get_check_list()
         self.sendmail()
     
 	#근태신청서
@@ -543,6 +619,19 @@ class GvmSignContent(models.Model):
          #if h_count < -7:
          # raise UserError(_('사용 가능한 연차 개수를 초과하셨습니다.'))
        
+      #평가표
+      if self.sign.num == 7:
+        user = self.env.uid
+        dep = self.env['hr.department'].search([('member_ids.user_id','=',user)],limit=1)
+        boss = dep.manager_id
+        ceo_kang = self.env['hr.employee'].search([('id','=',126)])
+        ceo_kim = self.env['hr.employee'].search([('id','=',125)])
+        for value in record.sign_line:
+            _logger.warning(value.name)
+            _logger.warning(ceo_kim)
+#           if (record.name != ceo_kim.id):
+#           if (record.name != ceo_kang.id): 
+#           if (record.name != boss.id):
       self.sendmail()
       #처음 결재자에게 메일을 보낸다.
       self.write({'state':'write',
@@ -614,6 +703,17 @@ class GvmSignContent(models.Model):
 
 	return count
 
+    def gvm_evaluation(ids, evaluation):
+       #현재페이지의 결재문서 번호를 가져온다.
+       Model = request.env['gvm.signcontent']
+       sign_id = Model.search([('id','=',ids.id)],limit=1)
+
+       for record in sign_id.evaluation:
+         _logger.warning(record.name)
+         _logger.warning(request.env.user.name)
+         if record.name == request.env.user.name:
+            record.sudo(1).write({'score':evaluation})
+
     def gvm_sign_comment(ids, comment, state=None):
       _logger.warning('comment start')
       #현재페이지의 결재문서 번호를 가져온다.
@@ -638,19 +738,21 @@ class GvmSignContent(models.Model):
                     'reason':comment
                })
             #통보자
-            else:
-               record.sudo(1).write({
-                    'check_date':datetime.now(),
-                    'check_checkname':name,
-                    'state':'1',
-               })
-          if record.check_date == False:
-            #진행상태: 진행중
-            if record.state == '0':
-              state = 'ing'
-            #sign_line 결재 상태일떄
-          if record.state == '1':
-              state = 'done'
+#            else:
+#               record.sudo(1).write({
+#                    'check_date':datetime.now(),
+#                    'check_checkname':name,
+#                    'state':'1',
+#               })
+#          if record.check_date == False:
+#            #진행상태: 진행중
+#            if record.state == '0':
+#              state = 'ing'
+#          #sign_line 결재 상태일떄
+#          _logger.warning(record.check_date)
+#          _logger.warning(record.state)
+#          if record.state == '1':
+#              state = 'done'
       #반려버튼 클릭시
       else:
         _logger.warning('click deny')
@@ -683,7 +785,7 @@ class GvmSignContent(models.Model):
                         'check_checkname':name,
                         'check_date':datetime.now()
                     })
-      sign_id.sudo(1).write({'state':state})
+#      sign_id.sudo(1).write({'state':state})
 
 #_____________________메일보내기
       check = False
@@ -692,22 +794,33 @@ class GvmSignContent(models.Model):
       for record in sign_id.sign_line:
         #결재라인: 다음 결재자에게 메일보내기
         if record.check_date == False:
-          if (record.check == 'sign' or record.check == '2') and check != True:
-             receiver.append(record.name)
-             _logger.warning("record%s"%record)
-             record.write({'check_mail':True})
-             check = True
-          elif record.check == '3':
-             receiver.append(record.name)
-             _logger.warning("record%s"%record)
-             record.write({'check_mail':True})
+          if record.check_and == True and sign_id.next_check == '강규영' :
+             for value2 in record:
+               _logger.warning("receiver_1%s"%record.name)
+               receiver.append(value2.name)
+               value2.write({'check_mail':True})
+               check = True
           else:
-             break
-          #반려시 메일보내기
-          if record.check != '3' and state == 'cancel':
-            post = '님에 의하여 반려되었습니다. 결재문서를 확인하세요.'
-            receiver.append(record.name)
-            Flag = 1
+            if (record.check == 'sign' or record.check == '2') and check != True:
+               receiver.append(record.name)
+               _logger.warning("receiver_2%s"%record.name)
+               record.write({'check_mail':True})
+               check = True
+            elif record.check == '3' and check != True:
+               receiver.append(record.name)
+               _logger.warning("record%s"%record)
+               record.write({'check_mail':True,
+                             'state':'1',
+                             'check_date':datetime.now()
+               })
+
+            else:
+               break
+            #반려시 메일보내기
+            if record.check != '3' and state == 'cancel':
+               post = '님에 의하여 반려되었습니다. 결재문서를 확인하세요.'
+               receiver.append(record.name)
+               Flag = 1
 
       _logger.warning('send mail')
       sender = request.env.user.name
@@ -723,6 +836,18 @@ class GvmSignContent(models.Model):
       action_id = "423"
       send_mail = gvm_mail().gvm_send_mail(sender, receiver, post, post_id, po_num, model_name, menu_id, action_id,Flag)
       _logger.warning('comment finish')
+      
+#_____________________결재상태바꾸기
+      for record in sign_id.sign_line:
+        if record.check_date == False:
+            #진행상태: 진행중
+            if record.state == '0':
+              state = 'ing'
+        #sign_line 결재 상태일떄
+        if record.state == '1':
+           state = 'done'
+      sign_id.sudo(1).write({'state':state})
+
     
     @api.model
     def create(self, vals):
@@ -755,7 +880,79 @@ class GvmSignContent(models.Model):
                 text = str('근태 삭제 %s -> %s' % (h_count+count, h_count))
                 self.env['hr.tracking'].create({'name':hr_name.id,'holiday_count':h_count,'etc':text,'sign_id':self.id})
         return super(GvmSignContent, self).unlink()
-
+    
+    @api.onchange('finally_cost','finally_cost2')
+    def sign_line_view(self):
+        for record in self:
+         # 0: 김진우과장 1: 유예진사원 2: 이승현사원
+         user = self.env.uid
+         management = self.env['hr.employee'].search([('department_id','=',10)])
+         ceo_kang = self.env['hr.employee'].search([('id','=',126)])
+         ceo_kim = self.env['hr.employee'].search([('id','=',125)])
+         present_user = self.env['hr.employee'].search([('user_id','=',user)]) 
+         dep = self.env['hr.department'].search([('member_ids.user_id','=',user)],limit=1)
+         boss = dep.manager_id
+            
+         if record.sign_ids == 5:
+          self.finally_cost = -(self.finally_cost)
+          #부서장 이거나 부서장이 없을경우
+          if present_user == boss or boss == ceo_kang or boss == ceo_kim:
+            if self.finally_cost >= 300000 and self.finally_cost < 1000000:
+                 record.sign_line = [(0, 0, {'name':management[2].id, 'check':'2','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'1','check_and':True}),
+                                     (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'2','check_and':True}),
+                                     (0, 0, {'name':management[2].id, 'check':'3','state':'0','sequence':'3'}),
+                                    ]
+            if self.finally_cost >= 1000000:
+                 record.sign_line = [(0, 0, {'name':management[2].id, 'check':'2','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'1'}),
+                                     (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'2'}),
+                                     (0, 0, {'name':management[2].id, 'check':'3','state':'0','sequence':'3'}),
+                                    ]
+          else:
+            if self.finally_cost >= 300000 and self.finally_cost < 1000000:
+                 record.sign_line = [(0, 0, {'name':management[2].id, 'check':'2','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'1'}),
+                                     (0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'2','check_and':True}),
+                                     (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'3','check_and':True}),
+                                     (0, 0, {'name':management[2].id, 'check':'3','state':'0','sequence':'4'}),
+                                    ]
+            if self.finally_cost >= 1000000:
+                 record.sign_line = [(0, 0, {'name':management[2].id, 'check':'2','state':'0','sequence':'0'}),
+                                     (0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'1'}),
+                                     (0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'2'}),
+                                     (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'3'}),
+                                     (0, 0, {'name':management[2].id, 'check':'3','state':'0','sequence':'4'}),
+                                    ]
+         elif record.sign_ids == 10:
+            if present_user == boss or boss == ceo_kang or boss == ceo_kim:
+               if self.finally_cost2 >= 300000 and self.finally_cost2 < 1000000:
+                    record.sign_line = [(0, 0, {'check':'2','state':'0','sequence':'0'}),
+                                        (0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'1','check_and':True}),
+                                        (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'2','check_and':True}),
+                                        (0, 0, {'check':'3','state':'0','sequence':'3'}),
+                                       ]
+               if self.finally_cost2 >= 1000000:
+                    record.sign_line = [(0, 0, {'check':'2','state':'0','sequence':'0'}),
+                                        (0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'1'}),
+                                        (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'2'}),
+                                        (0, 0, {'check':'3','state':'0','sequence':'3'}),
+                                       ]
+            else:
+               if self.finally_cost2 >= 300000 and self.finally_cost2 < 1000000:
+                     record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
+                                         (0, 0, {'check':'2','state':'0','sequence':'1'}),
+                                         (0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'2','check_and':True}),
+                                         (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'3','check_and':True}),
+                                         (0, 0, {'check':'3','state':'0','sequence':'4'}),
+                                        ]
+               if self.finally_cost2 >= 1000000:
+                     record.sign_line = [(0, 0, {'name':boss.id, 'check':'sign','state':'0','sequence':'0'}),
+                                         (0, 0, {'check':'2','state':'0','sequence':'1'}),
+                                         (0, 0, {'name':ceo_kang.id, 'check':'sign','state':'0','sequence':'2'}),
+                                         (0, 0, {'name':ceo_kim.id, 'check':'sign','state':'0','sequence':'3'}),
+                                         (0, 0, {'check':'3','state':'0','sequence':'4'}),
+                                        ]
     @api.multi
     def write(self, vals):
         #[취소권한부여] 294: 유예진, 295: 이승현, 258: 김진우, 316: 조나래
@@ -817,18 +1014,25 @@ class GvmSignContent(models.Model):
         else: 
             check = False
             for value in check_id_list:
-             if check == False:
-               if value.check != '3':
-                  receiver.append(value.name)
-                  value.write({'check_mail':True})
-             else:
-               if value.check == 'sign' or value.check == '2':
-                  break
-               else:
-                 receiver.append(value.name)
-                 value.write({'check_mail':True})
-             check = True
-              
+              if value.check_and== True:
+                if check == False:
+                   _logger.warning(value.name)
+#                  for value2 in value: 
+                   receiver.append(value.name)
+                   value.write({'check_mail':True})
+              else:
+                 if check == False:
+                   if value.check != '3':
+                      receiver.append(value.name)
+                      value.write({'check_mail':True})
+#                 else:
+#                   if value.check == 'sign' or value.check == '2':
+#                      break
+#                   else:
+#                     receiver.append(value.name)
+#                     value.write({'check_mail':True})
+                 check = True
+             
         gvm = gvm_mail()
         #메타데이터 id
         post_id = self.id
@@ -911,3 +1115,100 @@ class GvmSignLine(models.Model):
     reason = fields.Text('reason', readonly=True)
     check_reference = fields.Char(string='통보자확인')
     check_checkname = fields.Char(string='결재자확인')
+    evaluation = fields.Boolean('평가자',default=False)
+    #대표님 결재 or조건일때
+    check_and = fields.Boolean(default=False)
+
+class GvmEvaluation(models.Model):
+     _name = "gvm.evaluation"
+
+     name = fields.Many2one ('hr.employee' ,string = 'name')
+     score= fields.Integer('점수')
+     sign = fields.Many2one ('gvm.signcontent' , 'sign')
+
+class GvmCalendar(models.Model):
+     _name = "gvm.calendar"
+
+     date_start = fields.Date('시작시간')
+     date_end = fields.Date('종료시간')
+     caption = fields.Text('내용')
+     sign_view = fields.Many2one('내용')
+     sign = fields.Many2one('gvm.signcontent','sign')
+
+     def sign_done(self):
+         #결재상태에서 변경 되었을경우
+         self.sign_del()
+         #달력작성여부추가해야함(조건)
+         sign = self.env['gvm.signcontent'].search([('state','=','done'),('sign_ids','=',1)])
+         caption = ''
+#        _logger.warning(sign.sign_line.check_date)
+         for record in sign:
+             #유저이름
+             name = record.user_id.name
+             #연차정보
+             rest = record.rest1
+             if rest == 'day':  rest = '연차'
+             elif rest == 'half': rest = '[오전]반차'
+             elif rest == 'half_2': rest = '[오후]반차'
+             elif rest == 'quarter': rest = '[오전]반반차'
+             elif rest == 'quarter_2': rest = '[오후]반반차'
+             elif rest == 'vacation': rest = '휴가'
+             elif rest == 'refresh': rest = '리프레시휴가'
+             elif rest == 'publicvacation': rest = '공가'
+             elif rest == 'sick': rest = '병가'
+             elif rest == 'special': rest = '특별휴가'
+             elif rest == 'special': rest = '기타'
+             #직급
+             job = record.job_ids.name
+             if job == '사원':  job = 'S'
+             elif job == '주임':  job = 'J'
+             elif job == '대리':  job = 'D'
+             elif job == '과장':  job = 'K'
+             elif job == '차장':  job = 'C'
+             else: job = False   #이사, 대표일경우
+
+             #정보가 없을경우
+             if rest != False and name != False and job != False:
+                 caption = name + ' ' + job + ' ' +  rest
+                 #달력작성여부
+                 record.write({'check_calendar':True})
+                 #달력작성
+                 self.env['gvm.calendar'].create({'caption':caption,'date_start':record.date_from,'date_end':record.date_to,'sign':record.id})
+
+     def sign_del(self):
+          sign = self.env['gvm.signcontent'].search([('state','!=','done'),('sign_ids','=',1),('check_calendar','=',True)])
+          _logger.warning(sign)
+          caption = ''
+          for record in sign:
+             #유저이름
+             name = record.user_id.name
+             #연차정보
+             rest = record.rest1
+             if rest == 'day':  rest = '연차'
+             elif rest == 'half': rest = '[오전]반차'
+             elif rest == 'half_2': rest = '[오후]반차'
+             elif rest == 'quarter': rest = '[오전]반반차'
+             elif rest == 'quarter_2': rest = '[오후]반반차'
+             elif rest == 'vacation': rest = '휴가'
+             elif rest == 'refresh': rest = '리프레시휴가'
+             elif rest == 'publicvacation': rest = '공가'
+             elif rest == 'sick': rest = '병가'
+             elif rest == 'special': rest = '특별휴가'
+             elif rest == 'special': rest = '기타'
+             #직급
+             job = record.job_ids.name
+             if job == '사원':  job = 'S'
+             elif job == '주임':  job = 'J'
+             elif job == '대리':  job = 'D'
+             elif job == '과장':  job = 'K'
+             elif job == '차장':  job = 'C'
+             else: job = False   #이사, 대표일경우
+
+             caption = name + ' ' + job + ' ' +  rest
+             sign_del = self.env['gvm.calendar'].search([('caption','=',caption),('date_start','=',record.date_from),('date_end','=',record.date_to)])
+             _logger.warning(sign_del)
+             _logger.warning(caption)
+             _logger.warning(record.date_from)
+             _logger.warning(record.date_to)
+             sign_del.unlink()
+
